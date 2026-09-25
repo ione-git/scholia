@@ -135,4 +135,14 @@ Same screens at 834pt wide portrait: 32pt gutters, 5-column library, reader meas
 
 ## Swift API
 
-Filled in by #5 (tokens: colours, text styles, spacing, radius, shadows, reader themes, Literata) and #6 (components: GlassButton, Chip, BookCover, list rows, segmented control, sheet and popover styles). Until then there is no API: do not hardcode values in feature code; if a feature needs a token or component that does not exist yet, stop and report.
+`import DesignSystem`. Token values live in `Packages/DesignSystem/Sources/DesignSystem/GeneratedTokens.swift`, generated from `tokens.json` by `python3 scripts/generate_tokens.py`. Never edit that file: change `tokens.json`, re-run the script, commit both. Swift names are token names in lowerCamelCase: `surface-card` → `surfaceCard`, `space-5` → `space5`, `radius-2xl` → `radius2xl`, `label-caps` → `labelCaps`.
+
+- Colours: `.foregroundStyle(.ink)`, `.background(.surface)`, `.fill(.accent)`, `.stroke(.controlBorder, lineWidth: .hairlineW)`, `Color.inkMuted`. They are dynamic and follow light/dark (also `.environment(\.colorScheme, …)`). `selection` clashes with SwiftUI's `.selection` shape style: write `Color.selection`. A fixed variant: `ColorToken.surfacePaper.light` / `.dark`.
+- Text styles: `.textStyle(.body)` sets font, tracking, exact line height and uppercase (`labelCaps`). `TextStyle.readingBody.lineHeight` is 27; `.font` / `.uiFont` where an API needs a font. Serif styles use the bundled Literata roman at the token weight; sizes are fixed (no Dynamic Type).
+- Spacing, radius, effects are `CGFloat` constants: `.padding(.horizontal, .space5)`, `VStack(spacing: .space2)`, `RoundedRectangle(cornerRadius: .radiusXl)`, `.frame(minHeight: .controlH)`. `glassBlur` and `glassSaturate` describe the canvas glass only: in SwiftUI use `.glassEffect()`.
+- Shadows: `.shadow(.card, in: RoundedRectangle(cornerRadius: .radiusXl))`, names without `shadow-` (`card`, `popover`, `sheet`, `cover`, `coverHero`, `glass`). Draws every CSS layer: drop shadows behind the shape (meant for opaque surfaces), the 0.5pt ring, the inset cover spine. Never on glass. The hero glow in the cover's own hue is not a token value: BookCover supplies it.
+- Reader themes: `ReaderTheme.paper`, `.sepia`, `.night`, `.black`, each with fixed `page` and `text` colours.
+- Literata: variable roman + italic TTFs and `OFL.txt` in `Packages/DesignSystem/Sources/DesignSystem/Fonts`, registered by `DesignSystem.registerFonts()` in `ScholiaApp.init`.
+- Lists for tooling: `ColorToken.all`, `TextStyle.all`, `NumberToken.spacing` / `.radius` / `.effects`, `ShadowToken.all`. The Debug-only Token Gallery (root placeholder → Token Gallery, `App/Sources/TokenGallery.swift`) shows them all.
+
+Components (GlassButton, Chip, BookCover, list rows, segmented control, sheet and popover styles) are filled in by #6. Until then do not hardcode values in feature code; if a feature needs a token or component that does not exist yet, stop and report.

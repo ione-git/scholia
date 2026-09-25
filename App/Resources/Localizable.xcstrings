@@ -1,7 +1,37 @@
 {
   "sourceLanguage" : "en",
   "strings" : {
+    "Colours" : {
+      "shouldTranslate" : false
+    },
+    "Dark" : {
+      "shouldTranslate" : false
+    },
+    "Effects" : {
+      "shouldTranslate" : false
+    },
+    "Light" : {
+      "shouldTranslate" : false
+    },
+    "Radius" : {
+      "shouldTranslate" : false
+    },
+    "Reader themes" : {
+      "shouldTranslate" : false
+    },
     "Scholia" : {
+      "shouldTranslate" : false
+    },
+    "Shadows" : {
+      "shouldTranslate" : false
+    },
+    "Spacing" : {
+      "shouldTranslate" : false
+    },
+    "Text styles" : {
+      "shouldTranslate" : false
+    },
+    "Token Gallery" : {
       "shouldTranslate" : false
     }
   },

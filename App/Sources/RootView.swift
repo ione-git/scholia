@@ -2,7 +2,15 @@ import SwiftUI
 
 struct RootView: View {
     var body: some View {
-        Text("Scholia")
-            .accessibilityIdentifier("root.placeholder")
+        NavigationStack {
+            VStack {
+                Text("Scholia")
+                    .accessibilityIdentifier("root.placeholder")
+                #if DEBUG
+                    NavigationLink("Token Gallery") { TokenGallery() }
+                        .accessibilityIdentifier("root.tokenGallery")
+                #endif
+            }
+        }
     }
 }
