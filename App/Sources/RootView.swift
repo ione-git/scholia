@@ -1,20 +1,39 @@
 import SwiftUI
 
+enum Route: Hashable {
+    case library
+    case settings
+}
+
+#if DEBUG
+    enum DebugRoute: Hashable {
+        case tokenGallery
+        case componentGallery
+        case launchScreen
+    }
+#endif
+
 struct RootView: View {
+    @State private var path = NavigationPath()
+
     var body: some View {
-        NavigationStack {
-            VStack {
-                Text("Scholia")
-                    .accessibilityIdentifier("root.placeholder")
+        NavigationStack(path: $path) {
+            HomeView(path: $path)
+                .navigationDestination(for: Route.self) { route in
+                    switch route {
+                    case .library: LibraryView()
+                    case .settings: SettingsView()
+                    }
+                }
                 #if DEBUG
-                    NavigationLink("Token Gallery") { TokenGallery() }
-                        .accessibilityIdentifier("root.tokenGallery")
-                    NavigationLink("Component Gallery") { ComponentGallery() }
-                        .accessibilityIdentifier("root.componentGallery")
-                    NavigationLink("Launch Screen") { LaunchScreenPreview() }
-                        .accessibilityIdentifier("root.launchScreen")
+                    .navigationDestination(for: DebugRoute.self) { route in
+                        switch route {
+                        case .tokenGallery: TokenGallery()
+                        case .componentGallery: ComponentGallery()
+                        case .launchScreen: LaunchScreenPreview()
+                        }
+                    }
                 #endif
-            }
         }
     }
 }

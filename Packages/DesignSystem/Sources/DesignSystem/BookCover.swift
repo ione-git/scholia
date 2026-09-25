@@ -138,6 +138,17 @@ public struct BookCover: View {
     }
 }
 
+extension BookCover {
+    private static let generatedColors: [UInt32] = [
+        0x2E3A4F, 0x35545E, 0x8A6D2F, 0x9A6B4E, 0x6B2F3A, 0x7A5A1E, 0x4A4A48, 0x2F5D50, 0x1F3B57,
+    ]
+
+    public static func generatedColor(for title: String) -> Color {
+        let hash = title.unicodeScalars.reduce(0) { ($0 &* 31 &+ Int($1.value)) & Int.max }
+        return Color(uiColor: UIColor(rgb: generatedColors[hash % generatedColors.count], opacity: 1))
+    }
+}
+
 private struct FinishedBadge: View {
     private static let diameter: CGFloat = 26
     private static let ring: CGFloat = 2

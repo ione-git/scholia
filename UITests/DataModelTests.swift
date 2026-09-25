@@ -13,18 +13,18 @@ final class DataModelTests: UITestCase {
             LaunchConfiguration(
                 resetsState: true, fixtures: [.german, .frenchNoCover, .minimalMetadata, .corrupted, .drm],
                 mocksTranslation: true, now: nil))
-        RootScreen(app: seeded).waitUntilShown().storedLibrary.waitUntil(\.label, equals: library)
+        HomeScreen(app: seeded).waitUntilShown().storedLibrary.waitUntil(\.label, equals: library)
         seeded.terminate()
 
         let relaunched = launch(LaunchConfiguration(resetsState: false, fixtures: [], mocksTranslation: true, now: nil))
-        RootScreen(app: relaunched).waitUntilShown().storedLibrary.waitUntil(\.label, equals: library)
+        HomeScreen(app: relaunched).waitUntilShown().storedLibrary.waitUntil(\.label, equals: library)
     }
 
     func testResetDropsStoredBooksAndFiles() {
         let first = launch(
             LaunchConfiguration(
                 resetsState: true, fixtures: [.german, .frenchNoCover], mocksTranslation: true, now: nil))
-        RootScreen(app: first).waitUntilShown().storedLibrary.waitUntil(
+        HomeScreen(app: first).waitUntilShown().storedLibrary.waitUntil(
             \.label,
             equals: """
                 Die Verwandlung · Franz Kafka · de · german.epub
@@ -34,21 +34,21 @@ final class DataModelTests: UITestCase {
 
         let reset = launch(
             LaunchConfiguration(resetsState: true, fixtures: [.german], mocksTranslation: true, now: nil))
-        RootScreen(app: reset).waitUntilShown().storedLibrary.waitUntil(
+        HomeScreen(app: reset).waitUntilShown().storedLibrary.waitUntil(
             \.label, equals: "Die Verwandlung · Franz Kafka · de · german.epub")
     }
 
     func testSeedingAgainKeepsOneCopyOfEachBook() {
         let first = launch(
             LaunchConfiguration(resetsState: true, fixtures: [.german], mocksTranslation: true, now: nil))
-        RootScreen(app: first).waitUntilShown().storedLibrary.waitUntil(
+        HomeScreen(app: first).waitUntilShown().storedLibrary.waitUntil(
             \.label, equals: "Die Verwandlung · Franz Kafka · de · german.epub")
         first.terminate()
 
         let again = launch(
             LaunchConfiguration(
                 resetsState: false, fixtures: [.german, .frenchNoCover], mocksTranslation: true, now: nil))
-        RootScreen(app: again).waitUntilShown().storedLibrary.waitUntil(
+        HomeScreen(app: again).waitUntilShown().storedLibrary.waitUntil(
             \.label,
             equals: """
                 Die Verwandlung · Franz Kafka · de · german.epub

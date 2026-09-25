@@ -1,0 +1,158 @@
+import DesignSystem
+import SwiftData
+import SwiftUI
+
+struct HomeView: View {
+    @Binding var path: NavigationPath
+    @Query(sort: [
+        SortDescriptor(\Book.openedAt, order: .reverse), SortDescriptor(\Book.addedAt, order: .reverse),
+        SortDescriptor(\Book.title),
+    ])
+    private var books: [Book]
+
+    var body: some View {
+        GeometryReader { proxy in
+            ScrollView {
+                VStack(spacing: 0) {
+                    header
+                    if let hero = books.first {
+                        HeroBook(book: hero)
+                            .padding(.top, .space8)
+                        Spacer(minLength: .space6)
+                        LibraryShelf(count: books.count, books: Array(books.dropFirst()))
+                            .padding(.bottom, .space8)
+                    }
+                }
+                .frame(minHeight: proxy.size.height)
+            }
+            .scrollBounceBehavior(.basedOnSize)
+        }
+        .background(.surface)
+        .toolbar(.hidden, for: .navigationBar)
+    }
+
+    private var header: some View {
+        HStack(spacing: .space2) {
+            wordmark
+            GoalRing(value: 0)
+                .accessibilityLabel(Text("Daily goal"))
+                .accessibilityIdentifier("home.goalRing")
+            Spacer(minLength: 0)
+            GlassButton(.add, label: Text("Add a book"), size: .regular, isActive: false) {}
+                .accessibilityIdentifier("home.addBook")
+            GlassButton(.settings, label: Text("Settings"), size: .regular, isActive: false) {
+                path.append(Route.settings)
+            }
+            .accessibilityIdentifier("home.settings")
+        }
+        .frame(height: .controlH)
+        .padding(.horizontal, .space5)
+    }
+
+    private var wordmark: some View {
+        Text("Scholia")
+            .textStyle(.wordmark)
+            .foregroundStyle(.ink)
+            .accessibilityAddTraits(.isHeader)
+            .accessibilityIdentifier("home.wordmark")
+            #if DEBUG
+                .contextMenu { debugMenu }
+            #endif
+    }
+
+    #if DEBUG
+        @ViewBuilder private var debugMenu: some View {
+            Button("Token Gallery") { path.append(DebugRoute.tokenGallery) }
+                .accessibilityIdentifier("home.tokenGallery")
+            Button("Component Gallery") { path.append(DebugRoute.componentGallery) }
+                .accessibilityIdentifier("home.componentGallery")
+            Button("Launch Screen") { path.append(DebugRoute.launchScreen) }
+                .accessibilityIdentifier("home.launchScreen")
+        }
+    #endif
+}
+
+private struct HeroBook: View {
+    let book: Book
+
+    var body: some View {
+        VStack(spacing: .space4) {
+            BookCover(
+                title: book.title, author: book.author, color: BookCover.generatedColor(for: book.title),
+                image: book.coverImage, size: .heroLarge, isFinished: book.isFinished, finishedValue: Text("Finished")
+            )
+            .accessibilityIdentifier("home.hero.cover")
+            VStack(spacing: .space1) {
+                Text(book.title)
+                    .textStyle(.titleBook)
+                    .foregroundStyle(.ink)
+                    .accessibilityIdentifier("home.hero.title")
+                if let author = book.author {
+                    Text(author)
+                        .textStyle(.callout)
+                        .foregroundStyle(.inkMuted)
+                        .accessibilityIdentifier("home.hero.author")
+                }
+            }
+            .multilineTextAlignment(.center)
+            .padding(.top, .space2)
+            ProgressBar(value: 0)
+                .frame(width: BookCover.Size.heroLarge.width)
+                .accessibilityLabel(Text("Progress"))
+                .accessibilityIdentifier("home.hero.progress")
+        }
+        .padding(.horizontal, .space5)
+    }
+}
+
+private struct LibraryShelf: View {
+    let count: Int
+    let books: [Book]
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: .space3) {
+            NavigationLink(value: Route.library) {
+                HStack(alignment: .firstTextBaseline) {
+                    Text("Library")
+                        .textStyle(.section)
+                        .foregroundStyle(.ink)
+                    Spacer()
+                    HStack(spacing: .space1) {
+                        Text("All \(count)")
+                            .textStyle(.callout)
+                            .foregroundStyle(.inkMuted)
+                        ListRowChevron()
+                    }
+                }
+                .contentShape(.rect)
+            }
+            .buttonStyle(.plain)
+            .padding(.horizontal, .space5)
+            .accessibilityIdentifier("home.library")
+            if !books.isEmpty {
+                ScrollView(.horizontal) {
+                    LazyHStack(spacing: .space3) {
+                        ForEach(books) { book in
+                            BookCover(
+                                title: book.title, author: book.author,
+                                color: BookCover.generatedColor(for: book.title), image: book.coverImage, size: .row,
+                                isFinished: book.isFinished, finishedValue: Text("Finished")
+                            )
+                            .accessibilityIdentifier("home.book.\(book.title)")
+                        }
+                    }
+                }
+                .contentMargins(.horizontal, .space5)
+                .scrollIndicators(.hidden)
+                .scrollClipDisabled()
+                .fixedSize(horizontal: false, vertical: true)
+            }
+        }
+    }
+}
+
+extension Book {
+    fileprivate var coverImage: Image? {
+        cover.flatMap(UIImage.init(data:)).map(Image.init(uiImage:))
+    }
+}

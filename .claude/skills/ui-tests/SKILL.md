@@ -15,7 +15,7 @@ description: Write, run and debug Scholia UI tests (XCUITest) — screen objects
 
 ## Accessibility identifiers
 
-`screen.element`, both parts lowerCamelCase: `root.placeholder`, `library.searchField`, `reader.pageCounter`, `addBook.title`.
+`screen.element`, both parts lowerCamelCase: `home.wordmark`, `library.searchField`, `reader.pageCounter`, `addBook.title`.
 
 - Sheets, popovers and alerts are screens of their own.
 - Repeated items: `screen.element.<key>`, key stable and known to the test (book title), never an index or UUID: `library.book.Die Verwandlung`.
