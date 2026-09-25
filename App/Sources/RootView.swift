@@ -14,6 +14,7 @@ enum Route: Hashable {
 #endif
 
 struct RootView: View {
+    @Environment(Settings.self) private var settings
     @State private var path = NavigationPath()
 
     var body: some View {
@@ -34,6 +35,19 @@ struct RootView: View {
                         }
                     }
                 #endif
+        }
+        .background {
+            Color.clear.preferredColorScheme(settings.appTheme.colorScheme)
+        }
+    }
+}
+
+extension AppTheme {
+    fileprivate var colorScheme: ColorScheme? {
+        switch self {
+        case .system: nil
+        case .light: .light
+        case .dark: .dark
         }
     }
 }

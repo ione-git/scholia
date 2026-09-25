@@ -22,4 +22,14 @@ enum Storage {
         #endif
         return container
     }
+
+    static func settings(in context: ModelContext) throws -> Settings {
+        if let settings = try context.fetch(FetchDescriptor<Settings>()).first {
+            return settings
+        }
+        let settings = Settings.makeDefault()
+        context.insert(settings)
+        try context.save()
+        return settings
+    }
 }

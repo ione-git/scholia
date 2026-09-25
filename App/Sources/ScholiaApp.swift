@@ -5,11 +5,14 @@ import SwiftUI
 @main
 struct ScholiaApp: App {
     private let container: ModelContainer
+    private let settings: Settings
 
     init() {
         DesignSystem.registerFonts()
         do {
-            container = try Storage.makeContainer(.current)
+            let container = try Storage.makeContainer(.current)
+            settings = try Storage.settings(in: container.mainContext)
+            self.container = container
         } catch {
             fatalError("Storage: \(error)")
         }
@@ -18,6 +21,7 @@ struct ScholiaApp: App {
     var body: some Scene {
         WindowGroup {
             RootView()
+                .environment(settings)
                 #if DEBUG
                     .background { LaunchDiagnostics(configuration: .current) }
                     .background { LibraryDiagnostics() }

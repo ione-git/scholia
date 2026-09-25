@@ -83,4 +83,12 @@ final class Settings {
         self.locksRotation = locksRotation
         self.highlightColor = highlightColor
     }
+
+    static func makeDefault() -> Settings {
+        Settings(
+            translationLanguage: TargetLanguage.device, wordTapStyle: .bubble, dailyGoalMinutes: 20,
+            remindsDaily: false, reminderTime: TimeOfDay(hour: 21, minute: 0), appTheme: .system,
+            librarySort: .recentlyOpened, readerTheme: .paper, readerFont: .literata, textSizeStep: 3,
+            lineSpacing: .normal, pageTurn: .slide, locksRotation: false, highlightColor: .yellow)
+    }
 }

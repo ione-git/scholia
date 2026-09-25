@@ -2,7 +2,7 @@
   "sourceLanguage" : "en",
   "strings" : {
     "%lld min" : {
-      "shouldTranslate" : false
+
     },
     "%lld of %lld" : {
       "localizations" : {
@@ -30,10 +30,16 @@
 
     },
     "Appearance" : {
-      "shouldTranslate" : false
+
+    },
+    "Author" : {
+
     },
     "Back" : {
       "shouldTranslate" : false
+    },
+    "Back to Home" : {
+
     },
     "Biographies" : {
       "shouldTranslate" : false
@@ -51,13 +57,13 @@
       "shouldTranslate" : false
     },
     "Bubble" : {
-      "shouldTranslate" : false
+
     },
     "Cancel" : {
       "shouldTranslate" : false
     },
     "Card" : {
-      "shouldTranslate" : false
+
     },
     "Chip" : {
       "shouldTranslate" : false
@@ -87,7 +93,7 @@
 
     },
     "Dark" : {
-      "shouldTranslate" : false
+
     },
     "Done" : {
       "shouldTranslate" : false
@@ -120,7 +126,7 @@
 
     },
     "Light" : {
-      "shouldTranslate" : false
+
     },
     "List rows" : {
       "shouldTranslate" : false
@@ -129,7 +135,7 @@
       "shouldTranslate" : false
     },
     "Minimal" : {
-      "shouldTranslate" : false
+
     },
     "Modal sheet" : {
       "shouldTranslate" : false
@@ -141,7 +147,7 @@
 
     },
     "On word tap" : {
-      "shouldTranslate" : false
+
     },
     "Open EPUB…" : {
       "shouldTranslate" : false
@@ -165,13 +171,28 @@
       "shouldTranslate" : false
     },
     "Reading" : {
-      "shouldTranslate" : false
+
+    },
+    "Recently added" : {
+
+    },
+    "Recently opened" : {
+
+    },
+    "Reminder" : {
+
+    },
+    "Reminder at %@" : {
+
     },
     "Russian" : {
       "shouldTranslate" : false
     },
     "Scholia" : {
       "shouldTranslate" : false
+    },
+    "Scholia %@" : {
+
     },
     "Science Fiction" : {
       "shouldTranslate" : false
@@ -197,17 +218,20 @@
     "Slide" : {
       "shouldTranslate" : false
     },
+    "Sort books by" : {
+
+    },
     "Spacing" : {
       "shouldTranslate" : false
     },
     "System" : {
-      "shouldTranslate" : false
+
     },
     "Text styles" : {
       "shouldTranslate" : false
     },
     "Theme" : {
-      "shouldTranslate" : false
+
     },
     "Themes & Settings" : {
       "shouldTranslate" : false
@@ -215,14 +239,17 @@
     "This book can't be opened." : {
       "shouldTranslate" : false
     },
+    "Title" : {
+
+    },
     "Token Gallery" : {
       "shouldTranslate" : false
     },
     "Translate to" : {
-      "shouldTranslate" : false
+
     },
     "Translation" : {
-      "shouldTranslate" : false
+
     }
   },
   "version" : "1.0"
