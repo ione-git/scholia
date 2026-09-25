@@ -42,7 +42,7 @@ struct HomeView: View {
                 guard case .success(let picked) = result else {
                     return
                 }
-                prototypeBook = try? PrototypeBook(importing: picked)
+                Task { prototypeBook = PrototypeBook(url: try? await PrototypeBook.importedCopy(of: picked)) }
             }
             .fullScreenCover(item: $prototypeBook) { ReaderPrototype(url: $0.url) }
         #endif
@@ -180,13 +180,14 @@ extension Book {
 
 #if DEBUG
     private struct PrototypeBook: Identifiable {
-        let url: URL
+        let url: URL?
 
-        var id: URL { url }
+        var id: URL? { url }
     }
 
     extension PrototypeBook {
-        fileprivate init(importing picked: URL) throws {
+        @concurrent
+        fileprivate nonisolated static func importedCopy(of picked: URL) async throws -> URL {
             let copy = URL.temporaryDirectory.appending(path: picked.lastPathComponent)
             let isAccessing = picked.startAccessingSecurityScopedResource()
             defer {
@@ -196,7 +197,7 @@ extension Book {
             }
             try? FileManager.default.removeItem(at: copy)
             try FileManager.default.copyItem(at: picked, to: copy)
-            url = copy
+            return copy
         }
     }
 #endif

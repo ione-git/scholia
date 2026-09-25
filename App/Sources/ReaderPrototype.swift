@@ -4,7 +4,7 @@
     import SwiftUI
 
     struct ReaderPrototype: View {
-        let url: URL
+        let url: URL?
 
         @Environment(\.dismiss) private var dismiss
         @Environment(\.colorScheme) private var colorScheme
@@ -156,6 +156,9 @@
 
         private func open() async {
             do {
+                guard let url else {
+                    throw ReaderError.unreadable
+                }
                 let book = try await ReaderBook.open(url)
                 let controller = ReaderController(
                     book: book,
@@ -177,7 +180,8 @@
                     pageTurn: .slide,
                     highlightTitle: String(localized: "Highlight")
                 )
-                controller.onPageTap = { isChromeShown.toggle() }
+                let isChromeShown = $isChromeShown
+                controller.onPageTap = { isChromeShown.wrappedValue.toggle() }
                 self.controller = controller
             } catch {
                 cannotOpen = true

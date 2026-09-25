@@ -50,8 +50,9 @@ struct HomeScreen: Screen {
         return reader
     }
 
-    func openEPUB() {
+    func openEPUB() -> FilePickerScreen {
         openDebugMenu("home.openEPUB")
+        return FilePickerScreen(app: app).waitUntilShown()
     }
 
     private func openDebugMenu(_ item: String) {

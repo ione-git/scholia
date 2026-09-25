@@ -162,11 +162,15 @@ final class ReaderViewController: UIViewController {
         guard visible > 0 else {
             return
         }
-        controller?.page = ReaderPage(
+        let page = ReaderPage(
             location: ReaderLocation(chapter: resource.href.string, progression: resource.progression.lowerBound),
             number: Int((resource.progression.lowerBound / visible).rounded()) + 1,
             count: Int((1 / visible).rounded())
         )
+        if page.location != controller?.page?.location {
+            controller?.word = nil
+        }
+        controller?.page = page
     }
 
     @objc private func highlightSelection() {

@@ -73,6 +73,19 @@ final class ReaderPrototypeTests: UITestCase {
         reader.theme("paper").waitUntilGone()
     }
 
+    func testPageTurnClearsTappedWord() throws {
+        let reader = openReader()
+        let line = try readingLineHeight()
+        let paragraph = reader.paragraph(startingWith: "Als Gregor Samsa").waitUntilExists()
+        paragraph.coordinate(withNormalizedOffset: .zero).withOffset(CGVector(dx: 3, dy: line / 2)).tap()
+        reader.word.waitUntil(\.label, equals: "Als")
+
+        reader.turnForward(expecting: "2 of 18")
+
+        reader.word.waitUntilGone()
+        XCTAssertFalse(reader.wordTint.exists)
+    }
+
     func testThemesRecolourPageAndText() throws {
         let reader = openReader()
         let tokens = try TokenValues.load()
@@ -142,11 +155,10 @@ final class ReaderPrototypeTests: UITestCase {
 
     func testOpenEPUBPresentsFilesPicker() {
         let app = launch(LaunchConfiguration(resetsState: true, fixtures: [], mocksTranslation: true, now: nil))
-        let home = HomeScreen(app: app).waitUntilShown()
 
-        home.openEPUB()
+        let picker = HomeScreen(app: app).waitUntilShown().openEPUB()
 
-        home.root.waitUntil(\.isHittable, equals: false)
+        picker.root.waitUntil(\.isHittable, equals: true)
         attachScreenshot("FilePicker")
     }
 
