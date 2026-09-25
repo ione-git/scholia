@@ -6,9 +6,10 @@ class UITestCase: XCTestCase {
         continueAfterFailure = false
     }
 
-    func launch(_ configuration: LaunchConfiguration) -> XCUIApplication {
+    func launch(_ configuration: LaunchConfiguration, timeZone: TimeZone = .gmt) -> XCUIApplication {
         let app = XCUIApplication()
         app.launchEnvironment = configuration.environment
+        app.launchEnvironment["TZ"] = timeZone.identifier
         app.launch()
         return app
     }

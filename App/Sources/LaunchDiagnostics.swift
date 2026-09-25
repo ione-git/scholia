@@ -9,6 +9,7 @@
                 .accessibilityElement()
                 .accessibilityIdentifier("debug.launchConfiguration")
                 .accessibilityLabel(Text(verbatim: received.summary))
+                .accessibilityValue(Text(verbatim: TimeZone.current.identifier))
         }
 
         private var received: LaunchConfiguration {

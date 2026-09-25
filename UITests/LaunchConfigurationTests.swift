@@ -10,5 +10,6 @@ final class LaunchConfigurationTests: UITestCase {
         )
         let root = RootScreen(app: launch(configuration)).waitUntilShown()
         root.launchConfiguration.waitUntil(\.label, equals: configuration.summary)
+        XCTAssertEqual(root.launchConfiguration.value as? String, TimeZone.gmt.identifier)
     }
 }

@@ -37,8 +37,9 @@ let app = launch(LaunchConfiguration(resetsState: true, fixtures: [.german], moc
 
 - The app reads `LaunchConfiguration.current` where it builds a dependency (storage, translation provider, clock). A missing key means off, so a plain launch is a normal launch. Parsing exists only in Debug; Release always gets everything off.
 - `resetsState: true` unless the test checks persistence across a relaunch. `mocksTranslation: true` always. Set `now` whenever the screen shows dates, reading time or the daily goal.
+- Time zone: `launch` also sets `TZ` to GMT, so dates and "today" match on every Mac and on CI; another zone with `launch(configuration, timeZone: …)`. The app needs nothing for it: `TimeZone.current` and `Calendar.current` follow `TZ`.
 - New switch: add a field and key to `LaunchConfiguration` (`init(environment:)` and `environment`), then honour it where the dependency is created.
-- `debug.launchConfiguration` (any screen: `screen.launchConfiguration`) has the configuration the app received as its label (fixtures only if their file is in the bundle); see `LaunchConfigurationTests`.
+- `debug.launchConfiguration` (any screen: `screen.launchConfiguration`) has the configuration the app received as its label (fixtures only if their file is in the bundle) and the app's time zone as its value; see `LaunchConfigurationTests`.
 
 | Fixture | Content |
 |---|---|
@@ -91,7 +92,7 @@ They fail at the caller's line after 10 s. No `sleep`, `Thread.sleep` or fixed-d
 One simulator per worktree; never share it with another agent.
 
 ```sh
-xcrun simctl create Scholia-<issue> "iPhone 17 Pro" com.apple.CoreSimulator.SimRuntime.iOS-26-5
+xcrun simctl create Scholia-<issue> "iPhone 17 Pro" com.apple.CoreSimulator.SimRuntime.iOS-26-4
 make test DESTINATION='platform=iOS Simulator,id=<udid>'
 make test DESTINATION='platform=iOS Simulator,id=<udid>' ONLY=ScholiaUITests/SmokeTests
 make test DESTINATION='platform=iOS Simulator,id=<udid>' ONLY=ScholiaUITests/SmokeTests/testAppLaunches
@@ -116,8 +117,8 @@ xcrun xcresulttool export attachments --path <bundle> --output-path /tmp/att --t
 ## Screenshots
 
 - Deep screen: `attachScreenshot("Reader-Bubble")` in the test at that state, then export attachments as above; the name prefixes `suggestedHumanReadableName`. Name = design screen file name without `.dc.html` (`Design/canvas/project/Reader-Bubble.dc.html`), so reviewers can pair it with the render.
-- Whatever is on the simulator now: `xcrun simctl io <udid> screenshot /tmp/shot.png`.
-- Dark: `xcrun simctl ui <udid> appearance dark` before the run, `light` to switch back.
+- Whatever is on the simulator now: `xcrun simctl bootstatus <udid> -b`, then `xcrun simctl io <udid> screenshot /tmp/shot.png`.
+- Dark: `xcrun simctl bootstatus <udid> -b`, then `xcrun simctl ui <udid> appearance dark` before the run, `light` to switch back. Both commands fail on a shut-down simulator, and `make test` shuts down a simulator it booted.
 
 ## Flakiness rules
 

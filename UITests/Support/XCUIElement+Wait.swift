@@ -20,8 +20,9 @@ extension XCUIElement {
         line: UInt = #line
     ) -> XCUIElement {
         XCTAssertTrue(
-            wait(for: keyPath, toEqual: expected, timeout: timeout), "\(description) never had \(expected)", file: file,
-            line: line)
+            wait(for: keyPath, toEqual: expected, timeout: timeout),
+            "\(description) never had \(expected), has \(exists ? "\(self[keyPath: keyPath])" : "missing")",
+            file: file, line: line)
         return self
     }
 }
