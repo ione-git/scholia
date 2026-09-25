@@ -60,11 +60,11 @@ final class LibraryTests: UITestCase {
         earlier.terminate()
         let app = launch(
             LaunchConfiguration(
-                resetsState: false, fixtures: [.frenchNoCover], opened: [.minimalMetadata, .frenchNoCover],
+                resetsState: false, fixtures: [.frenchNoCover], opened: [.minimalMetadata, .german],
                 mocksTranslation: true, now: try Date("2026-03-02T10:00:00Z", strategy: .iso8601)))
         let library = HomeScreen(app: app).waitUntilShown().openLibrary()
 
-        XCTAssertEqual(library.shownTitles, ["Minimal", "Un matin en ville", "Corrupted", "Die Verwandlung"])
+        XCTAssertEqual(library.shownTitles, ["Minimal", "Die Verwandlung", "Un matin en ville", "Corrupted"])
 
         library.sort(by: "recentlyAdded")
         XCTAssertEqual(library.shownTitles, ["Un matin en ville", "Corrupted", "Die Verwandlung", "Minimal"])
@@ -76,7 +76,7 @@ final class LibraryTests: UITestCase {
         XCTAssertEqual(library.shownTitles, ["Die Verwandlung", "Un matin en ville", "Corrupted", "Minimal"])
 
         library.sort(by: "recentlyOpened")
-        XCTAssertEqual(library.shownTitles, ["Minimal", "Un matin en ville", "Corrupted", "Die Verwandlung"])
+        XCTAssertEqual(library.shownTitles, ["Minimal", "Die Verwandlung", "Un matin en ville", "Corrupted"])
     }
 
     func testSortPersistsAcrossRelaunch() {
