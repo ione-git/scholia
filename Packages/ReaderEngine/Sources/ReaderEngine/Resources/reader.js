@@ -121,4 +121,13 @@
       };
     },
   };
+
+  let paintedHighlights = 0;
+  new MutationObserver(() => {
+    const count = document.querySelectorAll(":has(> .scholia-highlight)").length;
+    if (count !== paintedHighlights) {
+      paintedHighlights = count;
+      webkit.messageHandlers.paintedHighlights.postMessage(count);
+    }
+  }).observe(document.body, { childList: true, subtree: true });
 })();

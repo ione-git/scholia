@@ -12,6 +12,7 @@ public final class ReaderController {
     public var highlights: [ReaderHighlight] {
         didSet { viewController.apply(highlights) }
     }
+    public internal(set) var paintedHighlights: Int
     public var highlightColor: UIColor
     public var pageTurn: ReaderPageTurn {
         didSet { viewController.apply(pageTurn) }
@@ -28,6 +29,7 @@ public final class ReaderController {
         self.highlightColor = highlightColor
         self.pageTurn = pageTurn
         highlights = []
+        paintedHighlights = 0
         viewController = ReaderViewController(
             book: book, style: style, colors: colors, pageTurn: pageTurn, highlightTitle: highlightTitle)
         viewController.controller = self

@@ -347,6 +347,7 @@ extension ReaderViewController: EPUBNavigatorDelegate {
     ) {
         userContentController.addUserScript(
             WKUserScript(source: Self.script, injectionTime: .atDocumentEnd, forMainFrameOnly: true))
+        userContentController.add(PaintedHighlights(controller: controller), name: "paintedHighlights")
     }
 
     func navigator(_ navigator: any SelectableNavigator, shouldShowMenuForSelection selection: Selection) -> Bool {
@@ -355,6 +356,20 @@ extension ReaderViewController: EPUBNavigatorDelegate {
 
     private static let script = try! String(
         contentsOf: Bundle.module.url(forResource: "reader", withExtension: "js")!, encoding: .utf8)
+}
+
+private final class PaintedHighlights: NSObject, WKScriptMessageHandler {
+    private weak var controller: ReaderController?
+
+    init(controller: ReaderController?) {
+        self.controller = controller
+    }
+
+    func userContentController(_ userContentController: WKUserContentController, didReceive message: WKScriptMessage) {
+        if let count = message.body as? Int {
+            controller?.paintedHighlights = count
+        }
+    }
 }
 
 extension ReaderViewController: UIGestureRecognizerDelegate {

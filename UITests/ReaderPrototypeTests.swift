@@ -148,7 +148,8 @@ final class ReaderPrototypeTests: UITestCase {
 
         reader.highlights.waitUntil(\.label, equals: "seinem")
         reader.highlightMenuItem.waitUntilGone()
-        let seinem = try waitForPaint(in: middle(ofLine: 2, from: 4, to: 36, in: paragraph), reader: reader)
+        reader.paintedHighlights.waitUntil(\.label, equals: "1")
+        let seinem = try highlightColor(in: middle(ofLine: 2, from: 4, to: 36, in: paragraph), reader: reader)
         XCTAssertLessThanOrEqual(seinem.found.distance(to: seinem.expected), 6, "\(seinem)")
         attachScreenshot("Reader-Highlighted")
     }
@@ -164,7 +165,8 @@ final class ReaderPrototypeTests: UITestCase {
 
         reader.highlights.waitUntil(\.label, equals: "Kopf ein wenig hob, seinen")
         XCTAssertFalse(reader.highlightMenuItem.exists)
-        let paint = try waitForPaint(in: middle(ofLine: 5, from: 60, to: 200, in: paragraph), reader: reader)
+        reader.paintedHighlights.waitUntil(\.label, equals: "1")
+        let paint = try highlightColor(in: middle(ofLine: 5, from: 60, to: 200, in: paragraph), reader: reader)
         XCTAssertLessThanOrEqual(paint.found.distance(to: paint.expected), 6, "\(paint)")
     }
 
@@ -202,17 +204,13 @@ final class ReaderPrototypeTests: UITestCase {
         return CGRect(x: paragraph.frame.minX + start, y: y - 4, width: end - start, height: 8)
     }
 
-    private func waitForPaint(in rect: CGRect, reader: ReaderScreen) throws -> (found: RGB, expected: RGB) {
+    private func highlightColor(in rect: CGRect, reader: ReaderScreen) throws -> (found: RGB, expected: RGB) {
         let tokens = try TokenValues.load()
         let dark = XCUIDevice.shared.appearance == .dark
         let page = try tokens.color("surface-paper", dark: dark)
         let highlight = try tokens.color("highlight-yellow", dark: dark, over: page)
-        let deadline = Date.now.addingTimeInterval(10)
-        var painted: RGB
-        repeat {
-            let pixels = try ScreenPixels(XCUIScreen.main.screenshot(), pointWidth: reader.app.frame.width)
-            painted = try XCTUnwrap(pixels.colors(in: rect).min { $0.distance(to: page) < $1.distance(to: page) })
-        } while painted.distance(to: highlight) > 6 && Date.now < deadline
+        let pixels = try ScreenPixels(XCUIScreen.main.screenshot(), pointWidth: reader.app.frame.width)
+        let painted = try XCTUnwrap(pixels.colors(in: rect).min { $0.distance(to: page) < $1.distance(to: page) })
         return (painted, highlight)
     }
 }

@@ -73,7 +73,10 @@
                     }
                 }
                 .frame(maxWidth: .infinity)
-                .background { HighlightDiagnostics(highlights: controller.highlights) }
+                .background {
+                    HighlightDiagnostics(
+                        highlights: controller.highlights, paintedHighlights: controller.paintedHighlights)
+                }
             }
             .ignoresSafeArea()
         }
@@ -216,6 +219,7 @@
 
     private struct HighlightDiagnostics: View {
         let highlights: [ReaderHighlight]
+        let paintedHighlights: Int
 
         var body: some View {
             Color.clear
@@ -223,6 +227,10 @@
                 .accessibilityIdentifier("debug.highlights")
                 .accessibilityLabel(Text(verbatim: highlights.map(\.range.text).joined(separator: "\n")))
                 .accessibilityValue(Text(verbatim: "\(highlights.count)"))
+            Color.clear
+                .accessibilityElement()
+                .accessibilityIdentifier("debug.paintedHighlights")
+                .accessibilityLabel(Text(verbatim: "\(paintedHighlights)"))
         }
     }
 

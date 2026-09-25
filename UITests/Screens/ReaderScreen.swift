@@ -9,6 +9,7 @@ struct ReaderScreen: Screen {
     var sentence: XCUIElement { app.staticTexts["reader.sentence"] }
     var wordTint: XCUIElement { app.descendants(matching: .any)["reader.wordTint"] }
     var highlights: XCUIElement { app.descendants(matching: .any)["debug.highlights"] }
+    var paintedHighlights: XCUIElement { app.descendants(matching: .any)["debug.paintedHighlights"] }
     var highlightMenuItem: XCUIElement { app.menuItems["Highlight"] }
 
     func theme(_ name: String) -> XCUIElement { app.buttons["reader.theme.\(name)"] }
