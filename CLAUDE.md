@@ -33,7 +33,7 @@ Out: saved words / vocabulary, footnotes, per-book target language, PDF, reader 
 ## Project layout and commands
 
 - `project.yml` is the project definition (XcodeGen). `Scholia.xcodeproj` is generated and not committed: change `project.yml`, never the project file.
-- `App/` app target (`Sources/`, `Resources/`), `UITests/` UI tests, `Packages/DesignSystem`, `Packages/ReaderEngine` (the only module allowed to import Readium).
+- `App/` app target (`Sources/`, `Resources/`), `UITests/` UI tests, `Fixtures/` test EPUBs (Debug builds only, regenerate with `python3 scripts/make_fixtures.py`), `Packages/DesignSystem`, `Packages/ReaderEngine` (the only module allowed to import Readium).
 - Tools: Xcode 26.4.1 with the iOS 26.4 simulator runtime (same in CI), `brew install xcodegen`. Formatting and lint use the `swift-format` bundled with Xcode, config in `.swift-format`.
 - `make generate` — generate the project.
 - `make build` — build app and tests.
@@ -45,5 +45,5 @@ Out: saved words / vocabulary, footnotes, per-book target language, PDF, reader 
 
 - Swift, SwiftUI. No comments in code.
 - Colours, fonts, spacing, radii only through the design system. No literal hex or magic numbers in feature code.
-- Every interactive element has an accessibility identifier. Icon-only buttons have an accessibility label (see `aria-label` in screens).
-- Tests: UI tests only (XCUITest). Every feature ships with UI tests for its flows. Translation and other external services are mocked in tests.
+- Every interactive element has an accessibility identifier `screen.element` (e.g. `library.searchField`). Icon-only buttons have an accessibility label (see `aria-label` in screens).
+- Tests: UI tests only (XCUITest). Every feature ships with UI tests for its flows. Translation and other external services are mocked in tests. How to write and run them: skill `ui-tests`.

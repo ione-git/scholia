@@ -1,10 +1,8 @@
 import XCTest
 
-@MainActor
-final class SmokeTests: XCTestCase {
+final class SmokeTests: UITestCase {
     func testAppLaunches() {
-        let app = XCUIApplication()
-        app.launch()
-        XCTAssertTrue(app.staticTexts["root.placeholder"].waitForExistence(timeout: 5))
+        let app = launch(LaunchConfiguration(resetsState: true, fixtures: [], mocksTranslation: true, now: nil))
+        RootScreen(app: app).waitUntilShown()
     }
 }
