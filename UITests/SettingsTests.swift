@@ -14,7 +14,7 @@ final class SettingsTests: UITestCase {
         XCTAssertFalse(settings.onWordTap("minimal").isSelected)
         XCTAssertFalse(settings.onWordTap("card").isSelected)
         XCTAssertEqual(settings.dailyGoal.label, "Daily goal, 20 min")
-        XCTAssertEqual(settings.reminderTitle.label, "Reminder at \(try time(hour: 21))")
+        XCTAssertEqual(settings.reminderTime.label, "Reminder at \(try time(hour: 21))")
         XCTAssertEqual(settings.reminder.label, "Reminder")
         XCTAssertEqual(settings.reminder.value as? String, "0")
         settings.theme("system").waitUntil(\.isSelected, equals: true)
@@ -24,7 +24,7 @@ final class SettingsTests: UITestCase {
         XCTAssertEqual(settings.version.label, "Scholia \(try marketingVersion())")
         XCTAssertEqual(settings.backButton.label, "Back to Home")
 
-        settings.reminder.tap()
+        settings.turnOnReminder()
 
         XCTAssertEqual(settings.reminder.value as? String, "1")
         attachScreenshot("Settings")
@@ -54,7 +54,7 @@ final class SettingsTests: UITestCase {
         settings.onWordTap("card").waitUntil(\.isSelected, equals: true)
         settings.chooseDailyGoal(30)
         settings.dailyGoal.waitUntil(\.label, equals: "Daily goal, 30 min")
-        settings.reminder.tap()
+        settings.turnOnReminder()
         settings.theme("dark").tap()
         settings.theme("dark").waitUntil(\.isSelected, equals: true)
         settings.chooseSortOrder("title")

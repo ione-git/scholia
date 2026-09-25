@@ -25,6 +25,7 @@ struct ScholiaApp: App {
                 #if DEBUG
                     .background { LaunchDiagnostics(configuration: .current) }
                     .background { LibraryDiagnostics() }
+                    .background { ReminderDiagnostics() }
                 #endif
         }
         .modelContainer(container)

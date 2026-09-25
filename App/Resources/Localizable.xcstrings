@@ -54,6 +54,9 @@
     "All %lld" : {
 
     },
+    "Allow notifications for Scholia in Settings to get a daily reminder." : {
+
+    },
     "Appearance" : {
 
     },
@@ -213,6 +216,12 @@
     "None" : {
 
     },
+    "Not Now" : {
+
+    },
+    "Notifications are off" : {
+
+    },
     "OK" : {
 
     },
@@ -222,7 +231,13 @@
     "Open EPUB…" : {
       "shouldTranslate" : false
     },
+    "Open Settings" : {
+
+    },
     "Paper" : {
+
+    },
+    "Pick up where you left off." : {
 
     },
     "Popover" : {
@@ -256,6 +271,9 @@
 
     },
     "Reminder at %@" : {
+
+    },
+    "Reminder time" : {
 
     },
     "Russian" : {
@@ -335,6 +353,9 @@
     },
     "This book can't be opened." : {
       "shouldTranslate" : false
+    },
+    "Time to read" : {
+
     },
     "Title" : {
 

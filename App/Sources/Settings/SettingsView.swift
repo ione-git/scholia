@@ -10,6 +10,10 @@ struct SettingsView: View {
     @Environment(\.modelContext) private var modelContext
     @Environment(\.dismiss) private var dismiss
     @Environment(\.locale) private var locale
+    @Environment(\.openURL) private var openURL
+    @State private var isTimePickerShown = false
+    @State private var isAskingPermission = false
+    @State private var isNotificationsOffAlertShown = false
 
     var body: some View {
         ScrollView {
@@ -96,17 +100,51 @@ struct SettingsView: View {
                 }
             }
             .accessibilityIdentifier("settings.dailyGoal")
-            ListRow(Text("Reminder at \(reminderTime, format: .dateTime.hour().minute())"), height: .regular) {
-                Toggle(isOn: binding(\.remindsDaily)) {
+            HStack(spacing: .space3) {
+                Button {
+                    isTimePickerShown = true
+                } label: {
+                    ListRow(Text("Reminder at \(reminderTime, format: .dateTime.hour().minute())"), height: .regular) {}
+                }
+                .buttonStyle(.plain)
+                .accessibilityIdentifier("settings.reminderTime")
+                .popover(isPresented: $isTimePickerShown) { timePicker }
+                Toggle(isOn: reminderBinding) {
                     Text("Reminder")
                 }
                 .labelsHidden()
                 .tint(.accent)
                 .accessibilityIdentifier("settings.reminder")
             }
-            .accessibilityElement(children: .contain)
-            .accessibilityIdentifier("settings.reminderRow")
+            .task(id: isAskingPermission) {
+                if isAskingPermission {
+                    await turnOnReminder()
+                }
+            }
+            .alert(Text("Notifications are off"), isPresented: $isNotificationsOffAlertShown) {
+                Button("Not Now", role: .cancel) {}
+                    .accessibilityIdentifier("notificationsOff.notNow")
+                Button("Open Settings") {
+                    if let url = URL(string: UIApplication.openNotificationSettingsURLString) {
+                        openURL(url)
+                    }
+                }
+                .accessibilityIdentifier("notificationsOff.openSettings")
+            } message: {
+                Text("Allow notifications for Scholia in Settings to get a daily reminder.")
+            }
         }
+    }
+
+    private var timePicker: some View {
+        DatePicker(selection: reminderTimeBinding, displayedComponents: .hourAndMinute) {
+            Text("Reminder time")
+        }
+        .datePickerStyle(.wheel)
+        .labelsHidden()
+        .accessibilityIdentifier("reminderTime.picker")
+        .padding(.horizontal, .space4)
+        .popoverStyle()
     }
 
     private var appearance: some View {
@@ -156,12 +194,49 @@ struct SettingsView: View {
             ?? .now
     }
 
+    private var reminderTimeBinding: Binding<Date> {
+        Binding {
+            reminderTime
+        } set: { date in
+            let calendar = Calendar.current
+            settings.reminderTime = TimeOfDay(
+                hour: calendar.component(.hour, from: date), minute: calendar.component(.minute, from: date))
+            try? modelContext.save()
+        }
+    }
+
+    private var reminderBinding: Binding<Bool> {
+        Binding {
+            settings.remindsDaily || isAskingPermission
+        } set: { isOn in
+            if isOn {
+                isAskingPermission = true
+            } else {
+                settings.remindsDaily = false
+                try? modelContext.save()
+            }
+        }
+    }
+
     private var version: String {
         Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? ""
     }
 
     private func languageName(_ identifier: String) -> String {
         locale.localizedString(forIdentifier: identifier) ?? identifier
+    }
+
+    private func turnOnReminder() async {
+        switch await ReadingReminder.requestPermission() {
+        case .granted:
+            settings.remindsDaily = true
+            try? modelContext.save()
+        case .declined:
+            break
+        case .turnedOff:
+            isNotificationsOffAlertShown = true
+        }
+        isAskingPermission = false
     }
 
     private func binding<Value>(_ keyPath: ReferenceWritableKeyPath<Settings, Value>) -> Binding<Value> {

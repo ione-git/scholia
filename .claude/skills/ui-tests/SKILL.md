@@ -44,6 +44,8 @@ let app = launch(LaunchConfiguration(resetsState: true, fixtures: [.german], ope
 - New switch: add a field and key to `LaunchConfiguration` (`init(environment:)` and `environment`), then honour it where the dependency is created.
 - `debug.launchConfiguration` (any screen: `screen.launchConfiguration`) has the configuration the app received as its label (fixtures only if their file is in the bundle) and the app's time zone as its value; see `LaunchConfigurationTests`.
 - `debug.storedLibrary` (any screen: `screen.storedLibrary`) lists the stored books by title, one per line as `title · author · language · file name` (`no author`, `no file` when missing); see `DataModelTests`.
+- `debug.readingReminder` (any screen: `screen.readingReminder`) has the pending local notifications as its label, one per line as `identifier · title · body · HH:mm · repeats` (`none` when there are none), and the notification permission as its value (`notDetermined`, `authorized`, `denied`); see `ReminderTests`.
+- Notification permission is not reset by `resetsState` and cannot be changed in the simulator's Settings app: a simulator asks once, then keeps the answer until the app is uninstalled (`xcrun simctl uninstall <udid> com.ione.scholia`). Turn the reminder on with `SettingsScreen.turnOnReminder()`, which allows the system prompt when it comes; never deny it in a test.
 
 | Fixture | Content |
 |---|---|
