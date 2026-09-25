@@ -115,7 +115,7 @@ xcrun xcresulttool export attachments --path <bundle> --output-path /tmp/att --t
 
 ## Screenshots
 
-- Deep screen: `attachScreenshot("reader-bubble")` in the test at that state, then export attachments as above; the name prefixes `suggestedHumanReadableName`.
+- Deep screen: `attachScreenshot("Reader-Bubble")` in the test at that state, then export attachments as above; the name prefixes `suggestedHumanReadableName`. Name = design screen file name without `.dc.html` (`Design/canvas/project/Reader-Bubble.dc.html`), so reviewers can pair it with the render.
 - Whatever is on the simulator now: `xcrun simctl io <udid> screenshot /tmp/shot.png`.
 - Dark: `xcrun simctl ui <udid> appearance dark` before the run, `light` to switch back.
 
