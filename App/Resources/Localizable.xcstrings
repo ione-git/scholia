@@ -1,6 +1,16 @@
 {
   "sourceLanguage" : "en",
   "strings" : {
+    "%@ %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@ %2$@"
+          }
+        }
+      }
+    },
     "%lld min" : {
 
     },
@@ -17,11 +27,17 @@
     "6 min to go" : {
       "shouldTranslate" : false
     },
+    "Add Book" : {
+
+    },
     "Add a book" : {
 
     },
     "Add to Collection" : {
       "shouldTranslate" : false
+    },
+    "Add to Library" : {
+
     },
     "All" : {
       "shouldTranslate" : false
@@ -36,7 +52,7 @@
 
     },
     "Back" : {
-      "shouldTranslate" : false
+
     },
     "Back to Home" : {
 
@@ -60,7 +76,10 @@
 
     },
     "Cancel" : {
-      "shouldTranslate" : false
+
+    },
+    "Can’t Add Book" : {
+
     },
     "Card" : {
 
@@ -98,6 +117,12 @@
     "Done" : {
       "shouldTranslate" : false
     },
+    "EPUB · %@" : {
+
+    },
+    "EPUB · %@ · from Files" : {
+
+    },
     "Effects" : {
       "shouldTranslate" : false
     },
@@ -118,6 +143,9 @@
     },
     "Highlights" : {
       "shouldTranslate" : false
+    },
+    "Language" : {
+
     },
     "Launch Screen" : {
       "shouldTranslate" : false
@@ -144,6 +172,12 @@
       "shouldTranslate" : false
     },
     "Night" : {
+
+    },
+    "None" : {
+
+    },
+    "OK" : {
 
     },
     "On word tap" : {
@@ -200,6 +234,12 @@
     "Scroll" : {
       "shouldTranslate" : false
     },
+    "Search" : {
+
+    },
+    "Search languages" : {
+
+    },
     "Segmented control" : {
       "shouldTranslate" : false
     },
@@ -230,6 +270,12 @@
     "Text styles" : {
       "shouldTranslate" : false
     },
+    "The book could not be saved. Try again." : {
+
+    },
+    "The book’s language decides how words are read and translated. Detected from the file; change it if it looks wrong." : {
+
+    },
     "Theme" : {
 
     },
@@ -249,6 +295,15 @@
 
     },
     "Translation" : {
+
+    },
+    "· detected" : {
+
+    },
+    "“%@” is damaged or is not an EPUB file." : {
+
+    },
+    "“%@” is protected by DRM. Scholia can open only DRM-free books." : {
 
     }
   },

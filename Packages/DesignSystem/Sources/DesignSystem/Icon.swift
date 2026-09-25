@@ -8,6 +8,7 @@ public enum Icon: Sendable {
     case chevron
     case check
     case settings
+    case search
 
     static let grid: CGFloat = 24
 
@@ -79,6 +80,9 @@ public enum Icon: Sendable {
             path.addLine(to: CGPoint(x: 20.9, y: 14))
             path.addArc(to: CGPoint(x: 19.4, y: 15), radius: 1.7, isLarge: false, isSweep: false)
             path.closeSubpath()
+        case .search:
+            path.addEllipse(in: CGRect(x: 4, y: 4, width: 14, height: 14))
+            path.addLines([CGPoint(x: 20, y: 20), CGPoint(x: 16.5, y: 16.5)])
         }
         let scale = min(rect.width, rect.height) / Self.grid
         return path.applying(

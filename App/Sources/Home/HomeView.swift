@@ -8,6 +8,7 @@ import SwiftUI
 
 struct HomeView: View {
     @Binding var path: NavigationPath
+    @Binding var isPickingFile: Bool
     @Query(sort: [
         SortDescriptor(\Book.openedAt, order: .reverse), SortDescriptor(\Book.addedAt, order: .reverse),
         SortDescriptor(\Book.title),
@@ -55,8 +56,10 @@ struct HomeView: View {
                 .accessibilityLabel(Text("Daily goal"))
                 .accessibilityIdentifier("home.goalRing")
             Spacer(minLength: 0)
-            GlassButton(.add, label: Text("Add a book"), size: .regular, isActive: false) {}
-                .accessibilityIdentifier("home.addBook")
+            GlassButton(.add, label: Text("Add a book"), size: .regular, isActive: false) {
+                isPickingFile = true
+            }
+            .accessibilityIdentifier("home.addBook")
             GlassButton(.settings, label: Text("Settings"), size: .regular, isActive: false) {
                 path.append(Route.settings)
             }

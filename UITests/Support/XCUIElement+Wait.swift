@@ -3,6 +3,8 @@ import XCTest
 private let timeout: TimeInterval = 10
 
 extension XCUIElement {
+    var stringValue: String? { value as? String }
+
     @discardableResult
     func waitUntilExists(file: StaticString = #filePath, line: UInt = #line) -> XCUIElement {
         XCTAssertTrue(waitForExistence(timeout: timeout), "\(description) did not appear", file: file, line: line)

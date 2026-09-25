@@ -16,10 +16,11 @@ enum Route: Hashable {
 struct RootView: View {
     @Environment(Settings.self) private var settings
     @State private var path = NavigationPath()
+    @State private var isPickingFile = false
 
     var body: some View {
         NavigationStack(path: $path) {
-            HomeView(path: $path)
+            HomeView(path: $path, isPickingFile: $isPickingFile)
                 .navigationDestination(for: Route.self) { route in
                     switch route {
                     case .library: LibraryView()
@@ -36,6 +37,7 @@ struct RootView: View {
                     }
                 #endif
         }
+        .modifier(ImportFlow(isPickingFile: $isPickingFile))
         .background {
             Color.clear.preferredColorScheme(settings.appTheme.colorScheme)
         }
