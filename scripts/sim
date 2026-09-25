@@ -30,11 +30,10 @@ create)
     udid=$(udids "$name" | head -1)
     if [ -z "$udid" ]; then
         udid=$(xcrun simctl create "$name" "$device" "$runtime")
-        xcrun simctl bootstatus "$udid" -b >/dev/null
-        xcrun simctl ui "$udid" appearance dark
-        xcrun simctl ui "$udid" appearance light
     fi
     xcrun simctl bootstatus "$udid" -b >/dev/null
+    xcrun simctl ui "$udid" appearance dark
+    xcrun simctl ui "$udid" appearance light
     echo "$udid"
     ;;
 delete)
