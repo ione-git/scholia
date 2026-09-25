@@ -3,7 +3,7 @@ DERIVED_DATA ?= build/DerivedData
 XCODEBUILD = xcodebuild -project Scholia.xcodeproj -scheme Scholia -destination '$(DESTINATION)' -derivedDataPath $(DERIVED_DATA)
 SOURCES = App UITests Packages
 
-.PHONY: generate build test lint format
+.PHONY: generate build test lint format device
 
 generate:
 	xcodegen generate --quiet
@@ -19,3 +19,9 @@ lint:
 
 format:
 	xcrun swift-format format --in-place --recursive $(SOURCES)
+
+device: generate
+	@test -n "$(DEVICE)" || (echo "usage: make device DEVICE=<device id>" && exit 1)
+	xcodebuild -project Scholia.xcodeproj -scheme Scholia -configuration Debug -destination 'id=$(DEVICE)' -derivedDataPath $(DERIVED_DATA) -allowProvisioningUpdates -quiet build
+	xcrun devicectl device install app --device $(DEVICE) $(DERIVED_DATA)/Build/Products/Debug-iphoneos/Scholia.app
+	xcrun devicectl device process launch --device $(DEVICE) com.ione.scholia

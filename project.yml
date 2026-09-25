@@ -1,6 +1,6 @@
 name: Scholia
 options:
-  bundleIdPrefix: io.github.ione-git
+  bundleIdPrefix: com.ione
   deploymentTarget:
     iOS: "26.0"
   createIntermediateGroups: true
@@ -9,7 +9,7 @@ settings:
     SWIFT_VERSION: "6.0"
     MARKETING_VERSION: "1.0"
     CURRENT_PROJECT_VERSION: "1"
-    DEVELOPMENT_TEAM: ""
+    DEVELOPMENT_TEAM: 3BD6GJJ883
 packages:
   DesignSystem:
     path: Packages/DesignSystem
@@ -28,7 +28,7 @@ targets:
       - package: ReaderEngine
     settings:
       base:
-        PRODUCT_BUNDLE_IDENTIFIER: io.github.ione-git.scholia
+        PRODUCT_BUNDLE_IDENTIFIER: com.ione.scholia
         PRODUCT_NAME: Scholia
         TARGETED_DEVICE_FAMILY: "1,2"
         GENERATE_INFOPLIST_FILE: YES
@@ -57,7 +57,7 @@ targets:
       - target: Scholia
     settings:
       base:
-        PRODUCT_BUNDLE_IDENTIFIER: io.github.ione-git.scholia.uitests
+        PRODUCT_BUNDLE_IDENTIFIER: com.ione.scholia.uitests
         GENERATE_INFOPLIST_FILE: YES
         TEST_TARGET_NAME: Scholia
         TARGETED_DEVICE_FAMILY: "1,2"
