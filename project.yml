@@ -21,6 +21,8 @@ targets:
     platform: iOS
     sources:
       - App
+      - path: Fixtures
+        type: folder
     dependencies:
       - package: DesignSystem
       - package: ReaderEngine
@@ -40,11 +42,15 @@ targets:
         SWIFT_EMIT_LOC_STRINGS: YES
         LOCALIZATION_PREFERS_STRING_CATALOGS: YES
         CODE_SIGN_STYLE: Automatic
+      configs:
+        Release:
+          EXCLUDED_SOURCE_FILE_NAMES: Fixtures
   ScholiaUITests:
     type: bundle.ui-testing
     platform: iOS
     sources:
       - UITests
+      - App/Sources/LaunchConfiguration.swift
     dependencies:
       - target: Scholia
     settings:
