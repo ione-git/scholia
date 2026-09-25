@@ -161,7 +161,9 @@ final class ComponentGalleryTests: UITestCase {
 
         let modal = presentations.openModalSheet()
         modal.doneButton.waitUntilExists()
+        presentations.modalSheetButton.waitUntilGone()
         modal.cancel()
+        presentations.modalSheetButton.waitUntilExists()
 
         let glass = presentations.openGlassSheet()
         glass.select("curl")

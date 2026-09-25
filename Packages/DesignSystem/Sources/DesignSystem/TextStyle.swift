@@ -44,10 +44,16 @@ public struct TextStyle: Identifiable, Sendable {
     }
 
     func fitting(_ text: String, in width: CGFloat) -> TextStyle {
-        let widest =
-            (isUppercase ? text.uppercased() : text).split(whereSeparator: \.isWhitespace)
-            .map { String($0).size(withAttributes: [.font: uiFont, .kern: tracking]).width }
-            .max() ?? 0
+        let shown = (isUppercase ? text.uppercased() : text) as NSString
+        let units = CFStringTokenizerCreate(
+            nil, shown, CFRange(location: 0, length: shown.length), kCFStringTokenizerUnitLineBreak, nil)
+        var widest: CGFloat = 0
+        while !CFStringTokenizerAdvanceToNextToken(units).isEmpty {
+            let range = CFStringTokenizerGetCurrentTokenRange(units)
+            let unit = shown.substring(with: NSRange(location: range.location, length: range.length))
+                .trimmingCharacters(in: .whitespacesAndNewlines)
+            widest = max(widest, unit.size(withAttributes: [.font: uiFont, .kern: tracking]).width)
+        }
         guard widest > width else { return self }
         return scaled(to: (size * width / widest).rounded(.down))
     }

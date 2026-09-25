@@ -1,10 +1,27 @@
 import SwiftUI
 
 extension View {
-    public func modalSheetStyle() -> some View {
-        presentationBackground(.surface)
-            .presentationCornerRadius(.radiusSheet)
-            .presentationDragIndicator(.visible)
+    public func modalSheet<Content: View>(
+        isPresented: Binding<Bool>, @ViewBuilder content: @escaping () -> Content
+    ) -> some View {
+        accessibilityHidden(isPresented.wrappedValue)
+            .overlay {
+                ZStack {
+                    if isPresented.wrappedValue {
+                        Color.scrim
+                            .ignoresSafeArea()
+                            .onTapGesture { isPresented.wrappedValue = false }
+                    }
+                }
+                .animation(.default, value: isPresented.wrappedValue)
+            }
+            .sheet(isPresented: isPresented) {
+                content()
+                    .presentationBackground(.surface)
+                    .presentationCornerRadius(.radiusSheet)
+                    .presentationDragIndicator(.visible)
+                    .presentationBackgroundInteraction(.enabled(upThrough: .large))
+            }
     }
 
     public func glassSheetStyle() -> some View {

@@ -329,7 +329,7 @@
                 }
             }
             .navigationTitle("Sheets and popover")
-            .sheet(isPresented: $isModalSheetShown) {
+            .modalSheet(isPresented: $isModalSheetShown) {
                 VStack(spacing: .space4) {
                     SheetHeader(Text("Add to Collection")) {
                         Button("Cancel") { isModalSheetShown = false }
@@ -351,7 +351,6 @@
                 .accessibilityElement(children: .contain)
                 .accessibilityIdentifier("galleryModalSheet.content")
                 .modifier(AppearanceValue())
-                .modalSheetStyle()
             }
             .sheet(isPresented: $isGlassSheetShown) {
                 VStack(spacing: .space4) {

@@ -95,8 +95,10 @@ struct PresentationGalleryScreen: ComponentGalleryPage {
 
     var root: XCUIElement { app.scrollViews["presentationGallery.scrollView"] }
 
+    var modalSheetButton: XCUIElement { app.buttons["presentationGallery.modalSheet"] }
+
     func openModalSheet() -> GalleryModalSheetScreen {
-        app.buttons["presentationGallery.modalSheet"].waitUntilExists().tap()
+        modalSheetButton.waitUntilExists().tap()
         return GalleryModalSheetScreen(app: app).waitUntilShown()
     }
 
