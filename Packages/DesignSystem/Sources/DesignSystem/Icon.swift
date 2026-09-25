@@ -7,6 +7,7 @@ public enum Icon: Sendable {
     case more
     case chevron
     case check
+    case settings
 
     static let grid: CGFloat = 24
 
@@ -32,6 +33,52 @@ public enum Icon: Sendable {
             path.addLines([CGPoint(x: 9, y: 6), CGPoint(x: 15, y: 12), CGPoint(x: 9, y: 18)])
         case .check:
             path.addLines([CGPoint(x: 5, y: 12), CGPoint(x: 10, y: 17), CGPoint(x: 19, y: 7)])
+        case .settings:
+            path.addEllipse(in: CGRect(x: 9, y: 9, width: 6, height: 6))
+            path.move(to: CGPoint(x: 19.4, y: 15))
+            path.addArc(to: CGPoint(x: 19.7, y: 16.8), radius: 1.7, isLarge: false, isSweep: false)
+            path.addLine(to: CGPoint(x: 19.8, y: 16.9))
+            path.addArc(to: CGPoint(x: 17, y: 19.7), radius: 2, isLarge: true, isSweep: true)
+            path.addLine(to: CGPoint(x: 16.9, y: 19.6))
+            path.addArc(to: CGPoint(x: 15.1, y: 19.3), radius: 1.7, isLarge: false, isSweep: false)
+            path.addArc(to: CGPoint(x: 14.1, y: 20.8), radius: 1.7, isLarge: false, isSweep: false)
+            path.addLine(to: CGPoint(x: 14.1, y: 21))
+            path.addArc(to: CGPoint(x: 10.1, y: 21), radius: 2, isLarge: true, isSweep: true)
+            path.addLine(to: CGPoint(x: 10.1, y: 20.9))
+            path.addArc(to: CGPoint(x: 9, y: 19.4), radius: 1.7, isLarge: false, isSweep: false)
+            path.addArc(to: CGPoint(x: 7.2, y: 19.7), radius: 1.7, isLarge: false, isSweep: false)
+            path.addLine(to: CGPoint(x: 7.1, y: 19.8))
+            path.addArc(to: CGPoint(x: 4.3, y: 17), radius: 2, isLarge: true, isSweep: true)
+            path.addLine(to: CGPoint(x: 4.4, y: 16.9))
+            path.addArc(to: CGPoint(x: 4.7, y: 15.1), radius: 1.7, isLarge: false, isSweep: false)
+            path.addArc(to: CGPoint(x: 3.2, y: 14.1), radius: 1.7, isLarge: false, isSweep: false)
+            path.addLine(to: CGPoint(x: 3, y: 14.1))
+            path.addArc(to: CGPoint(x: 3, y: 10.1), radius: 2, isLarge: true, isSweep: true)
+            path.addLine(to: CGPoint(x: 3.1, y: 10.1))
+            path.addArc(to: CGPoint(x: 4.6, y: 9), radius: 1.7, isLarge: false, isSweep: false)
+            path.addArc(to: CGPoint(x: 4.3, y: 7.2), radius: 1.7, isLarge: false, isSweep: false)
+            path.addLine(to: CGPoint(x: 4.2, y: 7.1))
+            path.addArc(to: CGPoint(x: 7, y: 4.3), radius: 2, isLarge: true, isSweep: true)
+            path.addLine(to: CGPoint(x: 7.1, y: 4.4))
+            path.addArc(to: CGPoint(x: 8.9, y: 4.7), radius: 1.7, isLarge: false, isSweep: false)
+            path.addLine(to: CGPoint(x: 9, y: 4.7))
+            path.addArc(to: CGPoint(x: 10, y: 3.2), radius: 1.7, isLarge: false, isSweep: false)
+            path.addLine(to: CGPoint(x: 10, y: 3))
+            path.addArc(to: CGPoint(x: 14, y: 3), radius: 2, isLarge: true, isSweep: true)
+            path.addLine(to: CGPoint(x: 14, y: 3.1))
+            path.addArc(to: CGPoint(x: 15, y: 4.6), radius: 1.7, isLarge: false, isSweep: false)
+            path.addArc(to: CGPoint(x: 16.8, y: 4.3), radius: 1.7, isLarge: false, isSweep: false)
+            path.addLine(to: CGPoint(x: 16.9, y: 4.2))
+            path.addArc(to: CGPoint(x: 19.7, y: 7), radius: 2, isLarge: true, isSweep: true)
+            path.addLine(to: CGPoint(x: 19.6, y: 7.1))
+            path.addArc(to: CGPoint(x: 19.3, y: 8.9), radius: 1.7, isLarge: false, isSweep: false)
+            path.addLine(to: CGPoint(x: 19.3, y: 9))
+            path.addArc(to: CGPoint(x: 20.8, y: 10), radius: 1.7, isLarge: false, isSweep: false)
+            path.addLine(to: CGPoint(x: 21, y: 10))
+            path.addArc(to: CGPoint(x: 21, y: 14), radius: 2, isLarge: true, isSweep: true)
+            path.addLine(to: CGPoint(x: 20.9, y: 14))
+            path.addArc(to: CGPoint(x: 19.4, y: 15), radius: 1.7, isLarge: false, isSweep: false)
+            path.closeSubpath()
         }
         let scale = min(rect.width, rect.height) / Self.grid
         return path.applying(
@@ -64,4 +111,18 @@ private struct IconShape: Shape {
     let icon: Icon
 
     func path(in rect: CGRect) -> Path { icon.path(in: rect) }
+}
+
+extension Path {
+    fileprivate mutating func addArc(to end: CGPoint, radius: CGFloat, isLarge: Bool, isSweep: Bool) {
+        guard let start = currentPoint else { return }
+        let half = CGPoint(x: (start.x - end.x) / 2, y: (start.y - end.y) / 2)
+        let squared = half.x * half.x + half.y * half.y
+        let sign: CGFloat = isLarge == isSweep ? -1 : 1
+        let factor = sign * (max(radius * radius - squared, 0) / squared).squareRoot()
+        let center = CGPoint(x: factor * half.y + (start.x + end.x) / 2, y: -factor * half.x + (start.y + end.y) / 2)
+        addArc(
+            center: center, radius: radius, startAngle: .radians(atan2(start.y - center.y, start.x - center.x)),
+            endAngle: .radians(atan2(end.y - center.y, end.x - center.x)), clockwise: !isSweep)
+    }
 }

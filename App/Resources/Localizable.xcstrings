@@ -8,13 +8,16 @@
       "shouldTranslate" : false
     },
     "Add a book" : {
-      "shouldTranslate" : false
+
     },
     "Add to Collection" : {
       "shouldTranslate" : false
     },
     "All" : {
       "shouldTranslate" : false
+    },
+    "All %lld" : {
+
     },
     "Appearance" : {
       "shouldTranslate" : false
@@ -65,7 +68,7 @@
       "shouldTranslate" : false
     },
     "Daily goal" : {
-      "shouldTranslate" : false
+
     },
     "Dark" : {
       "shouldTranslate" : false
@@ -80,7 +83,7 @@
       "shouldTranslate" : false
     },
     "Finished" : {
-      "shouldTranslate" : false
+
     },
     "Glass button" : {
       "shouldTranslate" : false
@@ -93,6 +96,9 @@
     },
     "Launch Screen" : {
       "shouldTranslate" : false
+    },
+    "Library" : {
+
     },
     "Light" : {
       "shouldTranslate" : false
@@ -118,6 +124,9 @@
     "Popover" : {
       "shouldTranslate" : false
     },
+    "Progress" : {
+
+    },
     "Radius" : {
       "shouldTranslate" : false
     },
@@ -141,6 +150,9 @@
     },
     "Segmented control" : {
       "shouldTranslate" : false
+    },
+    "Settings" : {
+
     },
     "Shadows" : {
       "shouldTranslate" : false
