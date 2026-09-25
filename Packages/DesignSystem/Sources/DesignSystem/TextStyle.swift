@@ -58,7 +58,7 @@ public struct TextStyle: Identifiable, Sendable {
         return scaled(to: (size * width / widest).rounded(.down))
     }
 
-    func weighted(_ newWeight: Int) -> TextStyle {
+    public func weighted(_ newWeight: Int) -> TextStyle {
         TextStyle(
             name: name, family: family, size: size, lineHeight: lineHeight, weight: newWeight, tracking: tracking,
             isUppercase: isUppercase)

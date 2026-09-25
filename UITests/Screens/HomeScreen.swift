@@ -9,10 +9,10 @@ struct HomeScreen: Screen {
     var addBookButton: XCUIElement { app.buttons["home.addBook"] }
     var settingsButton: XCUIElement { app.buttons["home.settings"] }
 
-    var heroCover: XCUIElement { app.descendants(matching: .any)["home.hero.cover"] }
-    var heroTitle: XCUIElement { app.staticTexts["home.hero.title"] }
-    var heroAuthor: XCUIElement { app.staticTexts["home.hero.author"] }
-    var heroProgress: XCUIElement { app.descendants(matching: .any)["home.hero.progress"] }
+    var heroCover: XCUIElement { app.descendants(matching: .any)["home.heroCover"] }
+    var heroTitle: XCUIElement { app.staticTexts["home.heroTitle"] }
+    var heroAuthor: XCUIElement { app.staticTexts["home.heroAuthor"] }
+    var heroProgress: XCUIElement { app.descendants(matching: .any)["home.heroProgress"] }
 
     var libraryButton: XCUIElement { app.buttons["home.library"] }
 

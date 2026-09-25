@@ -81,17 +81,17 @@ private struct HeroBook: View {
                 title: book.title, author: book.author, color: BookCover.generatedColor(for: book.title),
                 image: book.coverImage, size: .heroLarge, isFinished: book.isFinished, finishedValue: Text("Finished")
             )
-            .accessibilityIdentifier("home.hero.cover")
+            .accessibilityIdentifier("home.heroCover")
             VStack(spacing: .space1) {
                 Text(book.title)
                     .textStyle(.titleBook)
                     .foregroundStyle(.ink)
-                    .accessibilityIdentifier("home.hero.title")
+                    .accessibilityIdentifier("home.heroTitle")
                 if let author = book.author {
                     Text(author)
-                        .textStyle(.callout)
+                        .textStyle(TextStyle.callout.weighted(TextStyle.body.weight))
                         .foregroundStyle(.inkMuted)
-                        .accessibilityIdentifier("home.hero.author")
+                        .accessibilityIdentifier("home.heroAuthor")
                 }
             }
             .multilineTextAlignment(.center)
@@ -99,7 +99,7 @@ private struct HeroBook: View {
             ProgressBar(value: 0)
                 .frame(width: BookCover.Size.heroLarge.width)
                 .accessibilityLabel(Text("Progress"))
-                .accessibilityIdentifier("home.hero.progress")
+                .accessibilityIdentifier("home.heroProgress")
         }
         .padding(.horizontal, .space5)
     }
@@ -119,7 +119,7 @@ private struct LibraryShelf: View {
                     Spacer()
                     HStack(spacing: .space1) {
                         Text("All \(count)")
-                            .textStyle(.callout)
+                            .textStyle(TextStyle.callout.weighted(TextStyle.body.weight))
                             .foregroundStyle(.inkMuted)
                         ListRowChevron()
                     }
