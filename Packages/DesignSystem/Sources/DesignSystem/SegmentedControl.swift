@@ -58,6 +58,7 @@ public struct SegmentedControl<Value: Hashable>: View {
         } label: {
             HStack(spacing: Self.countSpacing) {
                 segment.title.foregroundStyle(.ink)
+                    .textStyle(isSelected ? TextStyle.subhead.weighted(TextStyle.title3.weight) : .subhead)
                 if let count = segment.count {
                     Text(count, format: .number).foregroundStyle(.inkMuted)
                 }

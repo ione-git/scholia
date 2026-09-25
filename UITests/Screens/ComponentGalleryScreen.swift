@@ -119,20 +119,38 @@ struct PresentationGalleryScreen: Screen {
 struct GalleryModalSheetScreen: Screen {
     let app: XCUIApplication
 
-    var root: XCUIElement { app.descendants(matching: .any)["galleryModalSheet"] }
+    var root: XCUIElement { app.descendants(matching: .any)["galleryModalSheet.content"] }
 
-    var cancel: XCUIElement { app.buttons["galleryModalSheet.cancel"] }
-    var done: XCUIElement { app.buttons["galleryModalSheet.done"] }
+    var cancelButton: XCUIElement { app.buttons["galleryModalSheet.cancel"] }
+    var doneButton: XCUIElement { app.buttons["galleryModalSheet.done"] }
+
+    @discardableResult
+    func cancel() -> PresentationGalleryScreen {
+        cancelButton.waitUntil(\.isHittable, equals: true).tap()
+        root.waitUntilGone()
+        return PresentationGalleryScreen(app: app).waitUntilShown()
+    }
 }
 
 struct GalleryGlassSheetScreen: Screen {
     let app: XCUIApplication
 
-    var root: XCUIElement { app.descendants(matching: .any)["galleryGlassSheet"] }
+    var root: XCUIElement { app.descendants(matching: .any)["galleryGlassSheet.content"] }
 
-    var done: XCUIElement { app.buttons["galleryGlassSheet.done"] }
+    var doneButton: XCUIElement { app.buttons["galleryGlassSheet.done"] }
 
     func segment(_ element: String) -> XCUIElement { app.buttons["galleryGlassSheet.\(element)"] }
+
+    func select(_ element: String) {
+        segment(element).waitUntil(\.isHittable, equals: true).tap()
+    }
+
+    @discardableResult
+    func done() -> PresentationGalleryScreen {
+        doneButton.waitUntil(\.isHittable, equals: true).tap()
+        root.waitUntilGone()
+        return PresentationGalleryScreen(app: app).waitUntilShown()
+    }
 }
 
 struct GalleryPopoverScreen: Screen {

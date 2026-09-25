@@ -179,7 +179,6 @@
                         "L’Étranger", author: "Albert Camus", color: 0x9A6B4E, image: nil, size: .library,
                         isFinished: true
                     )
-                    .accessibilityValue(Text("Finished"))
                 }
                 HStack(alignment: .top, spacing: .space4) {
                     VStack(spacing: .space4) {
@@ -210,10 +209,9 @@
             isFinished: Bool
         ) -> some View {
             BookCover(
-                title: title, author: author, color: Color(hex: color), image: image, size: size, isFinished: isFinished
+                title: title, author: author, color: Color(hex: color), image: image, size: size,
+                isFinished: isFinished, finishedValue: Text("Finished")
             )
-            .accessibilityElement(children: .ignore)
-            .accessibilityLabel(Text(title))
             .accessibilityIdentifier("bookCoverGallery.cover.\(title)")
         }
     }
@@ -341,7 +339,7 @@
                 .padding(.horizontal, .space5)
                 .padding(.top, .space4)
                 .accessibilityElement(children: .contain)
-                .accessibilityIdentifier("galleryModalSheet")
+                .accessibilityIdentifier("galleryModalSheet.content")
                 .modalSheetStyle()
             }
             .sheet(isPresented: $isGlassSheetShown) {
@@ -366,7 +364,7 @@
                 .padding(.horizontal, .space5)
                 .padding(.top, .space4)
                 .accessibilityElement(children: .contain)
-                .accessibilityIdentifier("galleryGlassSheet")
+                .accessibilityIdentifier("galleryGlassSheet.content")
                 .presentationDetents([.medium])
                 .glassSheetStyle()
             }

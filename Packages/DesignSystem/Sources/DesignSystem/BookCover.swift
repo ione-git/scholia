@@ -66,14 +66,19 @@ public struct BookCover: View {
     let image: Image?
     let size: Size
     let isFinished: Bool
+    let finishedValue: Text
 
-    public init(title: String, author: String?, color: Color, image: Image?, size: Size, isFinished: Bool) {
+    public init(
+        title: String, author: String?, color: Color, image: Image?, size: Size, isFinished: Bool,
+        finishedValue: Text
+    ) {
         self.title = title
         self.author = author
         self.color = color
         self.image = image
         self.size = size
         self.isFinished = isFinished
+        self.finishedValue = finishedValue
     }
 
     public var body: some View {
@@ -96,6 +101,9 @@ public struct BookCover: View {
                 FinishedBadge()
             }
         }
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel(Text(title))
+        .accessibilityValue(finishedValue, isEnabled: isFinished)
     }
 
     private func generatedText(_ lettering: Lettering) -> some View {

@@ -49,12 +49,10 @@ final class ComponentGalleryTests: UITestCase {
             let presentations = gallery.openPresentations()
             let modal = presentations.openModalSheet()
             attachScreenshot("ModalSheet\(suffix)")
-            modal.cancel.tap()
-            modal.root.waitUntilGone()
+            modal.cancel()
             let glass = presentations.openGlassSheet()
             attachScreenshot("GlassSheet\(suffix)")
-            glass.done.tap()
-            glass.root.waitUntilGone()
+            glass.done()
             presentations.openPopover()
             attachScreenshot("Popover\(suffix)")
         }
@@ -87,7 +85,7 @@ final class ComponentGalleryTests: UITestCase {
         XCTAssertEqual(chips.newCollection.label, "New collection")
         chips.chip("All").waitUntil(\.isSelected, equals: true)
 
-        chips.chip("Biographies").tap()
+        chips.chip("Biographies").waitUntilExists().tap()
 
         chips.chip("Biographies").waitUntil(\.isSelected, equals: true)
         chips.chip("All").waitUntil(\.isSelected, equals: false)
@@ -112,6 +110,7 @@ final class ComponentGalleryTests: UITestCase {
             uniqueKeysWithValues: expected.keys.map { ($0, covers.cover($0).waitUntilExists().frame.size) })
         XCTAssertEqual(shown, expected)
         XCTAssertEqual(covers.cover("L’Étranger").waitUntilExists().value as? String, "Finished")
+        XCTAssertNotEqual(covers.cover("Solaris").value as? String, "Finished")
         XCTAssertEqual(
             covers.progress.waitUntilExists().value as? String, 0.4.formatted(.percent.precision(.fractionLength(0))))
         XCTAssertEqual(covers.progress.frame.width, 180)
@@ -124,7 +123,7 @@ final class ComponentGalleryTests: UITestCase {
         XCTAssertEqual(rows.dailyGoal.waitUntilExists().frame.height, 50)
         rows.segment("bubble").waitUntil(\.isSelected, equals: true)
 
-        rows.segment("card").tap()
+        rows.segment("card").waitUntilExists().tap()
         rows.dailyGoal.tap()
 
         rows.segment("card").waitUntil(\.isSelected, equals: true)
@@ -140,7 +139,7 @@ final class ComponentGalleryTests: UITestCase {
             segmented.segment("contents").frame.width, segmented.segment("bookmarks").frame.width, accuracy: 0.5)
         segmented.segment("contents").waitUntil(\.isSelected, equals: true)
 
-        segmented.segment("highlights").tap()
+        segmented.segment("highlights").waitUntilExists().tap()
 
         segmented.segment("highlights").waitUntil(\.isSelected, equals: true)
         segmented.segment("contents").waitUntil(\.isSelected, equals: false)
@@ -151,15 +150,13 @@ final class ComponentGalleryTests: UITestCase {
         let presentations = openGallery().openPresentations()
 
         let modal = presentations.openModalSheet()
-        modal.done.waitUntilExists()
-        modal.cancel.tap()
-        modal.root.waitUntilGone()
+        modal.doneButton.waitUntilExists()
+        modal.cancel()
 
         let glass = presentations.openGlassSheet()
-        glass.segment("curl").tap()
+        glass.select("curl")
         glass.segment("curl").waitUntil(\.isSelected, equals: true)
-        glass.done.tap()
-        glass.root.waitUntilGone()
+        glass.done()
 
         let popover = presentations.openPopover()
         XCTAssertEqual(popover.root.label, "6 min to go")
