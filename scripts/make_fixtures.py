@@ -47,6 +47,11 @@ ENGLISH = [
     "language and a modification date. It has no author.",
 ]
 
+VERSE = (
+    "<p>Über allen Gipfeln<br/>Ist Ruh,<br/>In allen Wipfeln<br/>Spürest du<br/>Kaum einen Hauch;</p>\n"
+    "<div>Die Vögelein schweigen im Walde.</div><div>Warte nur, balde</div><div>Ruhest du auch.</div>\n"
+)
+
 CONTAINER = """<?xml version="1.0" encoding="UTF-8"?>
 <container version="1.0" xmlns="urn:oasis:names:tc:opendocument:xmlns:container">
   <rootfiles>
@@ -102,9 +107,12 @@ def xhtml(language, title, body):
 """
 
 
-def chapter(language, title, paragraphs):
-    text = "\n".join(f"<p>{escape(paragraph)}</p>" for paragraph in paragraphs)
-    return xhtml(language, title, f'<section epub:type="chapter">\n<h1>{escape(title)}</h1>\n{text}\n</section>')
+def prose(paragraphs):
+    return "\n".join(f"<p>{escape(paragraph)}</p>" for paragraph in paragraphs)
+
+
+def chapter(language, title, body):
+    return xhtml(language, title, f'<section epub:type="chapter">\n<h1>{escape(title)}</h1>\n{body}\n</section>')
 
 
 def nav(language, title, chapters):
@@ -153,8 +161,8 @@ def epub(identifier, title, language, creator, chapters, cover):
         "OEBPS/content.opf": package(identifier, title, language, creator, chapters, cover).encode(),
         "OEBPS/nav.xhtml": nav(language, title, chapters).encode(),
     }
-    for index, (heading, paragraphs) in enumerate(chapters, 1):
-        files[f"OEBPS/chapter-{index}.xhtml"] = chapter(language, heading, paragraphs).encode()
+    for index, (heading, body) in enumerate(chapters, 1):
+        files[f"OEBPS/chapter-{index}.xhtml"] = chapter(language, heading, body).encode()
     if cover:
         files["OEBPS/cover.png"] = cover
     return files
@@ -177,7 +185,11 @@ def main():
         "Die Verwandlung",
         "de",
         "Franz Kafka",
-        [("Erster Teil", KAFKA * 10), ("Zweiter Teil", KAFKA * 10), ("Dritter Teil", KAFKA * 10)],
+        [
+            ("Erster Teil", prose(KAFKA * 10)),
+            ("Zweiter Teil", VERSE + prose(KAFKA * 10)),
+            ("Dritter Teil", prose(KAFKA * 10)),
+        ],
         png(600, 900, (47, 74, 58), (96, 128, 108)),
     )
     french = epub(
@@ -185,7 +197,7 @@ def main():
         "Un matin en ville",
         "fr",
         "Scholia",
-        [("Premier chapitre", FRENCH * 6), ("Deuxième chapitre", FRENCH * 6)],
+        [("Premier chapitre", prose(FRENCH * 6)), ("Deuxième chapitre", prose(FRENCH * 6))],
         None,
     )
     minimal = archive(
@@ -194,11 +206,11 @@ def main():
             "Minimal",
             "en",
             None,
-            [("Minimal", ENGLISH)],
+            [("Minimal", prose(ENGLISH))],
             png(600, 900, (140, 59, 46), (196, 110, 92)),
         )
     )
-    drm = epub("urn:scholia:fixture:drm", "Encrypted", "de", "Franz Kafka", [("Erster Teil", KAFKA)], None)
+    drm = epub("urn:scholia:fixture:drm", "Encrypted", "de", "Franz Kafka", [("Erster Teil", prose(KAFKA))], None)
     drm["META-INF/encryption.xml"] = ENCRYPTION.encode()
     drm["OEBPS/chapter-1.xhtml"] = hashlib.shake_256(drm["OEBPS/chapter-1.xhtml"]).digest(
         len(drm["OEBPS/chapter-1.xhtml"])

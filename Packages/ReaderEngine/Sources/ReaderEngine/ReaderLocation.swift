@@ -1,0 +1,50 @@
+import UIKit
+
+public struct ReaderLocation: Codable, Hashable, Sendable {
+    public var chapter: String
+    public var progression: Double
+
+    public init(chapter: String, progression: Double) {
+        self.chapter = chapter
+        self.progression = progression
+    }
+}
+
+public struct ReaderTextRange: Codable, Hashable, Sendable {
+    public var chapter: String
+    public var text: String
+    public var before: String
+    public var after: String
+
+    public init(chapter: String, text: String, before: String, after: String) {
+        self.chapter = chapter
+        self.text = text
+        self.before = before
+        self.after = after
+    }
+}
+
+public struct ReaderPage: Equatable, Sendable {
+    public var location: ReaderLocation
+    public var number: Int
+    public var count: Int
+}
+
+public struct ReaderWord: Equatable, Sendable {
+    public var text: String
+    public var sentence: String
+    public var rect: CGRect
+    public var range: ReaderTextRange
+}
+
+public struct ReaderHighlight: Identifiable, Equatable {
+    public var id: String
+    public var range: ReaderTextRange
+    public var color: UIColor
+
+    public init(id: String, range: ReaderTextRange, color: UIColor) {
+        self.id = id
+        self.range = range
+        self.color = color
+    }
+}

@@ -9,5 +9,7 @@
 		<key>UIImageName</key>
 		<string>LaunchGlyph</string>
 	</dict>
+	<key>CADisableMinimumFrameDurationOnPhone</key>
+	<true/>
 </dict>
 </plist>

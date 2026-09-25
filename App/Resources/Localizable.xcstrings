@@ -4,6 +4,16 @@
     "%lld min" : {
       "shouldTranslate" : false
     },
+    "%lld of %lld" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$lld of %2$lld"
+          }
+        }
+      }
+    },
     "6 min to go" : {
       "shouldTranslate" : false
     },
@@ -28,6 +38,9 @@
     "Biographies" : {
       "shouldTranslate" : false
     },
+    "Black" : {
+
+    },
     "Book cover" : {
       "shouldTranslate" : false
     },
@@ -48,6 +61,9 @@
     },
     "Chip" : {
       "shouldTranslate" : false
+    },
+    "Close" : {
+
     },
     "Collection %lld" : {
       "shouldTranslate" : false
@@ -91,6 +107,9 @@
     "Glass sheet" : {
       "shouldTranslate" : false
     },
+    "Highlight" : {
+
+    },
     "Highlights" : {
       "shouldTranslate" : false
     },
@@ -118,8 +137,17 @@
     "New collection" : {
       "shouldTranslate" : false
     },
+    "Night" : {
+
+    },
     "On word tap" : {
       "shouldTranslate" : false
+    },
+    "Open EPUB…" : {
+      "shouldTranslate" : false
+    },
+    "Paper" : {
+
     },
     "Popover" : {
       "shouldTranslate" : false
@@ -128,6 +156,9 @@
 
     },
     "Radius" : {
+      "shouldTranslate" : false
+    },
+    "Reader Prototype" : {
       "shouldTranslate" : false
     },
     "Reader themes" : {
@@ -150,6 +181,9 @@
     },
     "Segmented control" : {
       "shouldTranslate" : false
+    },
+    "Sepia" : {
+
     },
     "Settings" : {
 
@@ -176,6 +210,9 @@
       "shouldTranslate" : false
     },
     "Themes & Settings" : {
+      "shouldTranslate" : false
+    },
+    "This book can't be opened." : {
       "shouldTranslate" : false
     },
     "Token Gallery" : {
