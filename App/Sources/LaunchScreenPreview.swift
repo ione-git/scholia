@@ -17,6 +17,7 @@
                     .overlay {
                         Image(glyph, scale: image.scale, label: Text("Scholia"))
                             .accessibilityIdentifier("launchScreen.glyph")
+                            .accessibilityValue(Text(verbatim: colorScheme == .dark ? "dark" : "light"))
                     }
                     .ignoresSafeArea()
                     .toolbar(.hidden, for: .navigationBar)

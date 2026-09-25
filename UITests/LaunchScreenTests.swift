@@ -4,12 +4,14 @@ final class LaunchScreenTests: UITestCase {
     func testLaunchScreenShowsGlyphInLightAppearance() {
         let launchScreen = openLaunchScreen(in: .light)
         launchScreen.glyph.waitUntil(\.isHittable, equals: true)
+        XCTAssertEqual(launchScreen.glyph.value as? String, "light")
         attachScreenshot("Launch-Light")
     }
 
     func testLaunchScreenShowsGlyphInDarkAppearance() {
         let launchScreen = openLaunchScreen(in: .dark)
         launchScreen.glyph.waitUntil(\.isHittable, equals: true)
+        XCTAssertEqual(launchScreen.glyph.value as? String, "dark")
         attachScreenshot("Launch-Dark")
     }
 
