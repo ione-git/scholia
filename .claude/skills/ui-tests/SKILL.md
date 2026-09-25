@@ -31,7 +31,7 @@ let app = launch(LaunchConfiguration(resetsState: true, fixtures: [.german], moc
 | Field | Environment key | Meaning for the app |
 |---|---|---|
 | `resetsState` | `SCHOLIA_RESET_STATE=1` | start with empty storage and settings |
-| `fixtures` | `SCHOLIA_FIXTURES=german,drm` | library holds these books; files at `Fixture.url` |
+| `fixtures` | `SCHOLIA_FIXTURES=german,drm` | library holds these books, added if missing: title, author, language from the table below, no cover yet, file copied into the app container |
 | `mocksTranslation` | `SCHOLIA_TRANSLATION=mock` | translation provider is the mock |
 | `now` | `SCHOLIA_NOW=<ISO 8601>` | the app's current date and time |
 
@@ -40,13 +40,14 @@ let app = launch(LaunchConfiguration(resetsState: true, fixtures: [.german], moc
 - Time zone: `launch` also sets `TZ` to GMT, so dates and "today" match on every Mac and on CI; another zone with `launch(configuration, timeZone: …)`. The app needs nothing for it: `TimeZone.current` and `Calendar.current` follow `TZ`.
 - New switch: add a field and key to `LaunchConfiguration` (`init(environment:)` and `environment`), then honour it where the dependency is created.
 - `debug.launchConfiguration` (any screen: `screen.launchConfiguration`) has the configuration the app received as its label (fixtures only if their file is in the bundle) and the app's time zone as its value; see `LaunchConfigurationTests`.
+- `debug.storedLibrary` (any screen: `screen.storedLibrary`) lists the stored books by title, one per line as `title · author · language · file name` (`no author`, `no file` when missing); see `DataModelTests`.
 
 | Fixture | Content |
 |---|---|
 | `.german` | "Die Verwandlung", Franz Kafka, `de`, cover, nav with Erster/Zweiter/Dritter Teil, ~2,400 words each |
 | `.frenchNoCover` | "Un matin en ville", Scholia, `fr`, no cover, Premier/Deuxième chapitre |
 | `.minimalMetadata` | cover; only identifier, title "Minimal", language `en`; no author |
-| `.corrupted` | truncated zip, cannot be opened |
+| `.corrupted` | truncated zip, cannot be opened; seeded as "Corrupted", no author, `en` |
 | `.drm` | "Encrypted", `META-INF/encryption.xml` (aes128-cbc), chapter bytes scrambled |
 
 ## Screen objects and a test
