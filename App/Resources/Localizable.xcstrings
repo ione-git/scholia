@@ -91,6 +91,9 @@
     "Highlights" : {
       "shouldTranslate" : false
     },
+    "Launch Screen" : {
+      "shouldTranslate" : false
+    },
     "Light" : {
       "shouldTranslate" : false
     },
