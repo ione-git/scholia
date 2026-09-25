@@ -39,6 +39,9 @@
     "Add to Library" : {
 
     },
+    "Added" : {
+
+    },
     "All" : {
       "shouldTranslate" : false
     },
@@ -88,6 +91,9 @@
       "shouldTranslate" : false
     },
     "Close" : {
+
+    },
+    "Close menu" : {
 
     },
     "Collection %lld" : {
@@ -168,6 +174,12 @@
     "Modal sheet" : {
       "shouldTranslate" : false
     },
+    "More" : {
+
+    },
+    "New Collection" : {
+
+    },
     "New collection" : {
       "shouldTranslate" : false
     },
@@ -207,6 +219,9 @@
     "Reading" : {
 
     },
+    "Recent" : {
+
+    },
     "Recently added" : {
 
     },
@@ -240,8 +255,14 @@
     "Search languages" : {
 
     },
+    "Search titles and authors" : {
+
+    },
     "Segmented control" : {
       "shouldTranslate" : false
+    },
+    "Select Books" : {
+
     },
     "Sepia" : {
 
@@ -259,6 +280,12 @@
       "shouldTranslate" : false
     },
     "Sort books by" : {
+
+    },
+    "Sort by" : {
+
+    },
+    "Sort by %@" : {
 
     },
     "Spacing" : {

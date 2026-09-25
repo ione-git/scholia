@@ -18,7 +18,8 @@ enum Storage {
         let container = try ModelContainer(for: schema)
         #if DEBUG
             try FixtureLibrary.seed(
-                configuration.fixtures, into: container.mainContext, addedAt: configuration.now ?? .now)
+                configuration.fixtures, opened: configuration.opened, into: container.mainContext,
+                now: configuration.now ?? .now)
         #endif
         return container
     }

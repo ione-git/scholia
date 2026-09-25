@@ -15,6 +15,7 @@ enum Fixture: String {
 struct LaunchConfiguration {
     var resetsState: Bool
     var fixtures: [Fixture]
+    var opened: [Fixture]
     var mocksTranslation: Bool
     var now: Date?
 
@@ -25,6 +26,7 @@ extension LaunchConfiguration {
     private enum Key {
         static let resetsState = "SCHOLIA_RESET_STATE"
         static let fixtures = "SCHOLIA_FIXTURES"
+        static let opened = "SCHOLIA_OPENED"
         static let translation = "SCHOLIA_TRANSLATION"
         static let now = "SCHOLIA_NOW"
     }
@@ -33,14 +35,18 @@ extension LaunchConfiguration {
         #if DEBUG
             self.init(
                 resetsState: environment[Key.resetsState] == "1",
-                fixtures: environment[Key.fixtures]?.split(separator: ",").compactMap { Fixture(rawValue: String($0)) }
-                    ?? [],
+                fixtures: Self.fixtures(environment[Key.fixtures]),
+                opened: Self.fixtures(environment[Key.opened]),
                 mocksTranslation: environment[Key.translation] == "mock",
                 now: environment[Key.now].flatMap { try? Date($0, strategy: .iso8601) }
             )
         #else
-            self.init(resetsState: false, fixtures: [], mocksTranslation: false, now: nil)
+            self.init(resetsState: false, fixtures: [], opened: [], mocksTranslation: false, now: nil)
         #endif
+    }
+
+    private static func fixtures(_ value: String?) -> [Fixture] {
+        value?.split(separator: ",").compactMap { Fixture(rawValue: String($0)) } ?? []
     }
 
     var environment: [String: String] {
@@ -50,6 +56,9 @@ extension LaunchConfiguration {
         }
         if !fixtures.isEmpty {
             environment[Key.fixtures] = fixtures.map(\.rawValue).joined(separator: ",")
+        }
+        if !opened.isEmpty {
+            environment[Key.opened] = opened.map(\.rawValue).joined(separator: ",")
         }
         if mocksTranslation {
             environment[Key.translation] = "mock"

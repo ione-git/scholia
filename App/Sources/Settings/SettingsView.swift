@@ -173,14 +173,3 @@ struct SettingsView: View {
         }
     }
 }
-
-extension LibrarySort {
-    fileprivate var title: LocalizedStringResource {
-        switch self {
-        case .recentlyOpened: "Recently opened"
-        case .recentlyAdded: "Recently added"
-        case .title: "Title"
-        case .author: "Author"
-        }
-    }
-}

@@ -4,7 +4,8 @@ final class HomeTests: UITestCase {
     func testFixtureLibraryShowsHeroAndRow() {
         let app = launch(
             LaunchConfiguration(
-                resetsState: true, fixtures: [.german, .frenchNoCover, .minimalMetadata], mocksTranslation: true,
+                resetsState: true, fixtures: [.german, .frenchNoCover, .minimalMetadata], opened: [],
+                mocksTranslation: true,
                 now: nil))
         let home = HomeScreen(app: app).waitUntilShown()
 
@@ -26,7 +27,8 @@ final class HomeTests: UITestCase {
 
     func testSingleBookIsHeroWithEmptyRow() {
         let app = launch(
-            LaunchConfiguration(resetsState: true, fixtures: [.minimalMetadata], mocksTranslation: true, now: nil))
+            LaunchConfiguration(
+                resetsState: true, fixtures: [.minimalMetadata], opened: [], mocksTranslation: true, now: nil))
         let home = HomeScreen(app: app).waitUntilShown()
 
         home.heroTitle.waitUntil(\.label, equals: "Minimal")
@@ -37,7 +39,7 @@ final class HomeTests: UITestCase {
 
     func testLibraryOpensFromHome() {
         let app = launch(
-            LaunchConfiguration(resetsState: true, fixtures: [.german], mocksTranslation: true, now: nil))
+            LaunchConfiguration(resetsState: true, fixtures: [.german], opened: [], mocksTranslation: true, now: nil))
         let home = HomeScreen(app: app).waitUntilShown()
 
         home.openLibrary().goBack()
@@ -46,7 +48,8 @@ final class HomeTests: UITestCase {
     }
 
     func testHeaderHasGoalRingAndGlassButtonsAndOpensSettings() {
-        let app = launch(LaunchConfiguration(resetsState: true, fixtures: [.german], mocksTranslation: true, now: nil))
+        let app = launch(
+            LaunchConfiguration(resetsState: true, fixtures: [.german], opened: [], mocksTranslation: true, now: nil))
         let home = HomeScreen(app: app).waitUntilShown()
 
         XCTAssertEqual(home.goalRing.waitUntilExists().frame.size, CGSize(width: 28, height: 28))
