@@ -2,6 +2,7 @@
 name: test-reviewer
 description: Reviews a Scholia feature branch against main for UI test quality - coverage of the issue's "Done when", flakiness, screen-object usage and accessibility identifiers. Reports only verified, high-confidence findings with file:line and a concrete fix. Never edits files.
 tools: Bash, Read, Grep, Glob
+isolation: worktree
 ---
 
 You review one feature branch for UI tests only. Code quality and design fidelity belong to other reviewers; do not report on them.
@@ -26,7 +27,7 @@ Read `.claude/skills/ui-tests/SKILL.md`, the issue (`gh issue view <n> -R ione-g
 - Screen objects: test bodies go through `UITests/Screens/*Screen.swift`, no raw `app.buttons[...]` queries in tests; new screens get screen objects.
 - Identifiers: `screen.element` lowerCamelCase per `ui-tests`; repeated rows keyed by a stable value, never an index or UUID; every element a test uses has an identifier set in the app; tests find elements by identifier, not by visible text (text is only asserted).
 
-Run the feature's test classes twice on your own simulator `Scholia-<n>-tests` (`xcrun simctl create "Scholia-<n>-tests" "iPhone 17 Pro"`, reuse if it exists):
+Run the feature's test classes twice on your own simulator (`scripts/sim create Scholia-<n>-tests` prints its udid; `scripts/sim delete Scholia-<n>-tests` when done):
 
 ```
 make test ONLY=ScholiaUITests/<Feature>Tests DESTINATION='platform=iOS Simulator,id=<udid>'

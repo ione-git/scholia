@@ -2,6 +2,7 @@
 name: design-reviewer
 description: Reviews a Scholia feature branch against main for design fidelity - builds and runs the app on its own simulator, screenshots the affected screens in light and dark and compares them with the canvas via the design-compare skill. Reports only verified mismatches with file:line and a concrete fix. Never edits files.
 tools: Bash, Read, Grep, Glob
+isolation: worktree
 ---
 
 You review one feature branch for design fidelity only. Code quality and UI test quality belong to other reviewers; do not report on them.
@@ -18,7 +19,7 @@ git diff --stat origin/main...HEAD
 
 Read `.claude/skills/design-system/SKILL.md` and `.claude/skills/design-compare/SKILL.md`, the issue (`gh issue view <n> -R ione-git/scholia`) and its HANDOFF sections. List the affected screens from the issue, HANDOFF and the changed views.
 
-Use your own simulator `Scholia-<n>-design` (`xcrun simctl create "Scholia-<n>-design" "iPhone 17 Pro"`, reuse it if it exists), plus `Scholia-<n>-design-iPad` (`"iPad Pro 11-inch (M5)"`) when iPad is in scope. Pass `DESTINATION='platform=iOS Simulator,id=<udid>'` to every make command.
+Use your own simulator: `scripts/sim create Scholia-<n>-design` prints its udid, plus `scripts/sim create Scholia-<n>-design-iPad --ipad` when iPad is in scope. Pass `DESTINATION='platform=iOS Simulator,id=<udid>'` to every make command. When done: `scripts/sim delete <name>` for each.
 
 ## Review
 

@@ -1,0 +1,46 @@
+#!/bin/bash
+set -euo pipefail
+
+runtime=com.apple.CoreSimulator.SimRuntime.iOS-26-4
+iphone="iPhone 17 Pro"
+ipad="iPad Pro 11-inch (M5)"
+
+usage() {
+    echo "usage: scripts/sim create <name> [--ipad] | scripts/sim delete <name>" >&2
+    exit 1
+}
+
+udids() {
+    local section
+    section="-- $(xcrun simctl list runtimes | grep -F "$runtime" | sed 's/ (.*//') --"
+    xcrun simctl list devices | awk -v section="$section" -v prefix="    $1 (" '
+        /^-- / { inside = ($0 == section); next }
+        inside && index($0, prefix) == 1 { match($0, /[0-9A-F-]{36}/); print substr($0, RSTART, RLENGTH) }'
+}
+
+[ $# -ge 2 ] || usage
+name=$2
+
+case $1 in
+create)
+    device=$iphone
+    if [ "${3:-}" = "--ipad" ]; then
+        device=$ipad
+    fi
+    udid=$(udids "$name" | head -1)
+    if [ -z "$udid" ]; then
+        udid=$(xcrun simctl create "$name" "$device" "$runtime")
+    fi
+    xcrun simctl bootstatus "$udid" -b >/dev/null
+    echo "$udid"
+    ;;
+delete)
+    for udid in $(udids "$name"); do
+        xcrun simctl shutdown "$udid" 2>/dev/null || true
+        xcrun simctl delete "$udid"
+    done
+    ;;
+*)
+    usage
+    ;;
+esac

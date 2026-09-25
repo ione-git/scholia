@@ -25,7 +25,7 @@ scripts/render-screen Design/canvas/project/Main.dc.html build/design/Main.png
 
 ## 3. Screenshot the app
 
-Use your own simulator (see `ship-feature`), never a shared one. Set the appearance before each run:
+Use your own simulator, never a shared one. `scripts/sim create <name>` (`--ipad` for iPad) creates it if needed, boots it and prints the udid; run it before any `simctl ui`, `install`, `launch` or `io`, which fail on a shut-down simulator. Set the appearance before each run:
 
 ```
 xcrun simctl ui <udid> appearance light
@@ -34,18 +34,22 @@ xcrun simctl ui <udid> appearance dark
 
 With the app theme at System it follows the simulator appearance. The reader page theme (Paper/Sepia/Night/Black) is separate: set it through the app for reader screens.
 
-- The first screen after launch, after `make build DESTINATION=…`:
+- The first screen after launch, after `make build DESTINATION=…`, per appearance:
   ```
   xcrun simctl install <udid> build/DerivedData/Build/Products/Debug-iphonesimulator/Scholia.app
-  xcrun simctl launch <udid> io.github.ione-git.scholia
+  xcrun simctl ui <udid> appearance light
+  xcrun simctl launch --terminate-running-process <udid> io.github.ione-git.scholia
+  sleep 2
   xcrun simctl io <udid> screenshot build/design/<Screen>-light.png
   ```
+  Set the appearance before launching and wait for the launch animation, otherwise the shot catches the app zooming in or half-switched. Look at every shot and retake one that shows a transition.
 - Any deeper state: the feature's UI test calls `attachScreenshot("<Screen>")` at the state that matches the design screen (helper on `UITestCase`, see `.claude/skills/ui-tests/SKILL.md`). Run the test once per appearance and export:
   ```
   make test ONLY=ScholiaUITests/<Feature>Tests DESTINATION='platform=iOS Simulator,id=<udid>'
+  rm -rf build/design/light
   xcrun xcresulttool export attachments --path "$(ls -td build/Results-*.xcresult | head -1)" --output-path build/design/light
   ```
-  Use `build/design/dark` for the dark run. Add `--test-id '<Feature>Tests/<testName>()'` to export one test only. In the output folder `manifest.json` maps files to names; `suggestedHumanReadableName` starts with the name given to `attachScreenshot`. Do not use `--only-failures`: it exports nothing.
+  Use `build/design/dark` for the dark run. Always remove the output folder first: export fails on an existing `manifest.json` and leaves stale " (1)" files. Add `--test-id '<Feature>Tests/<testName>()'` to export one test only. In the output folder `manifest.json` maps files to names; `suggestedHumanReadableName` starts with the name given to `attachScreenshot`. Do not use `--only-failures`: it exports nothing.
 
 ## 4. Compare
 

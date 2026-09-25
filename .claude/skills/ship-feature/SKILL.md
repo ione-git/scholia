@@ -19,11 +19,10 @@ You are the only writer for one issue, in your own git worktree. The orchestrato
 ```
 git fetch origin
 git checkout --no-track -b feature/<n>-<slug> origin/main
-xcrun simctl list devices | grep "Scholia-<n> ("
-xcrun simctl create "Scholia-<n>" "iPhone 17 Pro"
+scripts/sim create Scholia-<n>
 ```
 
-Reuse `Scholia-<n>` if it exists; `create` prints its udid. For iPad work add `Scholia-<n>-iPad` with `"iPad Pro 11-inch (M5)"`. Pass your own simulator to every build and test run: `DESTINATION='platform=iOS Simulator,id=<udid>'`. DerivedData (`build/`) is already per worktree.
+`scripts/sim` holds the project's device and runtime. `create` reuses the simulator if it exists, boots it and prints its udid; run it again whenever you come back to the work. For iPad work add `scripts/sim create Scholia-<n>-iPad --ipad`. `scripts/sim delete <name>` removes one. Pass your own simulator to every build and test run: `DESTINATION='platform=iOS Simulator,id=<udid>'`. DerivedData (`build/`) is already per worktree.
 
 ## 3. Implement
 
