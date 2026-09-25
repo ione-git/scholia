@@ -163,7 +163,7 @@
                 let controller = ReaderController(
                     book: book,
                     style: ReaderStyle(
-                        font: ReaderFont(
+                        font: ReaderTypeface(
                             family: DesignSystem.serifFamilyName,
                             regular: DesignSystem.serifFontURL,
                             italic: DesignSystem.serifItalicFontURL

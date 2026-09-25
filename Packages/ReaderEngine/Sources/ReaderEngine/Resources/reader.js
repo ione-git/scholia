@@ -1,15 +1,35 @@
 (() => {
-  const blocks = "p, li, dd, dt, blockquote, figcaption, td, th, h1, h2, h3, h4, h5, h6, pre";
   const contextLength = 32;
   const softHyphen = /\u00AD/g;
 
+  function blockOf(node) {
+    let element = node.parentElement;
+    while (element !== document.body && getComputedStyle(element).display.startsWith("inline")) {
+      element = element.parentElement;
+    }
+    return element;
+  }
+
   function index(block) {
-    const walker = document.createTreeWalker(block, NodeFilter.SHOW_TEXT);
+    const walker = document.createTreeWalker(block, NodeFilter.SHOW_TEXT | NodeFilter.SHOW_ELEMENT);
     const nodes = [];
     let text = "";
+    let previousBlock = block;
     while (walker.nextNode()) {
-      nodes.push({ node: walker.currentNode, start: text.length });
-      text += walker.currentNode.data;
+      const node = walker.currentNode;
+      if (node.nodeType === Node.ELEMENT_NODE) {
+        if (node.localName === "br") {
+          text += " ";
+        }
+        continue;
+      }
+      const nodeBlock = blockOf(node);
+      if (nodeBlock !== previousBlock) {
+        text += "\n";
+        previousBlock = nodeBlock;
+      }
+      nodes.push({ node, start: text.length });
+      text += node.data;
     }
     return { text, nodes };
   }
@@ -46,8 +66,7 @@
       if (!caret || caret.startContainer.nodeType !== Node.TEXT_NODE) {
         return null;
       }
-      const block = caret.startContainer.parentElement.closest(blocks) ?? document.body;
-      const textIndex = index(block);
+      const textIndex = index(blockOf(caret.startContainer));
       const caretOffset =
         textIndex.nodes.find((entry) => entry.node === caret.startContainer).start + caret.startOffset;
       const locale = canonicalLocale(language);

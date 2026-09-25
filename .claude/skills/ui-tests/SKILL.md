@@ -44,7 +44,7 @@ let app = launch(LaunchConfiguration(resetsState: true, fixtures: [.german], moc
 
 | Fixture | Content |
 |---|---|
-| `.german` | "Die Verwandlung", Franz Kafka, `de`, cover, nav with Erster/Zweiter/Dritter Teil, ~2,400 words each |
+| `.german` | "Die Verwandlung", Franz Kafka, `de`, cover, nav with Erster/Zweiter/Dritter Teil, ~2,400 words each; Zweiter Teil opens with a verse in `<br/>` lines and `<div>` paragraphs |
 | `.frenchNoCover` | "Un matin en ville", Scholia, `fr`, no cover, Premier/Deuxième chapitre |
 | `.minimalMetadata` | cover; only identifier, title "Minimal", language `en`; no author |
 | `.corrupted` | truncated zip, cannot be opened; seeded as "Corrupted", no author, `en` |

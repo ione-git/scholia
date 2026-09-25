@@ -58,6 +58,25 @@ final class ReaderPrototypeTests: UITestCase {
         XCTAssertLessThanOrEqual(reader.wordTint.frame.height, line)
     }
 
+    func testTapOnWordStopsAtLineBreaksAndBlocks() {
+        let reader = openReader()
+        for page in 2...18 {
+            reader.turnForward(expecting: "\(page) of 18")
+        }
+        reader.turnForward(expecting: "1 of 18")
+        let verse = reader.paragraph(startingWith: "Über allen Gipfeln").waitUntilExists()
+        let stanza = reader.paragraph(startingWith: "Die Vögelein").waitUntilExists()
+
+        verse.coordinate(withNormalizedOffset: CGVector(dx: 1, dy: 0.5)).withOffset(CGVector(dx: -8, dy: 0)).tap()
+        reader.word.waitUntil(\.label, equals: "Gipfeln")
+        XCTAssertEqual(
+            reader.sentence.label, "Über allen Gipfeln Ist Ruh, In allen Wipfeln Spürest du Kaum einen Hauch;")
+
+        stanza.coordinate(withNormalizedOffset: CGVector(dx: 1, dy: 0.5)).withOffset(CGVector(dx: -10, dy: 0)).tap()
+        reader.word.waitUntil(\.label, equals: "Walde")
+        XCTAssertEqual(reader.sentence.label, "Die Vögelein schweigen im Walde.")
+    }
+
     func testTapOutsideWordsClearsWordAndTogglesControls() throws {
         let reader = openReader()
         let line = try readingLineHeight()
@@ -129,6 +148,8 @@ final class ReaderPrototypeTests: UITestCase {
 
         reader.highlights.waitUntil(\.label, equals: "seinem")
         reader.highlightMenuItem.waitUntilGone()
+        let seinem = try waitForPaint(in: middle(ofLine: 2, from: 4, to: 36, in: paragraph), reader: reader)
+        XCTAssertLessThanOrEqual(seinem.found.distance(to: seinem.expected), 6, "\(seinem)")
         attachScreenshot("Reader-Highlighted")
     }
 
@@ -143,6 +164,8 @@ final class ReaderPrototypeTests: UITestCase {
 
         reader.highlights.waitUntil(\.label, equals: "Kopf ein wenig hob, seinen")
         XCTAssertFalse(reader.highlightMenuItem.exists)
+        let paint = try waitForPaint(in: middle(ofLine: 5, from: 60, to: 200, in: paragraph), reader: reader)
+        XCTAssertLessThanOrEqual(paint.found.distance(to: paint.expected), 6, "\(paint)")
     }
 
     func testCurlTurnsPagesBothWays() {
@@ -169,5 +192,27 @@ final class ReaderPrototypeTests: UITestCase {
 
     private func readingLineHeight() throws -> CGFloat {
         try TokenValues.load().lineHeight("reading-body")
+    }
+
+    private func middle(ofLine index: Int, from start: CGFloat, to end: CGFloat, in paragraph: XCUIElement) throws
+        -> CGRect
+    {
+        let line = try readingLineHeight()
+        let y = paragraph.frame.minY + line * CGFloat(index) + line / 2
+        return CGRect(x: paragraph.frame.minX + start, y: y - 4, width: end - start, height: 8)
+    }
+
+    private func waitForPaint(in rect: CGRect, reader: ReaderScreen) throws -> (found: RGB, expected: RGB) {
+        let tokens = try TokenValues.load()
+        let dark = XCUIDevice.shared.appearance == .dark
+        let page = try tokens.color("surface-paper", dark: dark)
+        let highlight = try tokens.color("highlight-yellow", dark: dark, over: page)
+        let deadline = Date.now.addingTimeInterval(10)
+        var painted: RGB
+        repeat {
+            let pixels = try ScreenPixels(XCUIScreen.main.screenshot(), pointWidth: reader.app.frame.width)
+            painted = try XCTUnwrap(pixels.colors(in: rect).min { $0.distance(to: page) < $1.distance(to: page) })
+        } while painted.distance(to: highlight) > 6 && Date.now < deadline
+        return (painted, highlight)
     }
 }

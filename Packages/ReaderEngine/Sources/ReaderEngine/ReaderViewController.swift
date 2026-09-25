@@ -305,7 +305,7 @@ final class ReaderViewController: UIViewController {
         )
     }
 
-    private static func fontDeclaration(_ font: ReaderFont) -> AnyHTMLFontFamilyDeclaration {
+    private static func fontDeclaration(_ font: ReaderTypeface) -> AnyHTMLFontFamilyDeclaration {
         CSSFontFamilyDeclaration(
             fontFamily: FontFamily(rawValue: font.family),
             fontFaces: [

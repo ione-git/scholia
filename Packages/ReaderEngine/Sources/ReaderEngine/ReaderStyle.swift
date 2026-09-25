@@ -1,7 +1,7 @@
 import UIKit
 
 public struct ReaderStyle {
-    public var font: ReaderFont
+    public var font: ReaderTypeface
     public var fontSize: CGFloat
     public var lineHeight: CGFloat
     public var sideMargin: CGFloat
@@ -10,7 +10,7 @@ public struct ReaderStyle {
     public var highlightRadius: CGFloat
 
     public init(
-        font: ReaderFont, fontSize: CGFloat, lineHeight: CGFloat, sideMargin: CGFloat, topMargin: CGFloat,
+        font: ReaderTypeface, fontSize: CGFloat, lineHeight: CGFloat, sideMargin: CGFloat, topMargin: CGFloat,
         minimumBottomMargin: CGFloat, highlightRadius: CGFloat
     ) {
         self.font = font
@@ -23,7 +23,7 @@ public struct ReaderStyle {
     }
 }
 
-public struct ReaderFont {
+public struct ReaderTypeface {
     public var family: String
     public var regular: URL
     public var italic: URL
