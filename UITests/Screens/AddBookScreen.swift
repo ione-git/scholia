@@ -32,6 +32,11 @@ struct AddBookScreen: Screen {
         return self
     }
 
+    func openUnreadableFromOtherApp(_ fixture: Fixture) throws -> ImportFailureAlert {
+        XCUIDevice.shared.system.open(try fixture.file)
+        return ImportFailureAlert(app: app).waitUntilShown()
+    }
+
     func chooseLanguage() -> LanguagePickerScreen {
         languageButton.waitUntil(\.isHittable, equals: true).tap()
         return LanguagePickerScreen(app: app).waitUntilShown()

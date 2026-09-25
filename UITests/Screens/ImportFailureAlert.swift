@@ -10,8 +10,13 @@ struct ImportFailureAlert: Screen {
 
     @discardableResult
     func dismiss() -> HomeScreen {
+        dismiss(to: HomeScreen(app: app))
+    }
+
+    @discardableResult
+    func dismiss<Next: Screen>(to next: Next) -> Next {
         okButton.waitUntilExists().tap()
         root.waitUntilGone()
-        return HomeScreen(app: app).waitUntilShown()
+        return next.waitUntilShown()
     }
 }

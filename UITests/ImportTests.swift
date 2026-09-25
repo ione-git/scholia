@@ -91,6 +91,26 @@ final class ImportTests: UITestCase {
         XCTAssertFalse(stored.contains("\n"), stored)
     }
 
+    func testBrokenSecondFileKeepsBookInSheet() throws {
+        let app = launch(LaunchConfiguration(resetsState: true, fixtures: [], mocksTranslation: true, now: nil))
+        let addBook = try HomeScreen(app: app).waitUntilShown().openFromOtherApp(.german)
+        addBook.titleField.waitUntil(\.stringValue, equals: "Die Verwandlung")
+        try addBook.replaceAuthor(with: "F. Kafka")
+        addBook.authorField.waitUntil(\.stringValue, equals: "F. Kafka")
+
+        let alert = try addBook.openUnreadableFromOtherApp(.corrupted)
+
+        XCTAssertTrue(
+            alert.messages.contains("“corrupted.epub” is damaged or is not an EPUB file."), "\(alert.messages)")
+        alert.dismiss(to: addBook)
+        XCTAssertEqual(addBook.titleField.stringValue, "Die Verwandlung")
+        XCTAssertEqual(addBook.authorField.stringValue, "F. Kafka")
+        let home = addBook.add()
+        home.heroTitle.waitUntil(\.label, equals: "Die Verwandlung")
+        let stored = home.storedLibrary.label
+        XCTAssertTrue(stored.hasPrefix("Die Verwandlung · F. Kafka · de · "), stored)
+    }
+
     func testBlankAuthorIsStoredWithoutAuthor() throws {
         let app = launch(LaunchConfiguration(resetsState: true, fixtures: [], mocksTranslation: true, now: nil))
         let addBook = try HomeScreen(app: app).waitUntilShown().openFromOtherApp(.frenchNoCover)

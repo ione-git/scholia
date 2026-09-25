@@ -19,6 +19,7 @@ struct ImportFlow: ViewModifier {
                 if let pending {
                     AddBookView(book: pending, onCancel: { discard() }, onAdded: { self.pending = nil })
                         .id(pending.id)
+                        .importFailureAlert(isPresented: isShowingFailure(overBook: true), failure: failure)
                 }
             }
             .fileImporter(isPresented: $isPickingFile, allowedContentTypes: [.epub]) { result in
@@ -40,11 +41,7 @@ struct ImportFlow: ViewModifier {
                 }
                 self.incoming = nil
             }
-            .alert(Text("Can’t Add Book"), isPresented: isShowingFailure, presenting: failure) { _ in
-                Button("OK") {}
-            } message: { failure in
-                failure.message
-            }
+            .importFailureAlert(isPresented: isShowingFailure(overBook: false), failure: failure)
     }
 
     private var isShowingBook: Binding<Bool> {
@@ -57,9 +54,9 @@ struct ImportFlow: ViewModifier {
             })
     }
 
-    private var isShowingFailure: Binding<Bool> {
+    private func isShowingFailure(overBook: Bool) -> Binding<Bool> {
         Binding(
-            get: { failure != nil },
+            get: { failure != nil && (pending != nil) == overBook },
             set: { isShown in
                 if !isShown {
                     failure = nil
@@ -71,6 +68,16 @@ struct ImportFlow: ViewModifier {
         guard let pending else { return }
         self.pending = nil
         Task { await pending.discard() }
+    }
+}
+
+extension View {
+    fileprivate func importFailureAlert(isPresented: Binding<Bool>, failure: ImportFailure?) -> some View {
+        alert(Text("Can’t Add Book"), isPresented: isPresented, presenting: failure) { _ in
+            Button("OK") {}
+        } message: { failure in
+            failure.message
+        }
     }
 }
 
