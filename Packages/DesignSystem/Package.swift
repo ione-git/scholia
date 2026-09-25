@@ -8,6 +8,6 @@ let package = Package(
         .library(name: "DesignSystem", targets: ["DesignSystem"])
     ],
     targets: [
-        .target(name: "DesignSystem")
+        .target(name: "DesignSystem", resources: [.copy("Fonts")])
     ]
 )

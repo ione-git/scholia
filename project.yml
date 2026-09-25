@@ -51,6 +51,8 @@ targets:
     sources:
       - UITests
       - App/Sources/LaunchConfiguration.swift
+      - path: Design/design-system/project/tokens.json
+        buildPhase: resources
     dependencies:
       - target: Scholia
     settings:
