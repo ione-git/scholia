@@ -29,6 +29,7 @@ Out: saved words / vocabulary, footnotes, per-book target language, PDF, reader 
 - Independent features always run in parallel, each in its own worktree.
 - Review before PR: code, design fidelity (simulator screenshot vs screen), UI test quality. Every screen checked in light and dark.
 - PR merges after green CI and clean review. Owner is called only for decisions and the reader go/no-go.
+- The owner explicitly allows every agent working on this repository to commit and push feature branches without asking (owner, 2026-09-25). Never push to `main`.
 
 ## Project layout and commands
 
