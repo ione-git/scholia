@@ -43,6 +43,17 @@ struct HomeScreen: Screen {
         return LaunchScreen(app: app).waitUntilShown()
     }
 
+    func openReaderPrototype() -> ReaderScreen {
+        openDebugMenu("home.readerPrototype")
+        let reader = ReaderScreen(app: app).waitUntilShown()
+        reader.pageCounter.waitUntilExists()
+        return reader
+    }
+
+    func openEPUB() {
+        openDebugMenu("home.openEPUB")
+    }
+
     private func openDebugMenu(_ item: String) {
         root.waitUntilExists().press(forDuration: 1)
         app.buttons[item].waitUntil(\.isHittable, equals: true).tap()

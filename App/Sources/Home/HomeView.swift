@@ -2,6 +2,10 @@ import DesignSystem
 import SwiftData
 import SwiftUI
 
+#if DEBUG
+    import UniformTypeIdentifiers
+#endif
+
 struct HomeView: View {
     @Binding var path: NavigationPath
     @Query(sort: [
@@ -9,6 +13,10 @@ struct HomeView: View {
         SortDescriptor(\Book.title),
     ])
     private var books: [Book]
+    #if DEBUG
+        @State private var prototypeBook: PrototypeBook?
+        @State private var isImporting = false
+    #endif
 
     var body: some View {
         GeometryReader { proxy in
@@ -29,6 +37,15 @@ struct HomeView: View {
         }
         .background(.surface)
         .toolbar(.hidden, for: .navigationBar)
+        #if DEBUG
+            .fileImporter(isPresented: $isImporting, allowedContentTypes: [.epub]) { result in
+                guard case .success(let picked) = result else {
+                    return
+                }
+                prototypeBook = try? PrototypeBook(importing: picked)
+            }
+            .fullScreenCover(item: $prototypeBook) { ReaderPrototype(url: $0.url) }
+        #endif
     }
 
     private var header: some View {
@@ -68,6 +85,10 @@ struct HomeView: View {
                 .accessibilityIdentifier("home.componentGallery")
             Button("Launch Screen") { path.append(DebugRoute.launchScreen) }
                 .accessibilityIdentifier("home.launchScreen")
+            Button("Reader Prototype") { prototypeBook = Fixture.german.url.map(PrototypeBook.init(url:)) }
+                .accessibilityIdentifier("home.readerPrototype")
+            Button("Open EPUB…") { isImporting = true }
+                .accessibilityIdentifier("home.openEPUB")
         }
     #endif
 }
@@ -156,3 +177,26 @@ extension Book {
         cover.flatMap(UIImage.init(data:)).map(Image.init(uiImage:))
     }
 }
+
+#if DEBUG
+    private struct PrototypeBook: Identifiable {
+        let url: URL
+
+        var id: URL { url }
+    }
+
+    extension PrototypeBook {
+        fileprivate init(importing picked: URL) throws {
+            let copy = URL.temporaryDirectory.appending(path: picked.lastPathComponent)
+            let isAccessing = picked.startAccessingSecurityScopedResource()
+            defer {
+                if isAccessing {
+                    picked.stopAccessingSecurityScopedResource()
+                }
+            }
+            try? FileManager.default.removeItem(at: copy)
+            try FileManager.default.copyItem(at: picked, to: copy)
+            url = copy
+        }
+    }
+#endif
