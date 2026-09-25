@@ -30,6 +30,17 @@ Out: saved words / vocabulary, footnotes, per-book target language, PDF, reader 
 - Review before PR: code, design fidelity (simulator screenshot vs screen), UI test quality. Every screen checked in light and dark.
 - PR merges after green CI and clean review. Owner is called only for decisions and the reader go/no-go.
 
+## Project layout and commands
+
+- `project.yml` is the project definition (XcodeGen). `Scholia.xcodeproj` is generated and not committed: change `project.yml`, never the project file.
+- `App/` app target (`Sources/`, `Resources/`), `UITests/` UI tests, `Packages/DesignSystem`, `Packages/ReaderEngine` (the only module allowed to import Readium).
+- Tools: Xcode 26, `brew install xcodegen`. Formatting and lint use the `swift-format` bundled with Xcode, config in `.swift-format`.
+- `make generate` — generate the project.
+- `make build` — build app and tests.
+- `make test` — run all UI tests; `make test ONLY=ScholiaUITests/SmokeTests/testAppLaunches` for one test.
+- `make lint` / `make format` — check / fix formatting.
+- `DESTINATION` and `DERIVED_DATA` can be overridden, e.g. for a separate simulator per worktree.
+
 ## Code rules
 
 - Swift, SwiftUI. No comments in code.
