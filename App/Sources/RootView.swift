@@ -11,6 +11,8 @@ struct RootView: View {
                         .accessibilityIdentifier("root.tokenGallery")
                     NavigationLink("Component Gallery") { ComponentGallery() }
                         .accessibilityIdentifier("root.componentGallery")
+                    NavigationLink("Launch Screen") { LaunchScreenPreview() }
+                        .accessibilityIdentifier("root.launchScreen")
                 #endif
             }
         }

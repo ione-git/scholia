@@ -102,6 +102,8 @@ scripts/sim delete Scholia-<issue>
 
 `scripts/sim create` holds the project device and runtime, reuses an existing simulator, boots it and prints the udid. iPad: `scripts/sim create Scholia-<issue>-iPad --ipad`. If the runner fails to launch with "Busy" / "Application failed preflight checks", the simulator was not fully booted: run `scripts/sim create` again and rerun.
 
+Tests that switch the appearance (`LaunchScreenTests`) need a simulator prepared by `scripts/sim create`, which switches it once with `simctl` after booting. If the dark launch test reports "light", reboot that simulator (`xcrun simctl shutdown <udid>`, then `scripts/sim create` again).
+
 ## Read failures
 
 Every run writes `build/Results-<timestamp>.xcresult`; the path is printed first.
