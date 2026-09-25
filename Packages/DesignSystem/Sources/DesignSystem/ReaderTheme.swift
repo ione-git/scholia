@@ -1,6 +1,6 @@
 import SwiftUI
 
-public enum ReaderTheme: String, CaseIterable, Sendable {
+public enum ReaderTheme: String, CaseIterable, Codable, Sendable {
     case paper
     case sepia
     case night

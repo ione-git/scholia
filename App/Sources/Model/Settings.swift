@@ -1,3 +1,4 @@
+import DesignSystem
 import SwiftData
 
 nonisolated enum WordTapStyle: String, Codable {
@@ -17,13 +18,6 @@ nonisolated enum LibrarySort: String, Codable {
     case recentlyAdded
     case title
     case author
-}
-
-nonisolated enum ReaderTheme: String, Codable {
-    case paper
-    case sepia
-    case night
-    case black
 }
 
 nonisolated enum ReaderFont: String, Codable {
