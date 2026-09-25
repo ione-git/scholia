@@ -40,6 +40,7 @@ Out: saved words / vocabulary, footnotes, per-book target language, PDF, reader 
 - `make build` — build app and tests.
 - `make test` — run all UI tests; `make test ONLY=ScholiaUITests/SmokeTests/testAppLaunches` for one test.
 - `make lint` / `make format` — check / fix formatting.
+- `make device DEVICE=<id>` — build Debug, install and launch on a real iPhone (signing team is in `project.yml`; ids from `xcrun devicectl list devices`).
 - `DESTINATION` and `DERIVED_DATA` can be overridden, e.g. for a separate simulator per worktree.
 
 ## Code rules

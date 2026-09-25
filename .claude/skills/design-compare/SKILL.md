@@ -38,7 +38,7 @@ With the app theme at System it follows the simulator appearance. The reader pag
   ```
   xcrun simctl install <udid> build/DerivedData/Build/Products/Debug-iphonesimulator/Scholia.app
   xcrun simctl ui <udid> appearance light
-  xcrun simctl launch --terminate-running-process <udid> io.github.ione-git.scholia
+  xcrun simctl launch --terminate-running-process <udid> com.ione.scholia
   sleep 2
   xcrun simctl io <udid> screenshot build/design/<Screen>-light.png
   ```
