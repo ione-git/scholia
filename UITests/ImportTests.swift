@@ -1,5 +1,7 @@
 import XCTest
 
+private let germanCover = RGBColor(red: 47, green: 74, blue: 58)
+
 final class ImportTests: UITestCase {
     func testAddButtonOpensFilesPicker() {
         let app = launch(LaunchConfiguration(resetsState: true, fixtures: [.german], mocksTranslation: true, now: nil))
@@ -20,15 +22,20 @@ final class ImportTests: UITestCase {
         XCTAssertEqual(addBook.authorField.stringValue, "Franz Kafka")
         XCTAssertEqual(addBook.fileInfo.label, try Fixture.german.fileInfo)
         XCTAssertEqual(addBook.cover.frame.size, CGSize(width: 100, height: 150))
+        let cover = try addBook.coverColor()
+        XCTAssertTrue(cover.isClose(to: germanCover), "cover is \(cover), expected \(germanCover)")
         XCTAssertEqual(addBook.languageButton.label, "Language, German · detected")
         attachScreenshot("Import")
 
         try addBook.replaceTitle(with: "Die Verwandlung, Auszug")
         addBook.titleField.waitUntil(\.stringValue, equals: "Die Verwandlung, Auszug")
         XCTAssertEqual(addBook.cover.label, "Die Verwandlung, Auszug")
+        try addBook.replaceAuthor(with: "F. Kafka")
+        addBook.authorField.waitUntil(\.stringValue, equals: "F. Kafka")
 
         let picker = addBook.chooseLanguage()
         picker.language("de").waitUntil(\.isSelected, equals: true)
+        XCTAssertEqual(picker.languages, ["de", "en", "fr", "es", "it", "pl", "pt", "nl"])
         XCTAssertEqual(picker.language("de").label, "German · detected")
         XCTAssertFalse(picker.language("fr").isSelected)
         attachScreenshot("Import-Language")
@@ -41,10 +48,61 @@ final class ImportTests: UITestCase {
         addBook.languageButton.waitUntil(\.label, equals: "Language, French")
         let home = addBook.add()
         home.heroTitle.waitUntil(\.label, equals: "Die Verwandlung, Auszug")
-        XCTAssertEqual(home.heroAuthor.label, "Franz Kafka")
+        XCTAssertEqual(home.heroAuthor.label, "F. Kafka")
+        let heroCover = try home.heroCoverColor()
+        XCTAssertTrue(heroCover.isClose(to: germanCover), "hero cover is \(heroCover), expected \(germanCover)")
         let stored = home.storedLibrary.label
-        XCTAssertTrue(stored.hasPrefix("Die Verwandlung, Auszug · Franz Kafka · fr · "), stored)
+        XCTAssertTrue(stored.hasPrefix("Die Verwandlung, Auszug · F. Kafka · fr · "), stored)
         XCTAssertTrue(stored.hasSuffix(".epub"), stored)
+    }
+
+    func testSearchFindsLanguageOutsideSuggestions() throws {
+        let app = launch(LaunchConfiguration(resetsState: true, fixtures: [], mocksTranslation: true, now: nil))
+        let addBook = try HomeScreen(app: app).waitUntilShown().openFromOtherApp(.german)
+        let picker = addBook.chooseLanguage()
+        picker.language("de").waitUntil(\.isSelected, equals: true)
+        XCTAssertFalse(picker.language("ja").exists)
+
+        picker.search("japan")
+        picker.language("ja").waitUntil(\.label, equals: "Japanese")
+        picker.choose("ja")
+
+        addBook.languageButton.waitUntil(\.label, equals: "Language, Japanese")
+        let reopened = addBook.chooseLanguage()
+        reopened.language("ja").waitUntil(\.isSelected, equals: true)
+        XCTAssertEqual(reopened.languages, ["de", "en", "fr", "es", "it", "pl", "pt", "nl", "ja"])
+    }
+
+    func testSecondFileReplacesBookInSheet() throws {
+        let app = launch(LaunchConfiguration(resetsState: true, fixtures: [], mocksTranslation: true, now: nil))
+        let addBook = try HomeScreen(app: app).waitUntilShown().openFromOtherApp(.german)
+        addBook.titleField.waitUntil(\.stringValue, equals: "Die Verwandlung")
+
+        try addBook.openFromOtherApp(.frenchNoCover)
+
+        addBook.titleField.waitUntil(\.stringValue, equals: "Un matin en ville")
+        XCTAssertEqual(addBook.authorField.stringValue, "Scholia")
+        XCTAssertEqual(addBook.languageButton.label, "Language, French · detected")
+        XCTAssertEqual(addBook.fileInfo.label, try Fixture.frenchNoCover.fileInfo)
+        let home = addBook.add()
+        home.heroTitle.waitUntil(\.label, equals: "Un matin en ville")
+        let stored = home.storedLibrary.label
+        XCTAssertTrue(stored.hasPrefix("Un matin en ville · Scholia · fr · "), stored)
+        XCTAssertFalse(stored.contains("\n"), stored)
+    }
+
+    func testBlankAuthorIsStoredWithoutAuthor() throws {
+        let app = launch(LaunchConfiguration(resetsState: true, fixtures: [], mocksTranslation: true, now: nil))
+        let addBook = try HomeScreen(app: app).waitUntilShown().openFromOtherApp(.frenchNoCover)
+        addBook.authorField.waitUntil(\.stringValue, equals: "Scholia")
+
+        try addBook.replaceAuthor(with: " ")
+        let home = addBook.add()
+
+        home.heroTitle.waitUntil(\.label, equals: "Un matin en ville")
+        XCTAssertFalse(home.heroAuthor.exists)
+        let stored = home.storedLibrary.label
+        XCTAssertTrue(stored.hasPrefix("Un matin en ville · no author · fr · "), stored)
     }
 
     func testBookWithoutAuthorIsStoredWithoutAuthor() throws {

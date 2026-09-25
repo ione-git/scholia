@@ -18,6 +18,7 @@ struct ImportFlow: ViewModifier {
             .modalSheet(isPresented: isShowingBook) {
                 if let pending {
                     AddBookView(book: pending, onCancel: { discard() }, onAdded: { self.pending = nil })
+                        .id(pending.id)
                 }
             }
             .fileImporter(isPresented: $isPickingFile, allowedContentTypes: [.epub]) { result in

@@ -10,15 +10,25 @@ nonisolated enum BookLanguage {
         Locale.current.localizedString(forLanguageCode: code) ?? code
     }
 
+    private static let common = ["en", "fr", "es", "it", "pl", "pt", "nl"]
+
     private static let all = Locale.LanguageCode.isoLanguageCodes.map(\.identifier)
         .filter { $0.count == 2 }
         .map { (code: $0, name: name(of: $0)) }
         .sorted { $0.name.localizedStandardCompare($1.name) == .orderedAscending }
         .map(\.code)
 
-    static func codes(detected: String?) -> [String] {
-        guard let detected else { return all }
-        return [detected] + all.filter { $0 != detected }
+    static func suggested(detected: String?, selection: String?) -> [String] {
+        unique([detected].compactMap(\.self) + common + [selection].compactMap(\.self))
+    }
+
+    static func matching(_ query: String, detected: String?) -> [String] {
+        unique([detected].compactMap(\.self) + common + all).filter { name(of: $0).localizedStandardContains(query) }
+    }
+
+    private static func unique(_ codes: [String]) -> [String] {
+        var seen = Set<String>()
+        return codes.filter { seen.insert($0).inserted }
     }
 }
 
@@ -79,9 +89,8 @@ struct LanguagePicker: View {
     }
 
     private var matches: [String] {
-        let codes = BookLanguage.codes(detected: detected)
-        guard !query.isEmpty else { return codes }
-        return codes.filter { BookLanguage.name(of: $0).localizedStandardContains(query) }
+        guard !query.isEmpty else { return BookLanguage.suggested(detected: detected, selection: selection) }
+        return BookLanguage.matching(query, detected: detected)
     }
 
     private func row(_ code: String) -> some View {

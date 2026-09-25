@@ -118,18 +118,27 @@ struct AddBookView: View {
         guard let draft else { return }
         isAdding = true
         Task {
+            guard let fileName = try? await book.moveToLibrary() else {
+                fail()
+                return
+            }
+            let added = Book(
+                fileName: fileName, title: draft.title, author: draft.author, language: draft.language,
+                cover: book.cover, addedAt: LaunchConfiguration.current.now ?? .now)
+            context.insert(added)
             do {
-                let fileName = try await book.moveToLibrary()
-                context.insert(
-                    Book(
-                        fileName: fileName, title: draft.title, author: draft.author, language: draft.language,
-                        cover: book.cover, addedAt: LaunchConfiguration.current.now ?? .now))
                 try context.save()
                 onAdded()
             } catch {
-                isAdding = false
-                isShowingSaveFailure = true
+                context.delete(added)
+                await book.moveOutOfLibrary()
+                fail()
             }
         }
+    }
+
+    private func fail() {
+        isAdding = false
+        isShowingSaveFailure = true
     }
 }

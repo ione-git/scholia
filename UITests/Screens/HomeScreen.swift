@@ -24,6 +24,10 @@ struct HomeScreen: Screen {
         try app.screenshot().color(at: CGPoint(x: 0.02, y: 0.9))
     }
 
+    func heroCoverColor() throws -> RGBColor {
+        try heroCover.screenshot().color(at: CGPoint(x: 0.5, y: 0.3))
+    }
+
     func pickFile() -> FilePickerScreen {
         addBookButton.waitUntil(\.isHittable, equals: true).tap()
         return FilePickerScreen(app: app).waitUntilShown()

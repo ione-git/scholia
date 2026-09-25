@@ -57,12 +57,20 @@ nonisolated struct PendingBook: Identifiable, Sendable {
         }
     }
 
+    private var libraryFile: URL {
+        Storage.booksDirectory.appending(path: file.lastPathComponent)
+    }
+
     @concurrent
     func moveToLibrary() async throws -> String {
         try FileManager.default.createDirectory(at: Storage.booksDirectory, withIntermediateDirectories: true)
-        let fileName = file.lastPathComponent
-        try FileManager.default.moveItem(at: file, to: Storage.booksDirectory.appending(path: fileName))
-        return fileName
+        try FileManager.default.moveItem(at: file, to: libraryFile)
+        return libraryFile.lastPathComponent
+    }
+
+    @concurrent
+    func moveOutOfLibrary() async {
+        try? FileManager.default.moveItem(at: libraryFile, to: file)
     }
 
     @concurrent
