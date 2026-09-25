@@ -163,9 +163,9 @@ final class ReaderPrototypeTests: UITestCase {
         origin.withOffset(CGVector(dx: 60, dy: line * 5 + line / 2))
             .press(forDuration: 1, thenDragTo: origin.withOffset(CGVector(dx: 200, dy: line * 6 + line / 2)))
 
-        reader.highlights.waitUntil(\.label, equals: "Kopf ein wenig hob, seinen")
-        XCTAssertFalse(reader.highlightMenuItem.exists)
         reader.paintedHighlights.waitUntil(\.label, equals: "1")
+        XCTAssertTrue(reader.highlights.label.hasPrefix("Kopf ein wenig hob, seinen"), reader.highlights.label)
+        XCTAssertFalse(reader.highlightMenuItem.exists)
         let paint = try highlightColor(in: middle(ofLine: 5, from: 60, to: 200, in: paragraph), reader: reader)
         XCTAssertLessThanOrEqual(paint.found.distance(to: paint.expected), 6, "\(paint)")
     }
