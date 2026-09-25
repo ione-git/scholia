@@ -2,17 +2,23 @@ DESTINATION ?= platform=iOS Simulator,name=iPhone 17 Pro,OS=26.4.1
 DERIVED_DATA ?= build/DerivedData
 XCODEBUILD = xcodebuild -project Scholia.xcodeproj -scheme Scholia -destination '$(DESTINATION)' -derivedDataPath $(DERIVED_DATA)
 SOURCES = App UITests Packages
+RESOLVED = Scholia.xcodeproj/project.xcworkspace/xcshareddata/swiftpm/Package.resolved
 
-.PHONY: generate build test lint format device
+.PHONY: generate build test lint format device resolve
 
 generate:
 	xcodegen generate --quiet
+	mkdir -p $(dir $(RESOLVED)) && cp Package.resolved $(RESOLVED)
+
+resolve: generate
+	xcodebuild -project Scholia.xcodeproj -scheme Scholia -derivedDataPath $(DERIVED_DATA) -resolvePackageDependencies -quiet
+	cp $(RESOLVED) Package.resolved
 
 build: generate
 	$(XCODEBUILD) build-for-testing -quiet
 
 test: generate
-	$(XCODEBUILD) test -quiet -resultBundlePath build/Results-$$(date +%s).xcresult $(if $(ONLY),-only-testing:$(ONLY))
+	$(XCODEBUILD) test -quiet -resultBundlePath build/Results-$$(date +%s).xcresult $(if $(ONLY),-only-testing:$(ONLY)) $(TEST_FLAGS)
 
 lint:
 	xcrun swift-format lint --strict --recursive $(SOURCES)
