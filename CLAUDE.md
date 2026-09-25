@@ -21,7 +21,6 @@ iOS reader for books in languages you are learning. Tap a word, its translation 
 
 In: see MVP in `Design/HANDOFF.md`, plus Curl page turn and a Bookmarks list.
 Out: saved words / vocabulary, footnotes, per-book target language, PDF, reader search (menu item hidden), iPad landscape spread.
-Waiting for design: empty Home, Bookmarks list, iPad screens.
 
 ## Process
 
@@ -29,7 +28,7 @@ Waiting for design: empty Home, Bookmarks list, iPad screens.
 - One writer agent per feature. Researchers and reviewers are called as needed.
 - Independent features always run in parallel, each in its own worktree.
 - Review before PR: code, design fidelity (simulator screenshot vs screen), UI test quality. Every screen checked in light and dark.
-- PR merges after green CI and owner approval.
+- PR merges after green CI and clean review. Owner is called only for decisions and the reader go/no-go.
 
 ## Code rules
 

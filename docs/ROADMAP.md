@@ -25,7 +25,7 @@ Each item is one feature, one issue, one PR. The code in brackets is the issue t
 - [2.4] Collections — after 2.1, 2.3.
 - [2.5] Book actions and multi-select — after 2.4.
 - [2.6] Settings screen — after 1.2, 1.4.
-- [2.7] Home empty state — waiting for design.
+- [2.7] Home empty state — after 2.1, 2.2.
 
 ## 3 · Reader
 
@@ -49,13 +49,13 @@ Starts after go on 1.5.
 - [5.2] Drag to highlight — after 5.1.
 - [5.3] Highlight colour and delete — after 5.1.
 - [5.4] Highlights list — after 3.4, 5.1.
-- [5.5] Bookmarks list — after 3.2, 3.4; waiting for design.
+- [5.5] Bookmarks list — after 3.2, 3.4.
 
 ## 6 · Goal and iPad
 
 - [6.1] Reading time and daily goal — after 2.2, 3.1.
 - [6.2] Reading reminder — after 2.6.
-- [6.3] iPad — waiting for design.
+- [6.3] iPad — after 2.2, 2.3, 2.6, 3.2, 4.2.
 
 ## 7 · Release
 
