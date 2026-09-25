@@ -32,6 +32,14 @@
     return x >= rect.left && x <= rect.right && y >= rect.top && y <= rect.bottom;
   }
 
+  function canonicalLocale(language) {
+    try {
+      return Intl.getCanonicalLocales(language?.replaceAll("_", "-"))[0];
+    } catch {
+      return undefined;
+    }
+  }
+
   window.scholia = {
     wordAt(x, y, language) {
       const caret = document.caretRangeFromPoint(x, y);
@@ -42,7 +50,7 @@
       const textIndex = index(block);
       const caretOffset =
         textIndex.nodes.find((entry) => entry.node === caret.startContainer).start + caret.startOffset;
-      const locale = language ?? undefined;
+      const locale = canonicalLocale(language);
       const words = new Intl.Segmenter(locale, { granularity: "word" }).segment(textIndex.text);
       for (const offset of [caretOffset, caretOffset - 1]) {
         const word = offset >= 0 ? words.containing(offset) : undefined;

@@ -28,9 +28,7 @@ final class ReaderViewController: UIViewController {
             initialLocation: nil,
             config: .init(
                 preferences: Self.preferences(style: style, colors: colors),
-                editingActions: [
-                    EditingAction(title: highlightTitle, action: #selector(highlightSelection)), .translate, .copy,
-                ],
+                editingActions: [EditingAction(title: highlightTitle, action: #selector(highlightSelection)), .copy],
                 decorationTemplates: [.highlight: Self.highlightTemplate(radius: style.highlightRadius)],
                 fontFamilyDeclarations: [Self.fontDeclaration(style.font)],
                 readiumCSSRSProperties: CSSRSProperties(
