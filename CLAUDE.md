@@ -34,7 +34,7 @@ Out: saved words / vocabulary, footnotes, per-book target language, PDF, reader 
 
 - `project.yml` is the project definition (XcodeGen). `Scholia.xcodeproj` is generated and not committed: change `project.yml`, never the project file.
 - `App/` app target (`Sources/`, `Resources/`), `UITests/` UI tests, `Packages/DesignSystem`, `Packages/ReaderEngine` (the only module allowed to import Readium).
-- Tools: Xcode 26, `brew install xcodegen`. Formatting and lint use the `swift-format` bundled with Xcode, config in `.swift-format`.
+- Tools: Xcode 26.4.1 with the iOS 26.4 simulator runtime (same in CI), `brew install xcodegen`. Formatting and lint use the `swift-format` bundled with Xcode, config in `.swift-format`.
 - `make generate` — generate the project.
 - `make build` — build app and tests.
 - `make test` — run all UI tests; `make test ONLY=ScholiaUITests/SmokeTests/testAppLaunches` for one test.
