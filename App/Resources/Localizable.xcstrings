@@ -1,16 +1,118 @@
 {
   "sourceLanguage" : "en",
   "strings" : {
+    "%lld min" : {
+      "shouldTranslate" : false
+    },
+    "6 min to go" : {
+      "shouldTranslate" : false
+    },
+    "Add a book" : {
+      "shouldTranslate" : false
+    },
+    "Add to Collection" : {
+      "shouldTranslate" : false
+    },
+    "All" : {
+      "shouldTranslate" : false
+    },
+    "Appearance" : {
+      "shouldTranslate" : false
+    },
+    "Back" : {
+      "shouldTranslate" : false
+    },
+    "Biographies" : {
+      "shouldTranslate" : false
+    },
+    "Book cover" : {
+      "shouldTranslate" : false
+    },
+    "Bookmark" : {
+      "shouldTranslate" : false
+    },
+    "Bookmarks" : {
+      "shouldTranslate" : false
+    },
+    "Bubble" : {
+      "shouldTranslate" : false
+    },
+    "Cancel" : {
+      "shouldTranslate" : false
+    },
+    "Card" : {
+      "shouldTranslate" : false
+    },
+    "Chip" : {
+      "shouldTranslate" : false
+    },
+    "Collection %lld" : {
+      "shouldTranslate" : false
+    },
     "Colours" : {
+      "shouldTranslate" : false
+    },
+    "Component Gallery" : {
+      "shouldTranslate" : false
+    },
+    "Components" : {
+      "shouldTranslate" : false
+    },
+    "Contents" : {
+      "shouldTranslate" : false
+    },
+    "Curl" : {
+      "shouldTranslate" : false
+    },
+    "Daily goal" : {
       "shouldTranslate" : false
     },
     "Dark" : {
       "shouldTranslate" : false
     },
+    "Done" : {
+      "shouldTranslate" : false
+    },
     "Effects" : {
       "shouldTranslate" : false
     },
+    "Fade" : {
+      "shouldTranslate" : false
+    },
+    "Finished" : {
+      "shouldTranslate" : false
+    },
+    "Glass button" : {
+      "shouldTranslate" : false
+    },
+    "Glass sheet" : {
+      "shouldTranslate" : false
+    },
+    "Highlights" : {
+      "shouldTranslate" : false
+    },
     "Light" : {
+      "shouldTranslate" : false
+    },
+    "List rows" : {
+      "shouldTranslate" : false
+    },
+    "Menu" : {
+      "shouldTranslate" : false
+    },
+    "Minimal" : {
+      "shouldTranslate" : false
+    },
+    "Modal sheet" : {
+      "shouldTranslate" : false
+    },
+    "New collection" : {
+      "shouldTranslate" : false
+    },
+    "On word tap" : {
+      "shouldTranslate" : false
+    },
+    "Popover" : {
       "shouldTranslate" : false
     },
     "Radius" : {
@@ -19,19 +121,55 @@
     "Reader themes" : {
       "shouldTranslate" : false
     },
+    "Reading" : {
+      "shouldTranslate" : false
+    },
+    "Russian" : {
+      "shouldTranslate" : false
+    },
     "Scholia" : {
+      "shouldTranslate" : false
+    },
+    "Science Fiction" : {
+      "shouldTranslate" : false
+    },
+    "Scroll" : {
+      "shouldTranslate" : false
+    },
+    "Segmented control" : {
       "shouldTranslate" : false
     },
     "Shadows" : {
       "shouldTranslate" : false
     },
+    "Sheets and popover" : {
+      "shouldTranslate" : false
+    },
+    "Slide" : {
+      "shouldTranslate" : false
+    },
     "Spacing" : {
+      "shouldTranslate" : false
+    },
+    "System" : {
       "shouldTranslate" : false
     },
     "Text styles" : {
       "shouldTranslate" : false
     },
+    "Theme" : {
+      "shouldTranslate" : false
+    },
+    "Themes & Settings" : {
+      "shouldTranslate" : false
+    },
     "Token Gallery" : {
+      "shouldTranslate" : false
+    },
+    "Translate to" : {
+      "shouldTranslate" : false
+    },
+    "Translation" : {
       "shouldTranslate" : false
     }
   },

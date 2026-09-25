@@ -15,22 +15,65 @@ func fail(_ message: String) -> Never {
     exit(1)
 }
 
-let arguments = CommandLine.arguments
-guard arguments.count == 3 else {
-    fail("usage: scripts/render-screen <Design/canvas/project/Screen.dc.html> <out.png>")
+var arguments = Array(CommandLine.arguments.dropFirst())
+let theme = arguments.first == "--dark" ? "dark" : "light"
+if theme == "dark" { arguments.removeFirst() }
+guard arguments.count == 2 else {
+    fail(
+        "usage: scripts/render-screen [--dark] <Design/canvas/project/Screen.dc.html | Design/design-system/project/components/Name/preview.html> <out.png>"
+    )
 }
-let screenURL = URL(fileURLWithPath: arguments[1]).standardizedFileURL
-let outputURL = URL(fileURLWithPath: arguments[2]).standardizedFileURL
+let screenURL = URL(fileURLWithPath: arguments[0]).standardizedFileURL
+let outputURL = URL(fileURLWithPath: arguments[1]).standardizedFileURL
 let canvasURL = screenURL.deletingLastPathComponent().appendingPathComponent("canvas.json")
+let board = (try? Data(contentsOf: canvasURL))
+    .flatMap { try? JSONDecoder().decode(Canvas.self, from: $0) }?
+    .boards[screenURL.lastPathComponent]
 
-guard let canvasData = try? Data(contentsOf: canvasURL),
-    let canvas = try? JSONDecoder().decode(Canvas.self, from: canvasData)
-else { fail("cannot read \(canvasURL.path)") }
-guard let board = canvas.boards[screenURL.lastPathComponent] else {
-    fail("\(screenURL.lastPathComponent) is not a board in \(canvasURL.path)")
+func tokensURL(above url: URL) -> URL? {
+    var directory = url.deletingLastPathComponent()
+    while directory.path != "/" {
+        let candidate = directory.appendingPathComponent("tokens.json")
+        if FileManager.default.fileExists(atPath: candidate.path) { return candidate }
+        directory = directory.deletingLastPathComponent()
+    }
+    return nil
 }
 
-let runtime = """
+func tokenCSS(_ url: URL, theme: String) -> String {
+    guard let data = try? Data(contentsOf: url),
+        let tokens = try? JSONSerialization.jsonObject(with: data) as? [String: Any]
+    else { fail("cannot read \(url.path)") }
+    var variables: [String] = []
+    for group in ["color", "spacing", "radius", "shadow", "effects"] {
+        for token in (tokens[group] as? [String: Any])?["tokens"] as? [[String: Any]] ?? [] {
+            guard let name = token["name"] as? String else { continue }
+            let value = token["value"]
+            if let value = (value as? [String: String])?[theme] ?? value as? String {
+                variables.append("--\(name): \(value)")
+            }
+        }
+    }
+    for (family, stack) in (tokens["type"] as? [String: Any])?["families"] as? [String: String] ?? [:] {
+        variables.append("--font-\(family): \(stack)")
+    }
+    return ":root{\(variables.joined(separator: ";"))}"
+}
+
+if board != nil, theme == "dark" {
+    fail("--dark applies to component previews only; screens carry their own colours")
+}
+
+func previewCSS() -> String {
+    guard let url = tokensURL(above: screenURL) else {
+        fail("\(screenURL.lastPathComponent) is neither a board in \(canvasURL.path) nor below a tokens.json")
+    }
+    return tokenCSS(url, theme: theme)
+}
+
+let css = board == nil ? previewCSS() : nil
+
+let screenRuntime = """
     const host = document.querySelector('x-dc');
     const source = document.querySelector('script[data-dc-script]');
     const helmet = host.querySelector('helmet');
@@ -98,12 +141,27 @@ let runtime = """
     }
     render();
     if (component && component.componentDidMount) component.componentDidMount();
+    """
+
+let previewRuntime = """
+    const style = document.createElement('style');
+    style.textContent = css;
+    document.head.append(style);
+    document.body.style.width = 'max-content';
+    """
+
+let settle = """
     await document.fonts.ready;
     await new Promise((resolve) => setTimeout(resolve, 1000));
     await document.fonts.ready;
     const literata = [...document.fonts].filter((face) => face.family.replace(/["']/g, '') === 'Literata');
     const missing = literata.length === 0 || literata.some((face) => face.status === 'error');
-    return missing ? 'Literata did not load (offline?); serif text uses the Georgia fallback' : '';
+    const bounds = document.body.getBoundingClientRect();
+    return {
+        warning: missing ? 'Literata did not load (offline?); serif text uses the Georgia fallback' : '',
+        width: Math.ceil(bounds.right),
+        height: Math.ceil(bounds.bottom),
+    };
     """
 
 final class Renderer: NSObject, WKNavigationDelegate {
@@ -117,15 +175,22 @@ final class Renderer: NSObject, WKNavigationDelegate {
     }
 
     func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
-        webView.callAsyncJavaScript(runtime, arguments: [:], in: nil, in: .page) { result in
+        let runtime = (css == nil ? screenRuntime : previewRuntime) + settle
+        webView.callAsyncJavaScript(runtime, arguments: ["css": css ?? ""], in: nil, in: .page) { result in
             switch result {
             case .failure(let error):
                 fail("screen script failed: \(error)")
-            case .success(let warning):
-                if let warning = warning as? String, !warning.isEmpty {
+            case .success(let value):
+                guard let page = value as? [String: Any], let warning = page["warning"] as? String,
+                    let width = page["width"] as? Double, let height = page["height"] as? Double
+                else { fail("screen script returned \(String(describing: value))") }
+                if !warning.isEmpty {
                     FileHandle.standardError.write(Data("render-screen: warning: \(warning)\n".utf8))
                 }
-                self.snapshot()
+                if board == nil {
+                    webView.frame = CGRect(x: 0, y: 0, width: width, height: height)
+                }
+                DispatchQueue.main.async { self.snapshot() }
             }
         }
     }
@@ -158,6 +223,6 @@ final class Renderer: NSObject, WKNavigationDelegate {
     }
 }
 
-let renderer = Renderer(width: board.w, height: board.h)
+let renderer = Renderer(width: board?.w ?? 390, height: board?.h ?? 844)
 renderer.webView.loadFileURL(screenURL, allowingReadAccessTo: screenURL.deletingLastPathComponent())
 RunLoop.main.run()

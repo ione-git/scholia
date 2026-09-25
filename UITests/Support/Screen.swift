@@ -20,4 +20,10 @@ extension Screen {
         root.waitUntilExists(file: file, line: line)
         return self
     }
+
+    @discardableResult
+    func waitUntilSettled(file: StaticString = #filePath, line: UInt = #line) -> Self {
+        root.waitUntil(\.frame, equals: app.frame, file: file, line: line)
+        return self
+    }
 }

@@ -9,6 +9,8 @@ struct RootView: View {
                 #if DEBUG
                     NavigationLink("Token Gallery") { TokenGallery() }
                         .accessibilityIdentifier("root.tokenGallery")
+                    NavigationLink("Component Gallery") { ComponentGallery() }
+                        .accessibilityIdentifier("root.componentGallery")
                 #endif
             }
         }

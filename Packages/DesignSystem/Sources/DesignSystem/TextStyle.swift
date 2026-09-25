@@ -36,6 +36,34 @@ public struct TextStyle: Identifiable, Sendable {
 
     public var font: Font { Font(uiFont as CTFont) }
 
+    func scaled(to newSize: CGFloat) -> TextStyle {
+        let ratio = newSize / size
+        return TextStyle(
+            name: name, family: family, size: newSize, lineHeight: lineHeight * ratio, weight: weight,
+            tracking: tracking * ratio, isUppercase: isUppercase)
+    }
+
+    func fitting(_ text: String, in width: CGFloat) -> TextStyle {
+        let shown = (isUppercase ? text.uppercased() : text) as NSString
+        let units = CFStringTokenizerCreate(
+            nil, shown, CFRange(location: 0, length: shown.length), kCFStringTokenizerUnitLineBreak, nil)
+        var widest: CGFloat = 0
+        while !CFStringTokenizerAdvanceToNextToken(units).isEmpty {
+            let range = CFStringTokenizerGetCurrentTokenRange(units)
+            let unit = shown.substring(with: NSRange(location: range.location, length: range.length))
+                .trimmingCharacters(in: .whitespacesAndNewlines)
+            widest = max(widest, unit.size(withAttributes: [.font: uiFont, .kern: tracking]).width)
+        }
+        guard widest > width else { return self }
+        return scaled(to: (size * width / widest).rounded(.down))
+    }
+
+    func weighted(_ newWeight: Int) -> TextStyle {
+        TextStyle(
+            name: name, family: family, size: size, lineHeight: lineHeight, weight: newWeight, tracking: tracking,
+            isUppercase: isUppercase)
+    }
+
     private static let weightAxis = "wght".utf8.reduce(0) { $0 << 8 | Int($1) }
 
     private var systemWeight: UIFont.Weight {

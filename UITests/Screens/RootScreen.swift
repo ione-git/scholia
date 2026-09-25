@@ -7,8 +7,15 @@ struct RootScreen: Screen {
 
     var tokenGalleryButton: XCUIElement { app.buttons["root.tokenGallery"] }
 
+    var componentGalleryButton: XCUIElement { app.buttons["root.componentGallery"] }
+
     func openTokenGallery() -> TokenGalleryScreen {
         tokenGalleryButton.waitUntilExists().tap()
         return TokenGalleryScreen(app: app).waitUntilShown()
+    }
+
+    func openComponentGallery() -> ComponentGalleryScreen {
+        componentGalleryButton.waitUntilExists().tap()
+        return ComponentGalleryScreen(app: app).waitUntilShown()
     }
 }
