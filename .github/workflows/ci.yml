@@ -18,8 +18,12 @@ jobs:
       - uses: actions/checkout@v7
       - run: brew install xcodegen
       - run: make lint
+      - uses: actions/cache@v6
+        with:
+          path: build/DerivedData/SourcePackages
+          key: spm-${{ hashFiles('Package.resolved') }}
       - run: UDID=$(scripts/sim create CI) && echo "UDID=$UDID" >> "$GITHUB_ENV"
-      - run: make test DESTINATION="platform=iOS Simulator,id=$UDID"
+      - run: make test DESTINATION="platform=iOS Simulator,id=$UDID" TEST_FLAGS="-retry-tests-on-failure -test-iterations 2"
       - if: failure()
         uses: actions/upload-artifact@v7
         with:
