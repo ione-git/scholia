@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Scholia — Library, select mode</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Literata:ital,opsz,wght@0,7..72,400;0,7..72,500;0,7..72,600;1,7..72,400&amp;display=swap">
+<style>
+body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","Helvetica Neue",system-ui,sans-serif;background:#F4F2ED;color:#1D1B17;-webkit-font-smoothing:antialiased}
+a{color:#1D1B17;text-decoration:none}a:hover{color:#1D1B17}
+button{font-family:inherit;cursor:pointer}
+input::placeholder{color:#8A857B}
+</style>
+</helmet>
+<div style="width: 390px; height: 844px; box-sizing: border-box; overflow: hidden; position: relative; background: #F4F2ED; padding: 62px 20px 0; display: flex; flex-direction: column; gap: 14px">
+
+<div style="display: flex; align-items: center; justify-content: space-between; height: 44px">
+<a href="Library-A.dc.html" style="font-size: 17px; color: #B0471F; width: 70px">Cancel</a>
+<div style="font-size: 17px; font-weight: 600">2 Selected</div>
+<a href="Library-A.dc.html" style="font-size: 17px; font-weight: 600; color: #B0471F; width: 70px; text-align: right">Done</a>
+</div>
+
+<label style="display: flex; align-items: center; gap: 8px; height: 40px; border-radius: 12px; background: rgba(0,0,0,0.05); padding: 0 12px; color: #6C675E">
+<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7"></circle><path d="M20 20l-3.5-3.5"></path></svg>
+<input type="search" aria-label="Search titles and authors" placeholder="Search titles and authors" style="flex-grow: 1; min-width: 0; border: 0; background: transparent; font-family: inherit; font-size: 16px; color: #1D1B17; outline: none; padding: 0">
+</label>
+
+<div style="display: flex; gap: 8px; width: 600px">
+<button style="height: 36px; padding: 0 14px; border-radius: 18px; border: 0; background: #1D1B17; color: #FFFFFF; font-size: 14px; font-weight: 500; white-space: nowrap; display: flex; align-items: center; gap: 6px">All <span style="opacity: 0.6">24</span></button>
+<button style="height: 36px; padding: 0 14px; border-radius: 18px; border: 0.5px solid rgba(0,0,0,0.1); background: #FFFFFF; color: #1D1B17; font-size: 14px; font-weight: 500; white-space: nowrap; display: flex; align-items: center; gap: 6px">Science Fiction <span style="color: #6C675E">5</span></button>
+<button style="height: 36px; padding: 0 14px; border-radius: 18px; border: 0.5px solid rgba(0,0,0,0.1); background: #FFFFFF; color: #1D1B17; font-size: 14px; font-weight: 500; white-space: nowrap; display: flex; align-items: center; gap: 6px">Biographies <span style="color: #6C675E">4</span></button>
+<button style="height: 36px; padding: 0 14px; border-radius: 18px; border: 0.5px solid rgba(0,0,0,0.1); background: #FFFFFF; color: #1D1B17; font-size: 14px; font-weight: 500; white-space: nowrap; display: flex; align-items: center; gap: 6px">Fiction <span style="color: #6C675E">11</span></button>
+<button style="height: 36px; padding: 0 14px; border-radius: 18px; border: 0.5px solid rgba(0,0,0,0.1); background: #FFFFFF; color: #1D1B17; font-size: 14px; font-weight: 500; white-space: nowrap; display: flex; align-items: center; gap: 6px">Want to Read <span style="color: #6C675E">4</span></button>
+<button aria-label="New collection" style="width: 36px; height: 36px; border-radius: 18px; border: 1px dashed #C9C3B7; background: transparent; color: #6C675E; display: flex; align-items: center; justify-content: center; padding: 0; flex-shrink: 0"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"></path></svg></button>
+</div>
+
+<div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 20px 14px; margin-top: 6px">
+<sc-for list="{{books}}" as="b" hint-placeholder-count="9">
+<button role="checkbox" aria-checked="{{b.selected}}" style="display: flex; flex-direction: column; gap: 6px; border: 0; background: transparent; padding: 0; text-align: left; font-family: inherit">
+<div style="position: relative; width: 107px; height: 152px">
+<div style="width: 107px; height: 152px; border-radius: 6px; background: {{b.bg}}; color: {{b.fg}}; padding: 12px 10px; box-sizing: border-box; display: flex; flex-direction: column; justify-content: space-between; box-shadow: 0 2px 6px rgba(0,0,0,0.16), inset 3px 0 0 rgba(255,255,255,0.16); outline: {{b.ring}}; outline-offset: 3px">
+<div style="font-family: Literata, Georgia, serif; font-size: 13px; line-height: 1.25; font-weight: 500">{{b.title}}</div>
+<div style="font-size: 8px; letter-spacing: 0.08em; text-transform: uppercase; opacity: 0.85">{{b.author}}</div>
+</div>
+<sc-if value="{{b.selected}}" hint-placeholder-val="{{ false }}">
+<div style="position: absolute; right: 6px; bottom: 6px; width: 24px; height: 24px; border-radius: 12px; background: #B0471F; box-shadow: 0 0 0 2px #FFFFFF; display: flex; align-items: center; justify-content: center; color: #FFFFFF"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12l5 5 9-10"></path></svg></div>
+</sc-if>
+<sc-if value="{{b.unselected}}" hint-placeholder-val="{{ true }}">
+<div style="position: absolute; right: 6px; bottom: 6px; width: 24px; height: 24px; border-radius: 12px; box-sizing: border-box; border: 1.5px solid rgba(255,255,255,0.9); background: rgba(0,0,0,0.18)"></div>
+</sc-if>
+</div>
+<div style="font-size: 12px; line-height: 16px; color: #1D1B17; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; width: 107px">{{b.title}}</div>
+</button>
+</sc-for>
+</div>
+
+<div role="toolbar" style="position: absolute; left: 20px; right: 20px; bottom: 26px; height: 56px; box-sizing: border-box; border-radius: 28px; border: 1px solid rgba(255,255,255,0.85); background: rgba(255,255,255,0.72); backdrop-filter: blur(20px) saturate(1.4); -webkit-backdrop-filter: blur(20px) saturate(1.4); box-shadow: 0 1px 4px rgba(0,0,0,0.06), 0 0 0 0.5px rgba(0,0,0,0.05); display: flex; align-items: center; justify-content: space-around; padding: 0 6px">
+<a href="Library-AddTo.dc.html" style="height: 44px; padding: 0 12px; border-radius: 22px; display: flex; align-items: center; gap: 6px; font-size: 14px; font-weight: 600; color: #1D1B17"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 7a2 2 0 012-2h4l2 2h8a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2z"></path></svg>Collection</a>
+<a href="Library-Finished.dc.html" style="height: 44px; padding: 0 12px; border-radius: 22px; display: flex; align-items: center; gap: 6px; font-size: 14px; font-weight: 600; color: #1D1B17"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><path d="M8 12l3 3 5-6"></path></svg>Finished</a>
+<a href="Library-Remove.dc.html" style="height: 44px; padding: 0 12px; border-radius: 22px; display: flex; align-items: center; gap: 6px; font-size: 14px; font-weight: 600; color: #B3261E"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"></path></svg>Remove</a>
+</div>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const picked = ['Solaris', 'Der Schwarm'];
+    const books = [
+        { title: 'Die Verwandlung', author: 'Franz Kafka', bg: '#2E3A4F', fg: '#F2EDE3' },
+        { title: 'Solaris', author: 'Stanisław Lem', bg: '#35545E', fg: '#F2EDE3' },
+        { title: 'Educated', author: 'Tara Westover', bg: '#8A6D2F', fg: '#F7F2E6' },
+        { title: 'L’Étranger', author: 'Albert Camus', bg: '#9A6B4E', fg: '#FBF6EE' },
+        { title: 'Il nome della rosa', author: 'Umberto Eco', bg: '#6B2F3A', fg: '#F7EDEA' },
+        { title: 'Le Petit Prince', author: 'Antoine de Saint-Exupéry', bg: '#7A5A1E', fg: '#FBF4E4' },
+        { title: 'Steve Jobs', author: 'Walter Isaacson', bg: '#4A4A48', fg: '#F4F2ED' },
+        { title: 'Cien años de soledad', author: 'Gabriel García Márquez', bg: '#2F5D50', fg: '#EEF4EE' },
+        { title: 'Der Schwarm', author: 'Frank Schätzing', bg: '#1F3B57', fg: '#E9EFF5' }
+      ].map((b) => ({ ...b, selected: picked.includes(b.title), unselected: !picked.includes(b.title), ring: picked.includes(b.title) ? '2px solid #B0471F' : 'none' }));
+    return { books };
+  }
+}
+</script>
+</body>
+</html>

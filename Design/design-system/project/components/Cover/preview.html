@@ -1,0 +1,40 @@
+<!-- @dsCard height=288 -->
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Scholia — cover</title>
+<style>
+html,body{margin:0;background:var(--surface)}
+.cover{position:relative;width:960px;height:288px;overflow:hidden;background:var(--surface)}
+.cover svg{position:absolute;left:0;top:0}
+.ink{fill:var(--ink)}
+.accent{fill:var(--accent)}
+.sepia{fill:var(--surface-sepia)}
+.rule{stroke:var(--surface);stroke-width:2}
+.tile{rx:var(--radius-xl)}
+.name{position:absolute;left:32px;bottom:44px;margin:0;max-width:440px;font-family:var(--font-serif);font-size:112px;font-weight:600;line-height:.92;letter-spacing:-.01em;color:var(--ink)}
+.tag{position:absolute;left:34px;bottom:20px;margin:0;max-width:440px;font-family:var(--font-sans);font-size:13px;line-height:16px;color:var(--ink-muted)}
+</style>
+</head>
+<body>
+<div class="cover">
+<!--
+blocks: ink 260×240 (space-10 ×6.5 · space-6 ×10), accent 160×116, surface-sepia 160×108 — corners radius-xl (22px)
+arrangement: one tall ink slab left of two stacked satellites, flush to a space-4 (16px) gap, bleeding nothing
+pattern: editorial serif system → three baseline rules in the ground colour crossing the blocks, one space-9 (72px) apart — "the page is the product"
+scales: space-4 gap, space-6 top inset (24px), radius-xl corners, hairline-w ×4 rule
+-->
+<svg width="960" height="288" viewBox="0 0 960 288" aria-hidden="true">
+  <rect class="ink tile" x="500" y="24" width="260" height="240"></rect>
+  <rect class="accent tile" x="776" y="24" width="160" height="116"></rect>
+  <rect class="sepia tile" x="776" y="156" width="160" height="108"></rect>
+  <line class="rule" x1="500" y1="96" x2="936" y2="96"></line>
+  <line class="rule" x1="500" y1="168" x2="936" y2="168"></line>
+  <line class="rule" x1="500" y1="240" x2="936" y2="240"></line>
+</svg>
+<h1 class="name">Scholia</h1>
+<p class="tag">Read in any language. Tap a word.</p>
+</div>
+</body>
+</html>

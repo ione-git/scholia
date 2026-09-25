@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Scholia — Reader, highlight in text with color menu</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Literata:ital,opsz,wght@0,7..72,400;0,7..72,500;0,7..72,600;1,7..72,400&amp;display=swap">
+<style>
+body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","Helvetica Neue",system-ui,sans-serif;background:#F7F5F0;color:#1D1B17;-webkit-font-smoothing:antialiased}
+a{color:#1D1B17;text-decoration:none}a:hover{color:#1D1B17}
+button{font-family:inherit;cursor:pointer}
+</style>
+</helmet>
+<div data-root="reader" style="width: 390px; height: 844px; box-sizing: border-box; overflow: hidden; position: relative; background: #F7F5F0">
+
+<div style="position: absolute; left: 70px; right: 70px; top: 62px; height: 44px; display: flex; align-items: center; justify-content: center; font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; color: #6C675E">Die Verwandlung</div>
+
+<div lang="de" style="position: absolute; left: 28px; top: 140px; width: 334px; height: 621px; overflow: hidden; font-family: Literata, Georgia, serif; font-size: 17px; line-height: 27px; color: #1D1B17">
+<p style="margin: 0; hyphens: auto; -webkit-hyphens: auto">Als Gregor Samsa eines Morgens aus unruhigen Träumen erwachte, <span style="background: rgba(250, 204, 60, 0.42); border-radius: 3px; padding: 2px 0; box-decoration-break: clone; -webkit-box-decoration-break: clone">fand er sich in seinem Bett zu einem ungeheueren Ungeziefer verwandelt</span>. Er lag auf seinem panzerartig harten Rücken und sah, wenn er den Kopf ein wenig hob, seinen gewölbten, braunen, von bogenförmigen Versteifungen geteilten Bauch, auf dessen Höhe sich die Bettdecke, zum gänzlichen Niedergleiten bereit, kaum noch erhalten konnte. <span style="background: rgba(123, 198, 126, 0.4); border-radius: 3px; padding: 2px 0; box-decoration-break: clone; -webkit-box-decoration-break: clone">Seine vielen, im Vergleich zu seinem sonstigen Umfang kläglich dünnen Beine flimmerten ihm hilflos vor den Augen.</span></p>
+<p style="margin: 0; text-indent: 1.5em; hyphens: auto; -webkit-hyphens: auto">»Was ist mit mir geschehen?«, dachte er. <button data-word="true" aria-label="Highlight: Es war kein Traum. Change color or delete" style="display: inline; border: 0; padding: 2px 0; margin: 0; font: inherit; color: inherit; background: rgba(250, 204, 60, 0.42); border-radius: 3px; box-decoration-break: clone; -webkit-box-decoration-break: clone; box-shadow: 0 0 0 1.5px rgba(176, 71, 31, 0.35)">Es war kein Traum.</button> Sein Zimmer, ein richtiges, nur etwas zu kleines Menschenzimmer, lag ruhig zwischen den vier wohlbekannten Wänden. Über dem Tisch, auf dem eine auseinandergepackte Musterkollektion von Tuchwaren ausgebreitet war – Samsa war Reisender –, hing das Bild, das er vor kurzem aus einer illustrierten Zeitschrift ausgeschnitten und in einem hübschen, vergoldeten Rahmen untergebracht hatte. Es stellte eine Dame dar, die, mit einem Pelzhut und einer Pelzboa versehen, aufrecht dasaß und einen schweren Pelzmuff, in dem ihr ganzer Unterarm verschwunden war, dem Beschauer entgegenhob.</p>
+<p style="margin: 0; text-indent: 1.5em; hyphens: auto; -webkit-hyphens: auto">Gregors Blick richtete sich dann zum Fenster, und das trübe Wetter – man hörte Regentropfen auf das Fensterblech aufschlagen – machte ihn ganz melancholisch. »Wie wäre es, wenn ich noch ein wenig weiterschliefe und alle Narrheiten vergäße«, dachte er, aber das war gänzlich undurchführbar, denn er war gewöhnt, auf der rechten Seite zu schlafen, konnte sich aber in seinem gegenwärtigen Zustand nicht in diese Lage bringen.</p>
+</div>
+
+<div role="menu" aria-label="Highlight color" style="position: absolute; left: {{bx}}px; top: {{by}}px; transform: translateY({{ty}}); width: 276px; height: 48px; box-sizing: border-box; border-radius: 24px; background: rgba(255,255,255,0.88); backdrop-filter: blur(24px) saturate(1.5); -webkit-backdrop-filter: blur(24px) saturate(1.5); border: 1px solid rgba(255,255,255,0.9); box-shadow: 0 8px 24px rgba(0,0,0,0.14), 0 0 0 0.5px rgba(0,0,0,0.05); display: flex; align-items: center; justify-content: space-between; padding: 0 12px 0 14px">
+<div style="display: flex; align-items: center; gap: 12px">
+<button aria-label="Yellow" aria-pressed="true" style="width: 26px; height: 26px; border-radius: 13px; border: 0; background: #F2C94C; box-shadow: 0 0 0 2px #FFFFFF, 0 0 0 3.5px #1D1B17; padding: 0"></button>
+<button aria-label="Green" style="width: 26px; height: 26px; border-radius: 13px; border: 0; background: #7BC67E; padding: 0"></button>
+<button aria-label="Blue" style="width: 26px; height: 26px; border-radius: 13px; border: 0; background: #6FA8F5; padding: 0"></button>
+<button aria-label="Pink" style="width: 26px; height: 26px; border-radius: 13px; border: 0; background: #F28BB0; padding: 0"></button>
+<button aria-label="Purple" style="width: 26px; height: 26px; border-radius: 13px; border: 0; background: #B48CF2; padding: 0"></button>
+</div>
+<div style="width: 0.5px; height: 24px; background: rgba(0,0,0,0.12)"></div>
+<a href="Reader-Bubble.dc.html" aria-label="Remove highlight" style="width: 36px; height: 36px; border-radius: 18px; display: flex; align-items: center; justify-content: center; color: #B3261E"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"></path></svg></a>
+</div>
+
+<div style="position: absolute; left: 0; right: 0; bottom: 36px; text-align: center; font-size: 12px; color: #6C675E">3 of 78</div>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = { bx: 57, by: 560, ty: '-100%' };
+  }
+  componentDidMount() {
+    this.measure();
+    if (document.fonts && document.fonts.ready) { document.fonts.ready.then(() => this.measure()); }
+    setTimeout(() => this.measure(), 700);
+  }
+  measure() {
+    const root = document.querySelector('[data-root]');
+    const word = document.querySelector('[data-word]');
+    if (!root || !word) return;
+    const r = root.getBoundingClientRect();
+    const rects = word.getClientRects();
+    const w = rects.length ? rects[0] : word.getBoundingClientRect();
+    const scale = (r.width / 390) || 1;
+    const cx = (w.left - r.left) / scale + (w.width / scale) / 2;
+    const top = (w.top - r.top) / scale;
+    const bottom = (w.bottom - r.top) / scale;
+    const bw = 276, m = 16, bh = 48;
+    const bx = Math.round(Math.max(m, Math.min(390 - m - bw, cx - bw / 2)));
+    const above = top - 14 - bh >= 112;
+    const by = Math.round(above ? top - 14 : bottom + 14);
+    const ty = above ? '-100%' : '0%';
+    if (bx !== this.state.bx || by !== this.state.by || ty !== this.state.ty) this.setState({ bx, by, ty });
+  }
+  renderVals() {
+    return { bx: this.state.bx, by: this.state.by, ty: this.state.ty };
+  }
+}
+</script>
+</body>
+</html>

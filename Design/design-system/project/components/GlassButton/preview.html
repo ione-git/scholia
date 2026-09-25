@@ -1,0 +1,24 @@
+<!-- @dsCard group="Controls" height=88 subtitle="Floating glass circle, rest and open states" -->
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>GlassButton</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Literata:ital,opsz,wght@0,7..72,400;0,7..72,500;0,7..72,600&display=swap">
+<style>
+html,body{margin:0;background:var(--surface);font-family:var(--font-sans);color:var(--ink)}
+.row{display:flex;align-items:center;gap:16px;padding:20px}
+.gb{width:44px;height:44px;border-radius:var(--radius-pill);border:1px solid var(--glass-border);background:var(--surface-glass);backdrop-filter:blur(var(--glass-blur)) saturate(var(--glass-saturate));-webkit-backdrop-filter:blur(var(--glass-blur)) saturate(var(--glass-saturate));box-shadow:var(--shadow-glass);display:flex;align-items:center;justify-content:center;color:var(--ink);padding:0;cursor:pointer}
+.gb.on{background:var(--ink);color:var(--on-ink);border-color:transparent}
+.paper{background:var(--surface-paper);border-radius:var(--radius-lg)}
+</style>
+</head>
+<body>
+<div class="row paper">
+<button class="gb" aria-label="Back"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"/></svg></button>
+<button class="gb" aria-label="Add a book"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></button>
+<button class="gb" aria-label="Bookmark"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M6 4h12v17l-6-4-6 4z"/></svg></button>
+<button class="gb on" aria-label="Menu, open"><svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><circle cx="5" cy="12" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="19" cy="12" r="2"/></svg></button>
+</div>
+</body>
+</html>

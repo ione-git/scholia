@@ -1,0 +1,25 @@
+{
+  "v": 3,
+  "layout": "files",
+  "createdOnFiles": {
+    "v": 1,
+    "at": "2026-09-25T07:16:35Z"
+  },
+  "title": "Scholia Design System",
+  "namespace": "Scholia",
+  "libraries": [],
+  "sections": {},
+  "groups": [],
+  "assetGroups": {},
+  "blobs": {},
+  "docs": {
+    "readme": "project/README.md",
+    "sections": []
+  },
+  "lastChange": {
+    "by": "Garbage",
+    "via": "Claude Cowork",
+    "at": "2026-09-25T07:28:59Z",
+    "note": "Added the Black reader theme (surface-black)."
+  }
+}

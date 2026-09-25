@@ -1,0 +1,26 @@
+<!-- @dsCard group="Library" height=76 subtitle="Selected, rest and the new-collection chip" -->
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Chip</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Literata:ital,opsz,wght@0,7..72,400;0,7..72,500;0,7..72,600&display=swap">
+<style>
+html,body{margin:0;background:var(--surface);font-family:var(--font-sans);color:var(--ink)}
+.row{display:flex;align-items:center;gap:16px;padding:20px}
+.chip{height:36px;padding:0 14px;border-radius:var(--radius-pill);border:0.5px solid var(--control-border);background:var(--surface-card);color:var(--ink);font-family:var(--font-sans);font-size:14px;font-weight:500;white-space:nowrap;display:flex;align-items:center;gap:6px;cursor:pointer}
+.chip span{color:var(--ink-muted)}
+.chip.on{background:var(--ink);color:var(--on-ink);border-color:transparent}.chip.on span{color:inherit;opacity:.6}
+.new{width:36px;height:36px;border-radius:var(--radius-pill);border:1px dashed var(--ink-faint);background:transparent;color:var(--ink-muted);display:flex;align-items:center;justify-content:center;padding:0;cursor:pointer}
+</style>
+</head>
+<body>
+<div class="row" style="gap:8px">
+<button class="chip on">All <span>24</span></button>
+<button class="chip">Science Fiction <span>5</span></button>
+<button class="chip">Biographies <span>4</span></button>
+<button class="chip">Fiction <span>11</span></button>
+<button class="new" aria-label="New collection"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></button>
+</div>
+</body>
+</html>
