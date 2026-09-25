@@ -92,14 +92,14 @@ They fail at the caller's line after 10 s. No `sleep`, `Thread.sleep` or fixed-d
 One simulator per worktree; never share it with another agent.
 
 ```sh
-xcrun simctl create Scholia-<issue> "iPhone 17 Pro" com.apple.CoreSimulator.SimRuntime.iOS-26-4
+scripts/sim create Scholia-<issue>
 make test DESTINATION='platform=iOS Simulator,id=<udid>'
 make test DESTINATION='platform=iOS Simulator,id=<udid>' ONLY=ScholiaUITests/SmokeTests
 make test DESTINATION='platform=iOS Simulator,id=<udid>' ONLY=ScholiaUITests/SmokeTests/testAppLaunches
-xcrun simctl delete <udid>
+scripts/sim delete Scholia-<issue>
 ```
 
-iPad: create a second simulator with `"iPad Pro 11-inch (M5)"`.
+`scripts/sim create` holds the project device and runtime, reuses an existing simulator, boots it and prints the udid. iPad: `scripts/sim create Scholia-<issue>-iPad --ipad`. If the runner fails to launch with "Busy" / "Application failed preflight checks", the simulator was not fully booted: run `scripts/sim create` again and rerun.
 
 ## Read failures
 
