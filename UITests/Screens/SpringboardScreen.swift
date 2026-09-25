@@ -13,6 +13,10 @@ struct SpringboardScreen: Screen {
 
     var customizeButton: XCUIElement { app.buttons["Customize"] }
 
+    func appIconBackground() throws -> RGBColor {
+        try appIcon.screenshot().color(at: CGPoint(x: 0.12, y: 0.5))
+    }
+
     func scrollToAppIcon() -> XCUIElement {
         if !appIcon.isHittable {
             app.swipeLeft()
