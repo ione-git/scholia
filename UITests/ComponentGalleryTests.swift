@@ -5,9 +5,11 @@ final class ComponentGalleryTests: UITestCase {
         for appearance in [ComponentGalleryScreen.Appearance.light, .dark] {
             var gallery = openGallery().select(appearance)
             gallery.appearance(appearance).waitUntil(\.isSelected, equals: true)
+            XCTAssertEqual(gallery.root.value as? String, appearance.rawValue)
             let suffix = appearance == .dark ? "-Dark" : ""
 
             let glassButtons = gallery.openGlassButtons()
+            XCTAssertEqual(glassButtons.root.value as? String, appearance.rawValue)
             for element in ["back", "add", "bookmark", "menu", "readerBookmark", "readerMenu"] {
                 glassButtons.button(element).waitUntilExists()
             }
@@ -15,6 +17,7 @@ final class ComponentGalleryTests: UITestCase {
             gallery = glassButtons.goBack()
 
             let chips = gallery.openChips()
+            XCTAssertEqual(chips.root.value as? String, appearance.rawValue)
             for name in ["All", "Biographies", "Fiction"] {
                 chips.chip(name).waitUntilExists()
             }
@@ -23,6 +26,7 @@ final class ComponentGalleryTests: UITestCase {
             gallery = chips.goBack()
 
             let covers = gallery.openBookCovers()
+            XCTAssertEqual(covers.root.value as? String, appearance.rawValue)
             for title in ["Die Verwandlung", "Solaris", "Il nome della rosa", "Thumbnail", "Der Prozess", "Educated"] {
                 covers.cover(title).waitUntilExists()
             }
@@ -33,6 +37,7 @@ final class ComponentGalleryTests: UITestCase {
             gallery = covers.goBack()
 
             let rows = gallery.openListRows()
+            XCTAssertEqual(rows.root.value as? String, appearance.rawValue)
             rows.translateTo.waitUntilExists()
             rows.onWordTap.waitUntilExists()
             rows.dailyGoal.waitUntilExists()
@@ -40,6 +45,7 @@ final class ComponentGalleryTests: UITestCase {
             gallery = rows.goBack()
 
             let segmented = gallery.openSegmentedControls()
+            XCTAssertEqual(segmented.root.value as? String, appearance.rawValue)
             for element in ["contents", "highlights", "bookmarks", "bubble", "minimal", "card"] {
                 segmented.segment(element).waitUntilExists()
             }
@@ -47,13 +53,17 @@ final class ComponentGalleryTests: UITestCase {
             gallery = segmented.goBack()
 
             let presentations = gallery.openPresentations()
+            XCTAssertEqual(presentations.root.value as? String, appearance.rawValue)
             let modal = presentations.openModalSheet()
+            XCTAssertEqual(modal.root.value as? String, appearance.rawValue)
             attachScreenshot("ModalSheet\(suffix)")
             modal.cancel()
             let glass = presentations.openGlassSheet()
+            XCTAssertEqual(glass.root.value as? String, appearance.rawValue)
             attachScreenshot("GlassSheet\(suffix)")
             glass.done()
-            presentations.openPopover()
+            let popover = presentations.openPopover()
+            XCTAssertEqual(popover.root.value as? String, appearance.rawValue)
             attachScreenshot("Popover\(suffix)")
         }
     }
@@ -160,6 +170,7 @@ final class ComponentGalleryTests: UITestCase {
 
         let popover = presentations.openPopover()
         XCTAssertEqual(popover.root.label, "6 min to go")
+        popover.dismiss()
     }
 
     private func openGallery() -> ComponentGalleryScreen {

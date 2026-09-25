@@ -75,9 +75,18 @@
                     .padding(.bottom, .space10)
             }
             .accessibilityIdentifier("\(identifier).scrollView")
+            .modifier(AppearanceValue())
             .background(.surface)
             .foregroundStyle(.ink)
             .preferredColorScheme(colorScheme)
+        }
+    }
+
+    private struct AppearanceValue: ViewModifier {
+        @Environment(\.colorScheme) private var colorScheme
+
+        func body(content: Content) -> some View {
+            content.accessibilityValue(Text(verbatim: colorScheme == .dark ? "dark" : "light"))
         }
     }
 
@@ -314,6 +323,7 @@
                                 .foregroundStyle(.ink)
                                 .padding(.space4)
                                 .accessibilityIdentifier("galleryPopover.text")
+                                .modifier(AppearanceValue())
                                 .popoverStyle()
                         }
                 }
@@ -340,6 +350,7 @@
                 .padding(.top, .space4)
                 .accessibilityElement(children: .contain)
                 .accessibilityIdentifier("galleryModalSheet.content")
+                .modifier(AppearanceValue())
                 .modalSheetStyle()
             }
             .sheet(isPresented: $isGlassSheetShown) {
@@ -365,6 +376,7 @@
                 .padding(.top, .space4)
                 .accessibilityElement(children: .contain)
                 .accessibilityIdentifier("galleryGlassSheet.content")
+                .modifier(AppearanceValue())
                 .presentationDetents([.medium])
                 .glassSheetStyle()
             }

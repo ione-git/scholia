@@ -157,4 +157,11 @@ struct GalleryPopoverScreen: Screen {
     let app: XCUIApplication
 
     var root: XCUIElement { app.staticTexts["galleryPopover.text"] }
+
+    @discardableResult
+    func dismiss() -> PresentationGalleryScreen {
+        PresentationGalleryScreen(app: app).root.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.9)).tap()
+        root.waitUntilGone()
+        return PresentationGalleryScreen(app: app).waitUntilShown()
+    }
 }
