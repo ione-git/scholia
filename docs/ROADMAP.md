@@ -15,7 +15,7 @@ Each item is one feature, one issue, one PR. The code in brackets is the issue t
 - [1.2] Core components — after 1.1.
 - [1.3] App icon and launch screen.
 - [1.4] Data model.
-- [1.5] Reader prototype on Readium — ends with owner go/no-go on iPhone.
+- [1.5] Reader prototype on Readium — after 1.1; ends with owner go/no-go on iPhone.
 
 ## 2 · Library
 
