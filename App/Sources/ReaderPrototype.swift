@@ -8,10 +8,13 @@
 
         @Environment(\.dismiss) private var dismiss
         @Environment(\.colorScheme) private var colorScheme
+        @Environment(Settings.self) private var settings
+        @Environment(TranslationService.self) private var translationService
         @State private var controller: ReaderController?
         @State private var cannotOpen = false
         @State private var chosenTheme: ReaderTheme?
         @State private var isChromeShown = false
+        @State private var translated: WordTranslation?
 
         var body: some View {
             ZStack {
@@ -77,6 +80,7 @@
                     HighlightDiagnostics(
                         highlights: controller.highlights, paintedHighlights: controller.paintedHighlights)
                 }
+                .background { TranslationDiagnostics(provider: translationService.provider) }
             }
             .ignoresSafeArea()
         }
@@ -87,6 +91,12 @@
                     .textStyle(.title3)
                     .foregroundStyle(.ink)
                     .accessibilityIdentifier("reader.word")
+                if let translated {
+                    Text(translated.translation)
+                        .textStyle(.translation)
+                        .foregroundStyle(.ink)
+                        .accessibilityIdentifier("reader.translation")
+                }
                 Text(word.sentence)
                     .textStyle(.footnote)
                     .foregroundStyle(.inkMuted)
@@ -96,6 +106,20 @@
             .padding(.space4)
             .glassEffect(.regular, in: RoundedRectangle(cornerRadius: .radiusXl))
             .padding(.horizontal, .space5)
+            .task(id: word) { await translate(word) }
+        }
+
+        private func translate(_ word: ReaderWord) async {
+            translated = nil
+            guard let language = controller?.book.language else {
+                return
+            }
+            let result = try? await translationService.translate(
+                TranslationRequest(
+                    word: word.text, sentence: word.sentence, source: language, target: settings.translationLanguage))
+            if !Task.isCancelled {
+                translated = result
+            }
         }
 
         private func controls(_ controller: ReaderController) -> some View {
@@ -231,6 +255,22 @@
                 .accessibilityElement()
                 .accessibilityIdentifier("debug.paintedHighlights")
                 .accessibilityLabel(Text(verbatim: "\(paintedHighlights)"))
+        }
+    }
+
+    private struct TranslationDiagnostics: View {
+        let provider: any TranslationProvider
+
+        var body: some View {
+            Color.clear
+                .accessibilityElement()
+                .accessibilityIdentifier("debug.translationRequests")
+                .accessibilityLabel(Text(verbatim: requests))
+        }
+
+        private var requests: String {
+            let requests = (provider as? MockTranslationProvider)?.requests ?? []
+            return requests.map { "\($0.word) · \($0.source) → \($0.target)" }.joined(separator: "\n")
         }
     }
 

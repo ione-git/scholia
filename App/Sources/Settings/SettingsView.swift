@@ -7,6 +7,7 @@ struct SettingsView: View {
     private static let sortOrders: [LibrarySort] = [.recentlyOpened, .recentlyAdded, .title, .author]
 
     @Environment(Settings.self) private var settings
+    @Environment(TranslationService.self) private var translationService
     @Environment(\.modelContext) private var modelContext
     @Environment(\.dismiss) private var dismiss
     @Environment(\.locale) private var locale
@@ -14,6 +15,7 @@ struct SettingsView: View {
     @State private var isTimePickerShown = false
     @State private var isAskingPermission = false
     @State private var isNotificationsOffAlertShown = false
+    @State private var targetLanguages: [String] = []
 
     var body: some View {
         ScrollView {
@@ -34,6 +36,7 @@ struct SettingsView: View {
         .scrollBounceBehavior(.basedOnSize)
         .background(.surface)
         .toolbar(.hidden, for: .navigationBar)
+        .task { targetLanguages = await translationService.provider.targetLanguages() }
     }
 
     private var header: some View {
@@ -183,7 +186,7 @@ struct SettingsView: View {
     }
 
     private var languages: [String] {
-        TargetLanguage.identifiers.sorted {
+        targetLanguages.sorted {
             languageName($0).localizedStandardCompare(languageName($1)) == .orderedAscending
         }
     }
