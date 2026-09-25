@@ -95,7 +95,7 @@ public struct BookCover: View {
         .frame(width: metrics.width, height: metrics.height)
         .clipShape(shape)
         .shadow(shadow, in: shape)
-        .contentShape(.accessibility, shape)
+        .contentShape([.interaction, .accessibility], shape)
         .overlay(alignment: .topTrailing) {
             if isFinished {
                 FinishedBadge()

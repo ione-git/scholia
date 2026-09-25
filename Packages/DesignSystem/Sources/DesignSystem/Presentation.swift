@@ -19,20 +19,38 @@ extension View {
                 content()
                     .presentationBackground(.surface)
                     .presentationCornerRadius(.radiusSheet)
-                    .presentationDragIndicator(.visible)
+                    .sheetGrabber()
                     .presentationBackgroundInteraction(.enabled(upThrough: .large))
             }
     }
 
     public func glassSheetStyle() -> some View {
         presentationCornerRadius(.radiusSheet)
-            .presentationDragIndicator(.visible)
+            .sheetGrabber()
             .presentationBackgroundInteraction(.enabled)
+    }
+
+    fileprivate func sheetGrabber() -> some View {
+        frame(maxWidth: .infinity, maxHeight: .infinity)
+            .overlay(alignment: .top) { SheetGrabber() }
+            .presentationDragIndicator(.hidden)
     }
 
     public func popoverStyle() -> some View {
         presentationCompactAdaptation(.popover)
             .presentationCornerRadius(.radiusXl)
+    }
+}
+
+private struct SheetGrabber: View {
+    private static let width: CGFloat = 36
+    private static let height: CGFloat = 5
+
+    var body: some View {
+        Capsule()
+            .fill(.track)
+            .frame(width: Self.width, height: Self.height)
+            .padding(.top, .space2)
     }
 }
 
