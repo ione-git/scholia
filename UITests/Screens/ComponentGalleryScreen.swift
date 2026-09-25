@@ -18,7 +18,7 @@ struct ComponentGalleryScreen: Screen {
         return self
     }
 
-    func open<Page: Screen>(_ element: String, as page: (XCUIApplication) -> Page) -> Page {
+    func open<Page: ComponentGalleryPage>(_ element: String, as page: (XCUIApplication) -> Page) -> Page {
         app.buttons["componentGallery.\(element)"].waitUntilExists().tap()
         return page(app).waitUntilShown().waitUntilSettled()
     }
@@ -33,20 +33,16 @@ struct ComponentGalleryScreen: Screen {
     func openPresentations() -> PresentationGalleryScreen { open("presentations", as: PresentationGalleryScreen.init) }
 }
 
-extension Screen {
-    @discardableResult
-    func waitUntilSettled(file: StaticString = #filePath, line: UInt = #line) -> Self {
-        root.waitUntil(\.frame, equals: app.frame, file: file, line: line)
-        return self
-    }
+protocol ComponentGalleryPage: Screen {}
 
+extension ComponentGalleryPage {
     func goBack() -> ComponentGalleryScreen {
         app.navigationBars.buttons["BackButton"].waitUntilExists().tap()
         return ComponentGalleryScreen(app: app).waitUntilShown().waitUntilSettled()
     }
 }
 
-struct GlassButtonGalleryScreen: Screen {
+struct GlassButtonGalleryScreen: ComponentGalleryPage {
     let app: XCUIApplication
 
     var root: XCUIElement { app.scrollViews["glassButtonGallery.scrollView"] }
@@ -54,7 +50,7 @@ struct GlassButtonGalleryScreen: Screen {
     func button(_ element: String) -> XCUIElement { app.buttons["glassButtonGallery.\(element)"] }
 }
 
-struct ChipGalleryScreen: Screen {
+struct ChipGalleryScreen: ComponentGalleryPage {
     let app: XCUIApplication
 
     var root: XCUIElement { app.scrollViews["chipGallery.scrollView"] }
@@ -64,7 +60,7 @@ struct ChipGalleryScreen: Screen {
     func chip(_ name: String) -> XCUIElement { app.buttons["chipGallery.chip.\(name)"] }
 }
 
-struct BookCoverGalleryScreen: Screen {
+struct BookCoverGalleryScreen: ComponentGalleryPage {
     let app: XCUIApplication
 
     var root: XCUIElement { app.scrollViews["bookCoverGallery.scrollView"] }
@@ -74,7 +70,7 @@ struct BookCoverGalleryScreen: Screen {
     func cover(_ title: String) -> XCUIElement { app.descendants(matching: .any)["bookCoverGallery.cover.\(title)"] }
 }
 
-struct ListRowGalleryScreen: Screen {
+struct ListRowGalleryScreen: ComponentGalleryPage {
     let app: XCUIApplication
 
     var root: XCUIElement { app.scrollViews["listRowGallery.scrollView"] }
@@ -86,7 +82,7 @@ struct ListRowGalleryScreen: Screen {
     func segment(_ element: String) -> XCUIElement { app.buttons["listRowGallery.\(element)"] }
 }
 
-struct SegmentedControlGalleryScreen: Screen {
+struct SegmentedControlGalleryScreen: ComponentGalleryPage {
     let app: XCUIApplication
 
     var root: XCUIElement { app.scrollViews["segmentedControlGallery.scrollView"] }
@@ -94,7 +90,7 @@ struct SegmentedControlGalleryScreen: Screen {
     func segment(_ element: String) -> XCUIElement { app.buttons["segmentedControlGallery.\(element)"] }
 }
 
-struct PresentationGalleryScreen: Screen {
+struct PresentationGalleryScreen: ComponentGalleryPage {
     let app: XCUIApplication
 
     var root: XCUIElement { app.scrollViews["presentationGallery.scrollView"] }

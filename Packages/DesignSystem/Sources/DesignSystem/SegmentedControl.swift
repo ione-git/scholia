@@ -29,6 +29,8 @@ public struct SegmentedControl<Value: Hashable>: View {
 
     private static var inset: CGFloat { 2 }
     private static var countSpacing: CGFloat { 5 }
+    private static var edgeOffset: CGFloat { 1 }
+    private static var edgeBlur: CGFloat { 3 }
 
     @Binding var selection: Value
     let size: Size
@@ -70,7 +72,8 @@ public struct SegmentedControl<Value: Hashable>: View {
             .frame(height: size.height)
             .background {
                 if isSelected {
-                    shape.fill(.surfaceCard).shadow(.card, in: shape)
+                    shape.fill(.surfaceCard)
+                        .shadow(color: .controlBorder, radius: Self.edgeBlur / 2, y: Self.edgeOffset)
                 }
             }
             .contentShape(shape)
