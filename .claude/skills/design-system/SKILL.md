@@ -103,7 +103,7 @@ Serif = Literata (variable, bundled by #5). Sans = system SF Pro. Sizes in pt.
 
 ## Components
 
-Specs in `Design/design-system/project/components/<Name>/README.md`, static previews in `preview.html` next to them. Built by #6.
+Specs in `Design/design-system/project/components/<Name>/README.md`, static previews in `preview.html` next to them. Built by #6, except TranslationBubble (word tap bubble, 4.2).
 
 - GlassButton: 44pt glass circle (48 for the reader's bottom buttons), 20pt `ink` icon, accessibility label required. Open state: `ink` fill, `on-ink` icon, no glass. Over content, never inside a card.
 - TranslationBubble: width 236, padding 12/14, radius 20, `surface-glass-strong`. Row 1 word 13/600 + IPA 12 `ink-muted`; row 2 `translation`; row 3 lemma and part of speech 12 `ink-muted` + chevron `ink-faint`. Loading: 132x14 `track` bar and three `accent` dots. Clamped 16pt from page edges, flips below the word when there is no room above. Minimal variant: 150x40 pill.
@@ -145,4 +145,15 @@ Same screens at 834pt wide portrait: 32pt gutters, 5-column library, reader meas
 - Literata: variable roman + italic TTFs and `OFL.txt` in `Packages/DesignSystem/Sources/DesignSystem/Fonts`, registered by `DesignSystem.registerFonts()` in `ScholiaApp.init`.
 - Lists for tooling: `ColorToken.all`, `TextStyle.all`, `NumberToken.spacing` / `.radius` / `.effects`, `ShadowToken.all`. The Debug-only Token Gallery (root placeholder → Token Gallery, `App/Sources/TokenGallery.swift`) shows them all.
 
-Components (GlassButton, Chip, BookCover, list rows, segmented control, sheet and popover styles) are filled in by #6. Until then do not hardcode values in feature code; if a feature needs a token or component that does not exist yet, stop and report.
+Components (Debug-only Component Gallery: root placeholder → Component Gallery, `App/Sources/ComponentGallery.swift`, every component in light and dark). User-facing text is passed in as `Text` from the app, so it stays in the app's String Catalog.
+
+- `GlassButton(.back, label: Text("Back"), size: .regular, isActive: false) { … }`: 44pt glass circle, `.reader` is 48pt. `isActive` draws the open state (`ink` fill, `on-ink` icon, no glass) and adds the selected trait.
+- `Icon`: line icons drawn from the screens' SVG paths on the 24pt grid (`back`, `add`, `bookmark`, `more`, `chevron`, `check`). A new icon is a new case with the path from the screen.
+- `Chip(Text(name), count: 5, isSelected: true) { … }` and `NewCollectionChip(label: Text("New collection")) { … }`. The scrolling row and hiding it without collections are the feature's.
+- `BookCover(title:author:color:image:size:isFinished:)`: sizes `.thumbnail` 40x60, `.row` 80x120, `.grid` 100x150, `.library` 107x152, `.hero` 160x240 and `.heroLarge` 180x270 (hero glow), `Size.width` / `.height` for layout. `color` is the generated block and the hue of the hero glow, so pass it with an `image` too. A title word too long for the cover shrinks the title instead of breaking mid-word. `ProgressBar(value:)` (0…1) is the Home bar: give it the cover's width.
+- `GroupedSection(Text("Translation")) { rows }` (`label-caps` header + list), `GroupedList { rows }` (`surface-card`, `radius-lg`, hairline between rows), `ListRow(Text("Translate to"), height: .regular) { trailing }` (`.regular` 50pt, `.control` 56pt for a row holding a segmented control), `ListRowValue(Text("Russian"))` (value + chevron), `ListRowChevron()`. A tappable row is a `Button` or `NavigationLink` with `.buttonStyle(.plain)` around a `ListRow`.
+- `SegmentedControl(selection:size:segments:)` with `.init(value, title:count:identifier:)`: `.regular` fills the width with equal 36pt segments, `.compact` hugs its labels at 30pt. Selected segment: `surface-card` with `shadow-card`.
+- Sheets: `.modalSheetStyle()` on modal sheet content (`surface`, `radius-sheet`, grabber; iOS draws the dimming), `.glassSheetStyle()` for the reader settings sheet (system glass, no dimming, the page stays interactive). `SheetHeader(Text("Add Book")) { Button("Cancel") { … }.buttonStyle(.sheetCancel) } trailing: { Button("Done") { … }.buttonStyle(.sheetDone) }` (`EmptyView()` for a missing side).
+- Popovers: `.popoverStyle()` on the popover content keeps it a popover on iPhone (system glass).
+
+If a feature needs a token or component that does not exist yet, stop and report.

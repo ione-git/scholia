@@ -22,6 +22,7 @@ scripts/render-screen Design/canvas/project/Main.dc.html build/design/Main.png
 - Literata comes from Google Fonts at render time. If the script warns that Literata did not load, serif text in the render is Georgia: do not report font differences from that render.
 - Backdrop blur is not rendered: glass shows as its translucent fill with the content behind it sharp. Judge glass by presence, shape, size and fill, not by blur.
 - If the output looks wrong, read the screen's markup: it is the spec, the PNG is a convenience.
+- Component previews render the same way: `scripts/render-screen Design/design-system/project/components/Chip/preview.html build/design/Chip.png`. The script defines the CSS variables from `tokens.json` and snapshots the preview at its content size; `--dark` (previews only) uses the dark token values. The app side is the Component Gallery: `ComponentGalleryTests` attaches `GlassButton`, `Chip` and `BookCover` (and `-Dark`) plus list rows, segmented control, sheets and popover.
 
 ## 3. Screenshot the app
 

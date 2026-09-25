@@ -36,6 +36,28 @@ public struct TextStyle: Identifiable, Sendable {
 
     public var font: Font { Font(uiFont as CTFont) }
 
+    func scaled(to newSize: CGFloat) -> TextStyle {
+        let ratio = newSize / size
+        return TextStyle(
+            name: name, family: family, size: newSize, lineHeight: lineHeight * ratio, weight: weight,
+            tracking: tracking * ratio, isUppercase: isUppercase)
+    }
+
+    func fitting(_ text: String, in width: CGFloat) -> TextStyle {
+        let widest =
+            (isUppercase ? text.uppercased() : text).split(whereSeparator: \.isWhitespace)
+            .map { String($0).size(withAttributes: [.font: uiFont, .kern: tracking]).width }
+            .max() ?? 0
+        guard widest > width else { return self }
+        return scaled(to: (size * width / widest).rounded(.down))
+    }
+
+    func weighted(_ newWeight: Int) -> TextStyle {
+        TextStyle(
+            name: name, family: family, size: size, lineHeight: lineHeight, weight: newWeight, tracking: tracking,
+            isUppercase: isUppercase)
+    }
+
     private static let weightAxis = "wght".utf8.reduce(0) { $0 << 8 | Int($1) }
 
     private var systemWeight: UIFont.Weight {
