@@ -19,6 +19,7 @@ final class ReminderTests: UITestCase {
         settings.reminder.waitUntil(\.isHittable, equals: true).tap()
 
         settings.reminder.waitUntil(\.isOn, equals: false)
+        XCTAssertFalse(NotificationsOffScreen(app: settings.app).root.exists)
         settings.readingReminder.waitUntil(\.label, equals: "none")
     }
 

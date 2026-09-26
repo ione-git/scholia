@@ -201,7 +201,7 @@ struct SettingsView: View {
             let calendar = Calendar.current
             settings.reminderTime = TimeOfDay(
                 hour: calendar.component(.hour, from: date), minute: calendar.component(.minute, from: date))
-            try? modelContext.save()
+            saveReminder()
         }
     }
 
@@ -213,7 +213,7 @@ struct SettingsView: View {
                 isAskingPermission = true
             } else {
                 settings.remindsDaily = false
-                try? modelContext.save()
+                saveReminder()
             }
         }
     }
@@ -230,13 +230,18 @@ struct SettingsView: View {
         switch await ReadingReminder.requestPermission() {
         case .granted:
             settings.remindsDaily = true
-            try? modelContext.save()
+            saveReminder()
         case .declined:
             break
         case .turnedOff:
             isNotificationsOffAlertShown = true
         }
         isAskingPermission = false
+    }
+
+    private func saveReminder() {
+        try? modelContext.save()
+        ReadingReminder.schedule(for: settings)
     }
 
     private func binding<Value>(_ keyPath: ReferenceWritableKeyPath<Settings, Value>) -> Binding<Value> {

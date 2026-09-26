@@ -41,13 +41,6 @@ struct RootView: View {
         .background {
             Color.clear.preferredColorScheme(settings.appTheme.colorScheme)
         }
-        .task(id: reminderTime) {
-            await ReadingReminder.schedule(at: reminderTime)
-        }
-    }
-
-    private var reminderTime: TimeOfDay? {
-        settings.remindsDaily ? settings.reminderTime : nil
     }
 }
 

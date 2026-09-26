@@ -9,6 +9,7 @@ enum ReadingReminder {
     }
 
     private static let identifier = "reading-reminder"
+    private static var scheduling: Task<Void, Never>?
 
     static func requestPermission() async -> Permission {
         switch LaunchConfiguration.current.notificationPermission {
@@ -24,7 +25,16 @@ enum ReadingReminder {
         return isGranted == true ? .granted : .declined
     }
 
-    static func schedule(at time: TimeOfDay?) async {
+    static func schedule(for settings: Settings) {
+        let time = settings.remindsDaily ? settings.reminderTime : nil
+        let previous = scheduling
+        scheduling = Task {
+            await previous?.value
+            await replace(with: time)
+        }
+    }
+
+    private static func replace(with time: TimeOfDay?) async {
         let center = UNUserNotificationCenter.current()
         guard let time else {
             center.removePendingNotificationRequests(withIdentifiers: [identifier])

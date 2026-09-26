@@ -16,6 +16,7 @@ struct ScholiaApp: App {
         } catch {
             fatalError("Storage: \(error)")
         }
+        ReadingReminder.schedule(for: settings)
     }
 
     var body: some Scene {
