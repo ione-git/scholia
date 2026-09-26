@@ -81,7 +81,7 @@ Serif = Literata (variable, bundled by #5). Sans = system SF Pro. Sizes in pt.
 | `title-card` | serif | 22 / 1.15 / 500 | Book title in a card row. |
 | `list-serif` | serif | 17 / 1.3 / 400 | Chapter names, book titles in list rows. |
 | `cover-title` | serif | 14 / 1.2 / 500 | Title on a generated cover (12-24 by cover size). |
-| `reading-body` | serif | 17 / 27pt / 400 | Book text, size step 3 of 7. iPad 19 / 30. |
+| `reading-body` | serif | 17 / 27pt / 400, first-line indent 1.5em | Book text, size step 3 of 7. iPad 19 / 30. `TextStyle.readingBody.textIndent` is the indent in pt. |
 | `reading-quote` | serif | 16 / 1.5 / 400 | Quote in the Highlights list. |
 | `headline` | sans | 26 / 1.1 / 600, -0.01em | Word in the translation card. |
 | `translation` | sans | 20 / 1.2 / 500 | Translation in the bubble; 22/600 in the card. |

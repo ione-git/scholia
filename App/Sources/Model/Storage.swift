@@ -1,4 +1,5 @@
 import Foundation
+import ReaderEngine
 import SwiftData
 
 enum Storage {
@@ -19,6 +20,7 @@ enum Storage {
             where FileManager.default.fileExists(atPath: url.path(percentEncoded: false)) {
                 try FileManager.default.removeItem(at: url)
             }
+            try PageCountCache.removeAll()
         }
         let container = try ModelContainer(
             for: Schema(versionedSchema: SchemaV1.self), migrationPlan: ScholiaMigrationPlan.self,

@@ -13,6 +13,7 @@ extension SchemaV1 {
         var openedAt: Date?
         var isFinished: Bool
         var position: ReadingPosition?
+        var progress: Double?
         var collections: [BookCollection]
         @Relationship(deleteRule: .cascade, inverse: \Highlight.book) var highlights: [Highlight]
         @Relationship(deleteRule: .cascade, inverse: \Bookmark.book) var bookmarks: [Bookmark]
@@ -27,6 +28,7 @@ extension SchemaV1 {
             openedAt = nil
             isFinished = false
             position = nil
+            progress = nil
             collections = []
             highlights = []
             bookmarks = []

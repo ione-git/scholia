@@ -132,8 +132,11 @@ private struct HeroBook: View {
 
     var body: some View {
         VStack(spacing: .space4) {
-            BookCover(book: book, size: .heroLarge)
-                .accessibilityIdentifier("home.heroCover")
+            NavigationLink(value: Route.reader(book)) {
+                BookCover(book: book, size: .heroLarge)
+            }
+            .buttonStyle(.plain)
+            .accessibilityIdentifier("home.heroCover")
             VStack(spacing: .space1) {
                 Text(book.title)
                     .textStyle(.titleBook)
@@ -148,7 +151,7 @@ private struct HeroBook: View {
             }
             .multilineTextAlignment(.center)
             .padding(.top, .space2)
-            ProgressBar(value: 0)
+            ProgressBar(value: book.progress ?? 0)
                 .frame(width: BookCover.Size.heroLarge.width)
                 .accessibilityLabel(Text("Progress"))
                 .accessibilityIdentifier("home.heroProgress")
@@ -185,8 +188,11 @@ private struct LibraryShelf: View {
                 ScrollView(.horizontal) {
                     LazyHStack(spacing: .space3) {
                         ForEach(books) { book in
-                            BookCover(book: book, size: .row)
-                                .accessibilityIdentifier("home.book.\(book.title)")
+                            NavigationLink(value: Route.reader(book)) {
+                                BookCover(book: book, size: .row)
+                            }
+                            .buttonStyle(.plain)
+                            .accessibilityIdentifier("home.book.\(book.title)")
                         }
                     }
                 }
