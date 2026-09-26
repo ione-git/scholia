@@ -19,6 +19,10 @@ extension Screen {
         app.descendants(matching: .any)["debug.readingReminder"]
     }
 
+    var privacyManifest: XCUIElement {
+        app.descendants(matching: .any)["debug.privacyManifest"]
+    }
+
     @discardableResult
     func waitUntilShown(file: StaticString = #filePath, line: UInt = #line) -> Self {
         root.waitUntilExists(file: file, line: line)
