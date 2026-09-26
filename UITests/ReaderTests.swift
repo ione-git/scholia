@@ -15,13 +15,13 @@ final class ReaderTests: UITestCase {
         XCTAssertEqual(reader.root.label, "Die Verwandlung")
         reader.paragraph(startingWith: "Als Gregor Samsa").waitUntilExists()
         XCTAssertFalse(reader.backButton.exists)
-        attachScreenshot("Reader")
     }
 
     func testSwipesTurnPagesAcrossChaptersWithBookWideCounter() {
         let reader = HomeScreen(app: launchWithGermanBook()).waitUntilShown().openHeroBook()
 
         reader.turnForward(expecting: "2 of \(bookPages)")
+        attachScreenshot("Reader")
         reader.turnBackward(expecting: "1 of \(bookPages)")
         for page in 2...firstChapterPages + 1 {
             reader.turnForward(expecting: "\(page) of \(bookPages)")

@@ -24,10 +24,11 @@ final class ReaderViewController: UIViewController {
     private var observations: [ScrollObservation] = []
     private var shownPage: ChapterPage?
     private var pageCounts: [Int]?
-    private var countedSize: CGSize?
+    private var countedLayout: PageLayout?
     private var pageCounter: PageCounter?
     private var countTask: Task<Void, Never>?
     private var locateTask: Task<Void, Never>?
+    private var voiceOverTask: Task<Void, Never>?
 
     private static let highlightGroup = "highlights"
     private static let cssFontWeights = 1...1000
@@ -55,6 +56,7 @@ final class ReaderViewController: UIViewController {
     isolated deinit {
         countTask?.cancel()
         locateTask?.cancel()
+        voiceOverTask?.cancel()
     }
 
     @available(*, unavailable)
@@ -92,6 +94,14 @@ final class ReaderViewController: UIViewController {
             return swipe
         }
         apply(pageTurn)
+
+        voiceOverTask = Task { [weak self] in
+            for await _ in NotificationCenter.default.notifications(
+                named: UIAccessibility.voiceOverStatusDidChangeNotification)
+            {
+                self?.countPages()
+            }
+        }
     }
 
     override func viewDidLayoutSubviews() {
@@ -230,7 +240,7 @@ final class ReaderViewController: UIViewController {
 
     private func locate(_ page: ChapterPage) {
         locateTask?.cancel()
-        guard let webView = webView(inChapter: page.chapter) else {
+        guard !navigator.presentation.scroll, let webView = webView(inChapter: page.chapter) else {
             return
         }
         locateTask = Task {
@@ -245,15 +255,18 @@ final class ReaderViewController: UIViewController {
     }
 
     private func countPages() {
-        let size = view.bounds.size
-        guard isShown, size.width > 0, size.height > 0, size != countedSize else {
+        let layout = PageLayout(size: view.bounds.size, isScrolled: navigator.presentation.scroll)
+        guard isShown, layout.size.width > 0, layout.size.height > 0, layout != countedLayout else {
             return
         }
-        countedSize = size
+        countedLayout = layout
         stopCounting()
         pageCounts = nil
         publishPage()
-        let key = PageCountCache.key(book: book, style: style, size: size)
+        guard !layout.isScrolled else {
+            return
+        }
+        let key = PageCountCache.key(book: book, style: style, size: layout.size)
         if let counts = PageCountCache.counts(for: key) {
             pageCounts = counts
             publishPage()
@@ -594,6 +607,11 @@ extension ReaderViewController: UIGestureRecognizerDelegate {
 private struct ChapterPage: Equatable {
     var chapter: Int
     var page: Int
+}
+
+private struct PageLayout: Equatable {
+    var size: CGSize
+    var isScrolled: Bool
 }
 
 private struct ScrollObservation {
