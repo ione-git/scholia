@@ -2,7 +2,8 @@ import XCTest
 
 final class HomeEmptyTests: UITestCase {
     func testFirstLaunchShowsEmptyState() {
-        let app = launch(LaunchConfiguration(resetsState: true, fixtures: [], mocksTranslation: true, now: nil))
+        let app = launch(
+            LaunchConfiguration(resetsState: true, fixtures: [], opened: [], mocksTranslation: true, now: nil))
         let home = HomeScreen(app: app).waitUntilShown()
 
         XCTAssertEqual(home.emptyCover.waitUntilExists().label, "Add a book")
@@ -23,7 +24,8 @@ final class HomeEmptyTests: UITestCase {
     func testLandscapeKeepsEmptyStateBelowHeaderAndScrollsToPill() {
         XCUIDevice.shared.orientation = .landscapeLeft
         addTeardownBlock { XCUIDevice.shared.orientation = .portrait }
-        let app = launch(LaunchConfiguration(resetsState: true, fixtures: [], mocksTranslation: true, now: nil))
+        let app = launch(
+            LaunchConfiguration(resetsState: true, fixtures: [], opened: [], mocksTranslation: true, now: nil))
         let home = HomeScreen(app: app).waitUntilShown()
 
         home.emptyCover.waitUntilExists()
@@ -36,7 +38,8 @@ final class HomeEmptyTests: UITestCase {
     }
 
     func testAddingFirstBookShowsNormalHome() throws {
-        let app = launch(LaunchConfiguration(resetsState: true, fixtures: [], mocksTranslation: true, now: nil))
+        let app = launch(
+            LaunchConfiguration(resetsState: true, fixtures: [], opened: [], mocksTranslation: true, now: nil))
         let home = HomeScreen(app: app).waitUntilShown()
         home.emptyCover.waitUntilExists()
 
@@ -50,7 +53,8 @@ final class HomeEmptyTests: UITestCase {
     }
 
     func testEmptyCoverOpensFilesPicker() {
-        let app = launch(LaunchConfiguration(resetsState: true, fixtures: [], mocksTranslation: true, now: nil))
+        let app = launch(
+            LaunchConfiguration(resetsState: true, fixtures: [], opened: [], mocksTranslation: true, now: nil))
         let home = HomeScreen(app: app).waitUntilShown()
 
         home.pickFile(tapping: home.emptyCover).cancel()
@@ -60,7 +64,8 @@ final class HomeEmptyTests: UITestCase {
     }
 
     func testAddBookPillOpensFilesPicker() {
-        let app = launch(LaunchConfiguration(resetsState: true, fixtures: [], mocksTranslation: true, now: nil))
+        let app = launch(
+            LaunchConfiguration(resetsState: true, fixtures: [], opened: [], mocksTranslation: true, now: nil))
         let home = HomeScreen(app: app).waitUntilShown()
 
         home.pickFile(tapping: home.emptyAddBookButton).cancel()
