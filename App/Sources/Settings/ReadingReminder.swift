@@ -28,14 +28,19 @@ enum ReadingReminder {
     static func schedule(for settings: Settings) {
         let time = settings.remindsDaily ? settings.reminderTime : nil
         let previous = scheduling
+        previous?.cancel()
         scheduling = Task {
             await previous?.value
+            guard !Task.isCancelled else { return }
             await replace(with: time)
         }
     }
 
     static func waitUntilScheduled() async {
-        await scheduling?.value
+        while let task = scheduling {
+            await task.value
+            if task == scheduling { return }
+        }
     }
 
     private static func replace(with time: TimeOfDay?) async {
