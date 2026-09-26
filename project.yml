@@ -15,6 +15,9 @@ packages:
     path: Packages/DesignSystem
   ReaderEngine:
     path: Packages/ReaderEngine
+  SnapshotTesting:
+    url: https://github.com/pointfreeco/swift-snapshot-testing
+    exactVersion: 1.19.6
 targets:
   Scholia:
     type: application
@@ -49,7 +52,9 @@ targets:
     type: bundle.ui-testing
     platform: iOS
     sources:
-      - UITests
+      - path: UITests
+        excludes:
+          - __Snapshots__
       - App/Sources/LaunchConfiguration.swift
       - path: Design/design-system/project/tokens.json
         buildPhase: resources
@@ -58,9 +63,11 @@ targets:
         buildPhase: resources
     dependencies:
       - target: Scholia
+      - package: SnapshotTesting
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.ione.scholia.uitests
+        TESTING_FRAMEWORK_MODULE_ALIAS_FLAGS: ""
         GENERATE_INFOPLIST_FILE: YES
         TEST_TARGET_NAME: Scholia
         TARGETED_DEVICE_FAMILY: "1,2"

@@ -58,10 +58,6 @@ struct SettingsScreen: Screen {
         reminder.waitUntil(\.isOn, equals: false)
     }
 
-    func background() throws -> RGBColor {
-        try app.screenshot().color(at: CGPoint(x: 0.02, y: 0.9))
-    }
-
     @discardableResult
     func goBack() -> HomeScreen {
         backButton.waitUntilExists().tap()

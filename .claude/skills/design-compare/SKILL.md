@@ -1,6 +1,6 @@
 ---
 name: design-compare
-description: Compare a Scholia screen in the simulator with its design - render the canvas screen to PNG with scripts/render-screen, take simulator screenshots in light and dark, and judge the differences. Use for the writer's self-check and for design review.
+description: Compare a Scholia screen with its design - render the canvas screen to PNG with scripts/render-screen, take the committed reference snapshots (UITests/__Snapshots__) in light and dark, and judge the differences. Use for the writer's self-check and for design review.
 ---
 
 # Design compare
@@ -26,7 +26,13 @@ scripts/render-screen Design/canvas/project/Main.dc.html build/design/Main.png
 
 ## 3. Screenshot the app
 
-Take a simulator from the pool with `scripts/sim create <name>` (`--ipad` for iPad; queues if all are busy, give it back with `scripts/sim delete <name>` right after); it boots it and prints the udid; run it before any `simctl ui`, `install`, `launch` or `io`, which fail on a shut-down simulator. Set the appearance before each run:
+Every design screen has reference snapshots committed by its UI tests (skill `ui-tests`, Snapshot tests): `UITests/__Snapshots__/<TestClass>/<Screen>.light.png` and `<Screen>.dark.png`, named after the design file (`Library-A.dark.png` pairs with `Library-Dark` when that exists). They are the app side of the comparison: CI fails when the app stops matching them.
+
+- Find them: `ls UITests/__Snapshots__/*/<Screen>.*.png`. A writer records them with `make snapshots … ONLY=ScholiaUITests/<Screen>Tests`, then compares.
+- They are iPhone 17 Pro at 3x without the status bar and the home-indicator strip: 1206×2358 px = 402×786 pt, and y = 0 in the image is y = 54 pt on the screen. Add 54 pt before comparing a top offset with the board, whose content starts below its own status bar area; the bottom 34 pt of the screen are not in the image.
+- A screen or appearance without a reference is a gap in the tests, not something to screenshot by hand.
+
+The simulator itself is needed only for the system launch screen (it has no reference) and for a quick look at a state no test reaches yet. Take a simulator from the pool with `scripts/sim create <name>` (`--ipad` for iPad; queues if all are busy, give it back with `scripts/sim delete <name>` right after); it boots it and prints the udid; run it before any `simctl ui`, `install`, `launch` or `io`, which fail on a shut-down simulator. Set the appearance before each run:
 
 ```
 xcrun simctl ui <udid> appearance light
@@ -44,17 +50,11 @@ With the app theme at System it follows the simulator appearance. The reader pag
   xcrun simctl io <udid> screenshot build/design/<Screen>-light.png
   ```
   Set the appearance before launching and wait for the launch animation, otherwise the shot catches the app zooming in or half-switched. Look at every shot and retake one that shows a transition.
-- Any deeper state: the feature's UI test calls `attachScreenshot("<Screen>")` at the state that matches the design screen (helper on `UITestCase`, see `.claude/skills/ui-tests/SKILL.md`). Run the test once per appearance and export:
-  ```
-  make test ONLY=ScholiaUITests/<Feature>Tests DESTINATION='platform=iOS Simulator,id=<udid>'
-  rm -rf build/design/light
-  xcrun xcresulttool export attachments --path "$(ls -td build/Results-*.xcresult | head -1)" --output-path build/design/light
-  ```
-  Use `build/design/dark` for the dark run. Always remove the output folder first: export fails on an existing `manifest.json` and leaves stale " (1)" files. Add `--test-id '<Feature>Tests/<testName>()'` to export one test only. In the output folder `manifest.json` maps files to names; `suggestedHumanReadableName` starts with the name given to `attachScreenshot`. Do not use `--only-failures`: it exports nothing.
+- Legacy, until a screen's tests are migrated to snapshots: its flow test calls `attachScreenshot("<Screen>")`. Run it once per appearance and export the attachments (`rm -rf build/design/light` first, then `xcrun xcresulttool export attachments --path <bundle> --output-path build/design/light`; `manifest.json` maps files to names). Report the missing reference as a test gap.
 
 ## 4. Compare
 
-Open the render and the screenshot with Read, side by side. To zoom into a detail crop both (`sips -c <height> <width> --cropOffset <y> <x> in.png --out crop.png`, pixels).
+Open the render and the reference (or screenshot) with Read, side by side. To zoom into a detail crop both (`sips -c <height> <width> --cropOffset <y> <x> in.png --out crop.png`, pixels).
 
 Work in points. Render pixels / 2, iPhone screenshot pixels / 3, iPad screenshot pixels / 2. Boards are 390x844 but the iPhone 17 Pro is 402x874 and the iPad Pro 11-inch is 834x1210: compare fixed metrics, not the absolute position of things that stretch or pin to the right or bottom edge.
 
