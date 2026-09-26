@@ -102,6 +102,29 @@ final class ComponentGalleryTests: UITestCase {
         XCTAssertFalse(bubbles.part("loading", of: "failed").exists)
     }
 
+    func testTranslationPillShowsEachState() {
+        let pills = openGallery().openTranslationPills()
+
+        XCTAssertEqual(pills.translated.waitUntilExists().label, "Ungeziefer: vermin")
+        XCTAssertEqual(pills.loading.label, "Translating Ungeziefer")
+        XCTAssertEqual(pills.failure.label, "Translation unavailable")
+    }
+
+    func testWordCardShowsEachState() {
+        let cards = openGallery().openWordCards()
+
+        for element in ["translated", "loading", "failed"] {
+            XCTAssertEqual(cards.part("word", of: element).waitUntilExists().label, "Ungeziefer")
+            XCTAssertEqual(cards.part("pronounce", of: element).label, "Pronounce")
+        }
+        XCTAssertEqual(cards.part("details", of: "translated").label, "[ˈʊnɡəˌtsiːfɐ] · das Ungeziefer · noun")
+        XCTAssertEqual(cards.part("translation", of: "translated").label, "vermin")
+        XCTAssertEqual(cards.part("loading", of: "loading").label, "Translating Ungeziefer")
+        XCTAssertFalse(cards.part("meanings", of: "loading").exists)
+        XCTAssertEqual(cards.part("failure", of: "failed").label, "Translation unavailable")
+        XCTAssertFalse(cards.part("meanings", of: "failed").exists)
+    }
+
     func testGlassButtonsHaveSpecSizesAndToggleOpenState() {
         let glassButtons = openGallery().openGlassButtons()
         for element in ["back", "add", "bookmark", "menu"] {

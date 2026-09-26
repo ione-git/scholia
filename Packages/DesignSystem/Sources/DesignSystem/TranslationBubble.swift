@@ -1,13 +1,13 @@
 import SwiftUI
 
-private let rowSpacing: CGFloat = 6
-
 public struct TranslationBubble: View {
     public enum Phase {
         case loading(label: Text)
         case translated(translation: Text, ipa: Text, grammar: Text?)
         case failed(message: Text)
     }
+
+    public static let anchorGap: CGFloat = 10
 
     private static let width: CGFloat = 236
     private static let horizontalPadding: CGFloat = 14
@@ -18,19 +18,24 @@ public struct TranslationBubble: View {
     let phase: Phase
     let wordLocale: Locale
     let translationLocale: Locale
+    let details: TranslationDetails?
     let identifier: String
 
-    public init(word: Text, phase: Phase, wordLocale: Locale, translationLocale: Locale, identifier: String) {
+    public init(
+        word: Text, phase: Phase, wordLocale: Locale, translationLocale: Locale, details: TranslationDetails?,
+        identifier: String
+    ) {
         self.word = word
         self.phase = phase
         self.wordLocale = wordLocale
         self.translationLocale = translationLocale
+        self.details = details
         self.identifier = identifier
     }
 
     public var body: some View {
         let shape = RoundedRectangle(cornerRadius: .radiusXl)
-        VStack(alignment: .leading, spacing: rowSpacing) {
+        VStack(alignment: .leading, spacing: TranslationLoadingBlock.rowSpacing) {
             HStack(alignment: .firstTextBaseline, spacing: .space2) {
                 word
                     .textStyle(TextStyle.footnote.weighted(TextStyle.title3.weight))
@@ -47,7 +52,7 @@ public struct TranslationBubble: View {
             .environment(\.locale, wordLocale)
             switch phase {
             case .loading(let label):
-                TranslationLoading()
+                TranslationLoadingBlock(lineHeight: TextStyle.translation.lineHeight)
                     .accessibilityElement(children: .ignore)
                     .accessibilityLabel(label)
                     .accessibilityIdentifier("\(identifier).loading")
@@ -57,6 +62,7 @@ public struct TranslationBubble: View {
                     .foregroundStyle(.ink)
                     .fixedSize(horizontal: false, vertical: true)
                     .environment(\.locale, translationLocale)
+                    .accessibilityOpensDetails(details)
                     .accessibilityIdentifier("\(identifier).translation")
                 HStack(spacing: .space2) {
                     grammar?
@@ -80,55 +86,16 @@ public struct TranslationBubble: View {
         .padding(.horizontal, Self.horizontalPadding)
         .frame(width: Self.width, alignment: .leading)
         .contentShape(shape)
-        .glassEffect(.regular.tint(.surfaceGlassStrong), in: shape)
+        .glassEffect(.regular.tint(.surfaceGlassStrong).interactive(opensDetails), in: shape)
+        .gesture(TapGesture().onEnded { details?.action() }, isEnabled: opensDetails)
         .accessibilityElement(children: .contain)
         .accessibilityIdentifier(identifier)
     }
-}
 
-private struct TranslationLoading: View {
-    private static let barWidth: CGFloat = 132
-    private static let barHeight: CGFloat = 14
-    private static let dotSize: CGFloat = 5
-    private static let dotSpacing: CGFloat = 3
-    private static let dotOpacities: [Double] = [1, 0.5, 0.25]
-    private static let dotStep: TimeInterval = 0.3
-    private static let shimmerPeriod: TimeInterval = 1.2
-    private static let shimmerLowest = 0.5
-
-    @Environment(\.accessibilityReduceMotion) private var reduceMotion
-
-    var body: some View {
-        TimelineView(.animation(paused: reduceMotion)) { context in
-            let time = reduceMotion ? 0 : context.date.timeIntervalSinceReferenceDate
-            VStack(alignment: .leading, spacing: rowSpacing) {
-                Capsule()
-                    .fill(.track)
-                    .opacity(shimmer(at: time))
-                    .frame(width: Self.barWidth, height: Self.barHeight)
-                    .frame(height: TextStyle.translation.lineHeight)
-                HStack(spacing: Self.dotSpacing) {
-                    Spacer(minLength: 0)
-                    ForEach(Self.dotOpacities.indices, id: \.self) { index in
-                        Circle()
-                            .fill(.accent)
-                            .opacity(dotOpacity(index, at: time))
-                            .frame(width: Self.dotSize, height: Self.dotSize)
-                    }
-                }
-                .frame(height: TextStyle.caption.lineHeight)
-            }
+    private var opensDetails: Bool {
+        guard details != nil, case .translated = phase else {
+            return false
         }
-    }
-
-    private func shimmer(at time: TimeInterval) -> Double {
-        let wave = (cos(time / Self.shimmerPeriod * 2 * .pi) + 1) / 2
-        return Self.shimmerLowest + (1 - Self.shimmerLowest) * wave
-    }
-
-    private func dotOpacity(_ index: Int, at time: TimeInterval) -> Double {
-        let count = Self.dotOpacities.count
-        let step = Int(time / Self.dotStep) % count
-        return Self.dotOpacities[(index - step + count) % count]
+        return true
     }
 }

@@ -16,6 +16,7 @@ public enum Icon: Sendable {
     case collection
     case info
     case trash
+    case speaker
 
     static let grid: CGFloat = 24
 
@@ -126,6 +127,14 @@ public enum Icon: Sendable {
             path.addLines([CGPoint(x: 4, y: 17), CGPoint(x: 7, y: 20), CGPoint(x: 10, y: 17)])
             path.addLines([CGPoint(x: 17, y: 20), CGPoint(x: 17, y: 4)])
             path.addLines([CGPoint(x: 14, y: 7), CGPoint(x: 17, y: 4), CGPoint(x: 20, y: 7)])
+        case .speaker:
+            path.addLines([
+                CGPoint(x: 4, y: 10), CGPoint(x: 4, y: 14), CGPoint(x: 8, y: 14), CGPoint(x: 13, y: 18),
+                CGPoint(x: 13, y: 6), CGPoint(x: 8, y: 10),
+            ])
+            path.closeSubpath()
+            path.move(to: CGPoint(x: 16, y: 9))
+            path.addArc(to: CGPoint(x: 16, y: 15), radius: 4, isLarge: false, isSweep: true)
         }
         let scale = min(rect.width, rect.height) / Self.grid
         return path.applying(

@@ -7,6 +7,7 @@ struct ScholiaApp: App {
     private let container: ModelContainer
     private let settings: Settings
     private let translationService: TranslationService
+    private let pronouncer: Pronouncer
 
     init() {
         DesignSystem.registerFonts()
@@ -27,6 +28,7 @@ struct ScholiaApp: App {
                 AppleTranslationProvider()
             }
         translationService = TranslationService(provider: provider)
+        pronouncer = Pronouncer()
         ReadingReminder.schedule(for: settings)
     }
 
@@ -35,6 +37,7 @@ struct ScholiaApp: App {
             RootView()
                 .environment(settings)
                 .environment(translationService)
+                .environment(pronouncer)
                 .transaction { transaction in
                     if TestAnimations.areOff {
                         transaction.animation = nil
@@ -47,6 +50,7 @@ struct ScholiaApp: App {
                     .background { ReminderDiagnostics(settings: settings) }
                     .background { AppearanceDiagnostics() }
                     .background { TranslationDiagnostics(provider: translationService.provider) }
+                    .background { PronunciationDiagnostics(pronouncer: pronouncer) }
                 #endif
         }
         .modelContainer(container)

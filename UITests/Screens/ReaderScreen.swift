@@ -3,6 +3,8 @@ import XCTest
 private let bookOpenTimeout: TimeInterval = 30
 private let germanFirstParagraph = "Als Gregor Samsa"
 private let germanFirstHeading = "Erster Teil"
+private let ungezieferLine = 2
+private let ungezieferX: CGFloat = 305
 
 struct ReaderScreen: Screen {
     let app: XCUIApplication
@@ -22,10 +24,12 @@ struct ReaderScreen: Screen {
     var bubble: XCUIElement { app.otherElements["reader.bubble"] }
     var bubbleWord: XCUIElement { app.staticTexts["reader.bubble.word"] }
     var bubbleIPA: XCUIElement { app.staticTexts["reader.bubble.ipa"] }
-    var bubbleTranslation: XCUIElement { app.staticTexts["reader.bubble.translation"] }
+    var bubbleTranslation: XCUIElement { app.buttons["reader.bubble.translation"] }
     var bubbleGrammar: XCUIElement { app.staticTexts["reader.bubble.grammar"] }
     var bubbleLoading: XCUIElement { app.descendants(matching: .any)["reader.bubble.loading"] }
     var bubbleFailure: XCUIElement { app.staticTexts["reader.bubble.failure"] }
+    var pill: XCUIElement { app.buttons["reader.pill"] }
+    var pillLoading: XCUIElement { app.descendants(matching: .any)["reader.pill.loading"] }
     var germanParagraph: XCUIElement { paragraph(startingWith: germanFirstParagraph) }
     var germanHeading: XCUIElement { paragraph(startingWith: germanFirstHeading) }
     var highlightMenuItem: XCUIElement { app.menuItems["Highlight"] }
@@ -46,6 +50,15 @@ struct ReaderScreen: Screen {
 
     func tapWord(onLine index: Int, x: CGFloat) throws {
         try wordPoint(onLine: index, x: x).tap()
+    }
+
+    func tapUngeziefer() throws {
+        try tapWord(onLine: ungezieferLine, x: ungezieferX)
+    }
+
+    func openCard(from translation: XCUIElement) -> WordCardScreen {
+        translation.waitUntil(\.isHittable, equals: true).tap()
+        return WordCardScreen(app: app).waitUntilShown()
     }
 
     @discardableResult

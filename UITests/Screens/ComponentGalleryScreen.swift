@@ -35,6 +35,10 @@ struct ComponentGalleryScreen: Screen {
     func openTranslationBubbles() -> TranslationBubbleGalleryScreen {
         open("translationBubble", as: TranslationBubbleGalleryScreen.init)
     }
+    func openTranslationPills() -> TranslationPillGalleryScreen {
+        open("translationPill", as: TranslationPillGalleryScreen.init)
+    }
+    func openWordCards() -> WordCardGalleryScreen { open("wordCard", as: WordCardGalleryScreen.init) }
 }
 
 protocol ComponentGalleryPage: Screen {}
@@ -114,6 +118,25 @@ struct TranslationBubbleGalleryScreen: ComponentGalleryPage {
 
     func part(_ part: String, of element: String) -> XCUIElement {
         app.descendants(matching: .any)["translationBubbleGallery.\(element).\(part)"]
+    }
+}
+
+struct TranslationPillGalleryScreen: ComponentGalleryPage {
+    let app: XCUIApplication
+
+    var root: XCUIElement { app.scrollViews["translationPillGallery.scrollView"] }
+    var translated: XCUIElement { app.buttons["translationPillGallery.translated"] }
+    var loading: XCUIElement { app.descendants(matching: .any)["translationPillGallery.loading.loading"] }
+    var failure: XCUIElement { app.descendants(matching: .any)["translationPillGallery.failed.failure"] }
+}
+
+struct WordCardGalleryScreen: ComponentGalleryPage {
+    let app: XCUIApplication
+
+    var root: XCUIElement { app.scrollViews["wordCardGallery.scrollView"] }
+
+    func part(_ part: String, of element: String) -> XCUIElement {
+        app.descendants(matching: .any)["wordCardGallery.\(element).\(part)"]
     }
 }
 

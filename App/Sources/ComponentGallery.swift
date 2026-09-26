@@ -54,6 +54,12 @@
                     link(Text("Translation bubble"), element: "translationBubble") {
                         TranslationBubbleGallery(colorScheme: appearance.colorScheme)
                     }
+                    link(.pillTitle, element: "translationPill") {
+                        TranslationPillGallery(colorScheme: appearance.colorScheme)
+                    }
+                    link(.cardTitle, element: "wordCard") {
+                        WordCardGallery(colorScheme: appearance.colorScheme)
+                    }
                 }
             }
             .navigationTitle("Component Gallery")
@@ -483,7 +489,84 @@
         private func bubble(_ phase: TranslationBubble.Phase, element: String) -> some View {
             TranslationBubble(
                 word: Text(verbatim: word), phase: phase, wordLocale: Locale(identifier: "de"),
-                translationLocale: Locale(identifier: "en"), identifier: "translationBubbleGallery.\(element)")
+                translationLocale: Locale(identifier: "en"), details: nil,
+                identifier: "translationBubbleGallery.\(element)")
+        }
+    }
+
+    private struct TranslationPillGallery: View {
+        let colorScheme: ColorScheme?
+
+        private let word = "Ungeziefer"
+        private let translation = "vermin"
+
+        var body: some View {
+            GalleryPage(identifier: "translationPillGallery", colorScheme: colorScheme) {
+                VStack(alignment: .leading, spacing: .space4) {
+                    pill(
+                        .translated(
+                            translation: Text(verbatim: translation), label: Text("\(word): \(translation)")),
+                        element: "translated")
+                    pill(.loading(label: Text("Translating \(word)")), element: "loading")
+                    pill(.failed(message: Text("Translation unavailable")), element: "failed")
+                }
+                .padding(.space5)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .background(.surfacePaper, in: RoundedRectangle(cornerRadius: .radiusLg))
+            }
+            .navigationTitle(Text.pillTitle)
+        }
+
+        private func pill(_ phase: TranslationPill.Phase, element: String) -> some View {
+            TranslationPill(
+                phase: phase, translationLocale: Locale(identifier: "en"),
+                details: TranslationDetails(hint: Text("Opens details")) {},
+                identifier: "translationPillGallery.\(element)")
+        }
+    }
+
+    private struct WordCardGallery: View {
+        let colorScheme: ColorScheme?
+
+        private let word = "Ungeziefer"
+
+        var body: some View {
+            GalleryPage(identifier: "wordCardGallery", colorScheme: colorScheme) {
+                card(
+                    .translated(
+                        details: Text("\("[ˈʊnɡəˌtsiːfɐ]") · \("das Ungeziefer") · \("noun")"),
+                        translation: Text(verbatim: "vermin"),
+                        meaningInContext: Text(verbatim: "a monstrous, repulsive creature"),
+                        meanings: [
+                            Text(verbatim: "vermin, pests"), Text(verbatim: "a noxious insect"),
+                            Text(verbatim: "riffraff, scum"),
+                        ]),
+                    element: "translated")
+                card(.loading(label: Text("Translating \(word)")), element: "loading")
+                card(.failed(message: Text("Translation unavailable")), element: "failed")
+            }
+            .navigationTitle(Text.cardTitle)
+        }
+
+        private func card(_ phase: WordCard.Phase, element: String) -> some View {
+            WordCard(
+                word: Text(verbatim: word), phase: phase, contextTitle: Text("In this context"),
+                meaningsTitle: Text("All meanings"), wordLocale: Locale(identifier: "de"),
+                translationLocale: Locale(identifier: "en"),
+                pronounce: WordCard.Pronounce(label: Text("Pronounce")) {}, identifier: "wordCardGallery.\(element)"
+            )
+            .padding(.top, .space5)
+            .background(.surfaceCard, in: RoundedRectangle(cornerRadius: .radiusSheet))
+        }
+    }
+
+    extension Text {
+        fileprivate static var pillTitle: Text {
+            Text("Translation pill", comment: "Component Gallery: row and title of the translation pill page")
+        }
+
+        fileprivate static var cardTitle: Text {
+            Text("Word card", comment: "Component Gallery: row and title of the word card page")
         }
     }
 

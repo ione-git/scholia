@@ -18,6 +18,11 @@ struct SettingsScreen: Screen {
 
     func onWordTap(_ style: String) -> XCUIElement { app.buttons["settings.onWordTap.\(style)"] }
 
+    func chooseOnWordTap(_ style: String) {
+        onWordTap(style).waitUntil(\.isHittable, equals: true).tap()
+        onWordTap(style).waitUntil(\.isSelected, equals: true)
+    }
+
     func theme(_ theme: String) -> XCUIElement { app.buttons["settings.theme.\(theme)"] }
 
     func openTranslationLanguages() {

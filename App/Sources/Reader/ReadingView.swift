@@ -29,19 +29,12 @@ struct ReadingView: View {
                     .accessibilityIdentifier("reader.failure")
             }
             page
-            if let controller, let word = controller.word {
-                TranslationBubblePlacement(anchor: word.rect, topLimit: .navTop + .controlH) {
-                    WordBubble(word: word, language: book.language)
-                        .accessibilityAction(.escape) { controller.clearWord() }
-                }
-                .id(word.range)
-                .ignoresSafeArea()
-            }
         }
+        .modifier(WordTap(controller: controller, language: book.language, colorScheme: shownColorScheme))
         #if DEBUG
             .background { WordTintDiagnostics(painted: controller?.paintedWordTints ?? 0) }
         #endif
-        .environment(\.colorScheme, theme.isDark ? .dark : .light)
+        .environment(\.colorScheme, shownColorScheme)
         .statusBarHidden()
         .toolbar(.hidden, for: .navigationBar)
         .task { await open() }
@@ -52,6 +45,10 @@ struct ReadingView: View {
 
     private var theme: ReaderTheme {
         settings.readerTheme.shown(in: colorScheme)
+    }
+
+    private var shownColorScheme: ColorScheme {
+        theme.isDark ? .dark : .light
     }
 
     private var page: some View {
