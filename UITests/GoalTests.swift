@@ -6,13 +6,7 @@ final class GoalTests: UITestCase {
     private let noon = "2026-03-14T12:00:00Z"
 
     func testReadingAddsToTodayAndShowsTimeLeft() throws {
-        let now = try Date(noon, strategy: .iso8601)
-        setAppearance(.light)
-        let app = launch(
-            LaunchConfiguration(
-                resetsState: true, fixtures: [.german, .frenchNoCover, .minimalMetadata], opened: [],
-                mocksTranslation: true, now: now, minutesRead: 14))
-        let home = HomeScreen(app: app).waitUntilShown()
+        let home = HomeScreen(app: launch(try threeBooks(minutesRead: 14))).waitUntilShown()
         XCTAssertEqual(home.goalRing.waitUntilExists().label, "Today: 14 of 20 minutes read")
         XCTAssertFalse(home.heroTimeLeft.exists)
 
@@ -24,30 +18,13 @@ final class GoalTests: UITestCase {
         home.heroTimeLeft.waitUntil(\.label, equals: "5 hours, 57 minutes left")
         XCTAssertEqual(home.goalRing.label, "Today: 14 of 20 minutes read")
         XCTAssertEqual(home.goalRing.value as? String, percent(0.7))
-        attachScreenshot("Main")
         let goal = home.openGoal()
         XCTAssertEqual(goal.root.label, "Today: 14 minutes read, 6 minutes to go")
-        attachScreenshot("Home-Goal")
         goal.dismiss()
-        app.terminate()
-
-        setAppearance(.dark)
-        let dark = relaunch(now: now)
-        dark.heroTimeLeft.waitUntil(\.label, equals: "5 hours, 57 minutes left")
-        XCTAssertEqual(dark.goalRing.label, "Today: 14 of 20 minutes read")
-        attachScreenshot("Main-Dark")
-        XCTAssertEqual(dark.openGoal().root.label, "Today: 14 minutes read, 6 minutes to go")
-        attachScreenshot("Home-Goal-Dark")
     }
 
     func testReachedGoalShowsDoneRingAndPopover() throws {
-        let now = try Date(noon, strategy: .iso8601)
-        setAppearance(.light)
-        let app = launch(
-            LaunchConfiguration(
-                resetsState: true, fixtures: [.german, .frenchNoCover, .minimalMetadata], opened: [],
-                mocksTranslation: true, now: now, minutesRead: 23))
-        let home = HomeScreen(app: app).waitUntilShown()
+        let home = HomeScreen(app: launch(try threeBooks(minutesRead: 23))).waitUntilShown()
         let reader = home.openHeroBook()
         reader.turnForward(expecting: "2 of \(bookPages)")
         reader.turnForward(expecting: "3 of \(bookPages)")
@@ -56,20 +33,9 @@ final class GoalTests: UITestCase {
         home.heroTimeLeft.waitUntil(\.label, equals: "9 hours, 47 minutes left")
         XCTAssertEqual(home.goalRing.label, "Today: goal reached, 23 minutes read")
         XCTAssertEqual(home.goalRing.value as? String, percent(1))
-        attachScreenshot("Home-Done-3")
         let goal = home.openGoal()
         XCTAssertEqual(goal.root.label, "Today: goal done, 23 minutes read")
-        attachScreenshot("Home-Done-Goal")
         goal.dismiss()
-        app.terminate()
-
-        setAppearance(.dark)
-        let dark = relaunch(now: now)
-        dark.heroTimeLeft.waitUntil(\.label, equals: "9 hours, 47 minutes left")
-        XCTAssertEqual(dark.goalRing.label, "Today: goal reached, 23 minutes read")
-        attachScreenshot("Home-Done-3-Dark")
-        XCTAssertEqual(dark.openGoal().root.label, "Today: goal done, 23 minutes read")
-        attachScreenshot("Home-Done-Goal-Dark")
     }
 
     func testChangingGoalInSettingsUpdatesRingAndPopover() throws {
@@ -109,8 +75,9 @@ final class GoalTests: UITestCase {
     func testTimeLeftForRightToLeftBook() throws {
         let app = launch(
             LaunchConfiguration(
-                resetsState: true, fixtures: [.arabic], opened: [], mocksTranslation: true,
-                now: try Date(noon, strategy: .iso8601), minutesRead: 2))
+                resetsState: true, fixtures: [.arabic], opened: [], inProgress: [], highlighted: [],
+                translation: .immediate, now: try Date(noon, strategy: .iso8601), notificationPermission: nil,
+                minutesRead: 2))
         let reader = HomeScreen(app: app).waitUntilShown().openHeroBook()
         reader.pageCounter.waitUntil(\.label, equals: "1 of \(arabicBookPages)")
         reader.turnForwardRightToLeft(expecting: "2 of \(arabicBookPages)")
@@ -153,25 +120,47 @@ final class GoalTests: UITestCase {
         XCTAssertGreaterThan(sessions[1].end, sessions[1].start)
     }
 
+    func testHomeGoalSnapshotLight() throws {
+        assertSnapshot(of: try openGoalAfterReading(minutesRead: 14, appearance: .light), named: "Home-Goal")
+    }
+
+    func testHomeGoalSnapshotDark() throws {
+        assertSnapshot(of: try openGoalAfterReading(minutesRead: 14, appearance: .dark), named: "Home-Goal")
+    }
+
+    func testHomeDoneGoalSnapshotLight() throws {
+        assertSnapshot(of: try openGoalAfterReading(minutesRead: 23, appearance: .light), named: "Home-Done-Goal")
+    }
+
+    func testHomeDoneGoalSnapshotDark() throws {
+        assertSnapshot(of: try openGoalAfterReading(minutesRead: 23, appearance: .dark), named: "Home-Done-Goal")
+    }
+
     private func launchWithGermanBook(now: Date?, minutesRead: Int) -> XCUIApplication {
         launch(
             LaunchConfiguration(
-                resetsState: true, fixtures: [.german], opened: [], mocksTranslation: true, now: now,
-                minutesRead: minutesRead))
+                resetsState: true, fixtures: [.german], opened: [], inProgress: [], highlighted: [],
+                translation: .immediate, now: now, notificationPermission: nil, minutesRead: minutesRead))
     }
 
-    private func relaunch(now: Date) -> HomeScreen {
-        let app = launch(
-            LaunchConfiguration(resetsState: false, fixtures: [], opened: [], mocksTranslation: true, now: now))
-        return HomeScreen(app: app).waitUntilShown()
+    private func openGoalAfterReading(minutesRead: Int, appearance: XCUIDevice.Appearance) throws
+        -> GoalPopoverScreen
+    {
+        let app = launch(try threeBooks(minutesRead: minutesRead), appearance: appearance)
+        let reader = HomeScreen(app: app).waitUntilShown().openHeroBook()
+        reader.turnForward(expecting: "2 of \(bookPages)")
+        reader.turnForward(expecting: "3 of \(bookPages)")
+        let home = reader.backToHome()
+        home.heroTimeLeft.waitUntilExists()
+        return home.openGoal()
     }
 
-    private func setAppearance(_ appearance: XCUIDevice.Appearance) {
-        let original = XCUIDevice.shared.appearance
-        addTeardownBlock { @MainActor in
-            XCUIDevice.shared.appearance = original
-        }
-        XCUIDevice.shared.appearance = appearance
+    private func threeBooks(minutesRead: Int) throws -> LaunchConfiguration {
+        LaunchConfiguration(
+            resetsState: true, fixtures: [.german, .frenchNoCover, .minimalMetadata], opened: [], inProgress: [],
+            highlighted: [], translation: .immediate, now: try Date(noon, strategy: .iso8601),
+            notificationPermission: nil,
+            minutesRead: minutesRead)
     }
 
     private func percent(_ value: Double) -> String {
