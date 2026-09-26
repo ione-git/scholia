@@ -55,20 +55,22 @@ struct AppleTranslationProvider: TranslationProvider {
         lemma: String?, partOfSpeech: PartOfSpeech?
     ) {
         let sentence = request.sentence
+        guard
+            let word = Range(
+                NSRange(location: request.offsetInSentence, length: request.word.utf16.count), in: sentence)
+        else {
+            return (nil, nil)
+        }
         let tagger = NLTagger(tagSchemes: [.lemma, .lexicalClass])
         tagger.string = sentence
         tagger.setLanguage(NLLanguage(rawValue: request.source), range: sentence.startIndex..<sentence.endIndex)
         var grammar: (lemma: String?, partOfSpeech: PartOfSpeech?) = (nil, nil)
         tagger.enumerateTags(
-            in: sentence.startIndex..<sentence.endIndex, unit: .word, scheme: .lexicalClass,
-            options: [.omitWhitespace, .omitPunctuation]
+            in: word, unit: .word, scheme: .lexicalClass, options: [.omitWhitespace, .omitPunctuation]
         ) { lexicalClass, range in
-            guard sentence[range] == request.word else {
-                return true
-            }
             let lemma = tagger.tag(at: range.lowerBound, unit: .word, scheme: .lemma).0
             grammar = (lemma?.rawValue, lexicalClass.flatMap { Self.partsOfSpeech[$0] })
-            return false
+            return true
         }
         return grammar
     }

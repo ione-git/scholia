@@ -9,6 +9,7 @@ protocol TranslationProvider {
 nonisolated struct TranslationRequest: Hashable, Sendable {
     var word: String
     var sentence: String
+    var offsetInSentence: Int
     var source: String
     var target: String
 }

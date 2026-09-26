@@ -116,7 +116,8 @@
             }
             let result = try? await translationService.translate(
                 TranslationRequest(
-                    word: word.text, sentence: word.sentence, source: language, target: settings.translationLanguage))
+                    word: word.text, sentence: word.sentence, offsetInSentence: word.offsetInSentence,
+                    source: language, target: settings.translationLanguage))
             if !Task.isCancelled {
                 translated = result
             }
@@ -270,7 +271,8 @@
 
         private var requests: String {
             let requests = (provider as? MockTranslationProvider)?.requests ?? []
-            return requests.map { "\($0.word) · \($0.source) → \($0.target)" }.joined(separator: "\n")
+            return requests.map { "\($0.word) · \($0.offsetInSentence) · \($0.source) → \($0.target)" }
+                .joined(separator: "\n")
         }
     }
 

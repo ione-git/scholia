@@ -33,6 +33,7 @@ public struct ReaderPage: Equatable, Sendable {
 public struct ReaderWord: Equatable, Sendable {
     public var text: String
     public var sentence: String
+    public var offsetInSentence: Int
     public var rect: CGRect
     public var range: ReaderTextRange
 }

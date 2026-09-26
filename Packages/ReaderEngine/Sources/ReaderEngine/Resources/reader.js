@@ -89,6 +89,7 @@
         return {
           text: word.segment.replace(softHyphen, ""),
           sentence: sentence.segment.replace(softHyphen, "").trim(),
+          offsetInSentence: textIndex.text.slice(sentence.index, word.index).replace(softHyphen, "").trimStart().length,
           x: rect.left,
           y: rect.top,
           width: rect.width,
