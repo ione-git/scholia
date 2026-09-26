@@ -10,6 +10,9 @@ struct ScholiaApp: App {
 
     init() {
         DesignSystem.registerFonts()
+        if TestAnimations.areOff {
+            UIView.setAnimationsEnabled(false)
+        }
         do {
             let container = try Storage.makeContainer(.current)
             settings = try Storage.settings(in: container.mainContext)
@@ -28,10 +31,17 @@ struct ScholiaApp: App {
             RootView()
                 .environment(settings)
                 .environment(translationService)
+                .transaction { transaction in
+                    if TestAnimations.areOff {
+                        transaction.animation = nil
+                        transaction.disablesAnimations = true
+                    }
+                }
                 #if DEBUG
                     .background { LaunchDiagnostics(configuration: .current) }
                     .background { LibraryDiagnostics() }
                     .background { ReminderDiagnostics(settings: settings) }
+                    .background { AppearanceDiagnostics() }
                 #endif
         }
         .modelContainer(container)

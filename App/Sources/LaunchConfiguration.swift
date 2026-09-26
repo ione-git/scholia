@@ -100,3 +100,16 @@ extension LaunchConfiguration {
         environment.sorted { $0.key < $1.key }.map { "\($0.key)=\($0.value)" }.joined(separator: "\n")
     }
 }
+
+enum TestAnimations {
+    static let environmentKey = "SCHOLIA_ANIMATIONS"
+    static let off = "off"
+
+    static let areOff: Bool = {
+        #if DEBUG
+            ProcessInfo.processInfo.environment[environmentKey] == off
+        #else
+            false
+        #endif
+    }()
+}

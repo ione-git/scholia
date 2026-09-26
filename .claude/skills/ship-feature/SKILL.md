@@ -39,9 +39,15 @@ scripts/sim create Scholia-<n>
 
 ## 4. UI tests
 
-- Follow `.claude/skills/ui-tests/SKILL.md`: screen objects, launch configuration, waits.
-- At least one test per "Done when" item and per flow in the issue scope, asserting the outcome, not only that the screen appears.
-- In the flow tests, call `attachScreenshot("<Screen>")` at every state that matches a design screen, named exactly like the file (`"Library-A"`). Design review uses these.
+Follow `.claude/skills/ui-tests/SKILL.md` (worked example: `UITests/SettingsTests.swift`): screen objects, launch configuration, waits.
+
+- Flow tests: at least one per "Done when" item and per flow in the issue scope, asserting the outcome through accessibility queries, not only that the screen appears. No layout, pixel or image checks in flows.
+- Snapshot tests: for every design screen you build or change, `test<Name>SnapshotLight` and `test<Name>SnapshotDark` in that screen's test class, `assertSnapshot(of:named:)` with the design file name (`"Library-A"`). Record the references and review every PNG:
+  ```
+  make snapshots DESTINATION='platform=iOS Simulator,id=<udid>' ONLY=ScholiaUITests/<Screen>Tests
+  ```
+  Recorded snapshots fail that run by design; open each new or changed file under `UITests/__Snapshots__/` with Read and check it shows the intended state before you go on.
+- A change to an existing screen's look fails its snapshots: re-record them the same way and explain the difference in the report.
 
 ## 5. Checks
 
@@ -50,15 +56,15 @@ make lint
 make test DESTINATION='platform=iOS Simulator,id=<udid>'
 ```
 
-`make format` fixes most lint errors. The whole suite must pass, not only your tests.
+`make format` fixes most lint errors. The whole suite must pass, not only your tests, and must not write into `UITests/__Snapshots__` (`git status --short` shows no new PNG changes after the run).
 
 ## 6. Design self-check
 
-Run `.claude/skills/design-compare/SKILL.md` for every screen you built or changed, light and dark (iPad too if in scope). Fix every mismatch. A deviation you keep on purpose goes in the report with the reason.
+Run `.claude/skills/design-compare/SKILL.md` for every screen you built or changed, light and dark (iPad too if in scope), comparing your committed references with the design renders. Fix every mismatch, re-record, look again. A deviation you keep on purpose goes in the report with the reason.
 
 ## 7. Commit and push
 
-Stage explicit paths, check `git status` shows nothing unintended, then:
+Stage explicit paths, including the reference PNGs under `UITests/__Snapshots__/`, check `git status` shows nothing unintended, then:
 
 ```
 git commit -F - <<'EOF'
@@ -71,7 +77,7 @@ git push -u origin feature/<n>-<slug>
 
 ## 8. Fix rounds
 
-The orchestrator forwards reviewer findings. Fix each one, or answer with evidence why it is wrong. Re-run checks and the affected design compares, add a new commit (no amend), push, report again.
+The orchestrator forwards reviewer findings. Fix each one, or answer with evidence why it is wrong. Re-record the affected snapshots, re-run checks and the affected design compares, add a new commit (no amend), push, report again.
 
 ## Stop and report instead of guessing
 
@@ -85,6 +91,7 @@ Under 200 words, this shape:
 Branch: feature/<n>-<slug> @ <short sha>, pushed
 Done when:
 - <item> -> <TestClass/testMethod>
+Snapshots: <Name> light/dark -> UITests/__Snapshots__/<TestClass>/ (new | re-recorded: <why>)
 Checks: make lint clean; make test <passed>/<total>
 Design: <Screen> light match, dark match; deviations: <what, why> or none
 Changed: <main files or folders>

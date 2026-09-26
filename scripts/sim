@@ -31,6 +31,9 @@ boot() {
         xcrun simctl ui "$udid" appearance dark
     fi
     xcrun simctl bootstatus "$udid" -b >/dev/null
+    xcrun simctl spawn "$udid" defaults write -g AppleLanguages -array en
+    xcrun simctl spawn "$udid" defaults write -g AppleLocale -string en_US
+    xcrun simctl ui "$udid" content_size large
     xcrun simctl ui "$udid" appearance light
     echo "$udid"
 }
