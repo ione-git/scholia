@@ -120,19 +120,25 @@ def prose(paragraphs):
     return "\n".join(f"<p>{escape(paragraph)}</p>" for paragraph in paragraphs)
 
 
+def section(title, body, attributes=""):
+    return f'<section epub:type="chapter"{attributes}>\n<h1>{escape(title)}</h1>\n{body}\n</section>'
+
+
 def chapter(language, title, body):
-    return xhtml(language, title, f'<section epub:type="chapter">\n<h1>{escape(title)}</h1>\n{body}\n</section>')
+    return xhtml(language, title, section(title, body))
 
 
-def nav(language, title, chapters):
-    items = "\n".join(
-        f'<li><a href="chapter-{index}.xhtml">{escape(heading)}</a></li>'
-        for index, (heading, _) in enumerate(chapters, 1)
-    )
+def anchored_chapters(language, title, chapters):
+    sections = (section(heading, body, f' id="chapter-{index}"') for index, (heading, body) in enumerate(chapters, 1))
+    return xhtml(language, title, "\n".join(sections))
+
+
+def nav(language, title, entries):
+    items = "\n".join(f'<li><a href="{href}">{escape(heading)}</a></li>' for heading, href in entries)
     return xhtml(language, title, f'<nav epub:type="toc" id="toc">\n<ol>\n{items}\n</ol>\n</nav>')
 
 
-def package(identifier, title, language, creator, chapters, cover):
+def package(identifier, title, language, creator, documents, cover):
     metadata = [
         f'<dc:identifier id="book-id">{identifier}</dc:identifier>',
         f"<dc:title>{escape(title)}</dc:title>",
@@ -146,7 +152,7 @@ def package(identifier, title, language, creator, chapters, cover):
         metadata.append('<meta name="cover" content="cover"/>')
         manifest.append('<item id="cover" href="cover.png" media-type="image/png" properties="cover-image"/>')
     spine = []
-    for index in range(1, len(chapters) + 1):
+    for index in range(1, documents + 1):
         manifest.append(f'<item id="chapter-{index}" href="chapter-{index}.xhtml" media-type="application/xhtml+xml"/>')
         spine.append(f'<itemref idref="chapter-{index}"/>')
     return f"""<?xml version="1.0" encoding="UTF-8"?>
@@ -164,14 +170,20 @@ def package(identifier, title, language, creator, chapters, cover):
 """
 
 
-def epub(identifier, title, language, creator, chapters, cover):
+def epub(identifier, title, language, creator, chapters, cover, in_one_file=False):
+    if in_one_file:
+        documents = [anchored_chapters(language, title, chapters)]
+        hrefs = [f"chapter-1.xhtml#chapter-{index}" for index in range(1, len(chapters) + 1)]
+    else:
+        documents = [chapter(language, heading, body) for heading, body in chapters]
+        hrefs = [f"chapter-{index}.xhtml" for index in range(1, len(chapters) + 1)]
     files = {
         "META-INF/container.xml": CONTAINER.encode(),
-        "OEBPS/content.opf": package(identifier, title, language, creator, chapters, cover).encode(),
-        "OEBPS/nav.xhtml": nav(language, title, chapters).encode(),
+        "OEBPS/content.opf": package(identifier, title, language, creator, len(documents), cover).encode(),
+        "OEBPS/nav.xhtml": nav(language, title, [(heading, href) for (heading, _), href in zip(chapters, hrefs)]).encode(),
     }
-    for index, (heading, body) in enumerate(chapters, 1):
-        files[f"OEBPS/chapter-{index}.xhtml"] = chapter(language, heading, body).encode()
+    for index, document in enumerate(documents, 1):
+        files[f"OEBPS/chapter-{index}.xhtml"] = document.encode()
     if cover:
         files["OEBPS/cover.png"] = cover
     return files
@@ -208,6 +220,7 @@ def main():
         "Scholia",
         [("Premier chapitre", prose(FRENCH * 6)), ("Deuxième chapitre", prose(FRENCH * 6))],
         None,
+        in_one_file=True,
     )
     arabic = epub(
         "urn:scholia:fixture:arabic",
@@ -227,7 +240,7 @@ def main():
             "Minimal",
             "en",
             None,
-            [("Minimal", prose(ENGLISH))],
+            [("Chapter One", prose(ENGLISH))],
             png(600, 900, (140, 59, 46), (196, 110, 92)),
         )
     )

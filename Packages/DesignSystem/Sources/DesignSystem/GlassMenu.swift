@@ -1,8 +1,34 @@
 import SwiftUI
 
 private let menuInset: CGFloat = 4
-private let rowHeight: CGFloat = 46
 private let rowPadding: CGFloat = 14
+
+public enum GlassMenuSize: Sendable {
+    case regular
+    case reader
+
+    var width: CGFloat {
+        switch self {
+        case .regular: 240
+        case .reader: 260
+        }
+    }
+
+    var rowHeight: CGFloat {
+        switch self {
+        case .regular: 46
+        case .reader: 48
+        }
+    }
+}
+
+extension EnvironmentValues {
+    @Entry fileprivate var glassMenuSize = GlassMenuSize.regular
+}
+
+extension ContainerValues {
+    @Entry fileprivate var isGlassMenuDivider = false
+}
 
 extension View {
     public func glassMenu<Menu: View>(
@@ -42,12 +68,13 @@ private enum GlassMenuMotion {
 }
 
 public struct GlassMenu<Content: View>: View {
-    private static var width: CGFloat { 240 }
     private static var separatorInset: CGFloat { 10 }
 
+    let size: GlassMenuSize
     let content: Content
 
-    public init(@ViewBuilder content: () -> Content) {
+    public init(size: GlassMenuSize, @ViewBuilder content: () -> Content) {
+        self.size = size
         self.content = content()
     }
 
@@ -56,7 +83,7 @@ public struct GlassMenu<Content: View>: View {
             Group(subviews: content) { rows in
                 ForEach(rows) { row in
                     row
-                    if row.id != rows.last?.id {
+                    if separates(row, in: rows) {
                         Rectangle()
                             .fill(.hairline)
                             .frame(height: .hairlineW)
@@ -66,22 +93,60 @@ public struct GlassMenu<Content: View>: View {
             }
         }
         .padding(menuInset)
-        .frame(width: Self.width)
+        .frame(width: size.width)
         .glassEffect(.regular.tint(.surfaceGlassStrong), in: RoundedRectangle(cornerRadius: .radiusXl))
+        .environment(\.glassMenuSize, size)
+    }
+
+    private func separates(_ row: Subview, in rows: SubviewsCollection) -> Bool {
+        guard let index = rows.firstIndex(where: { $0.id == row.id }), index != rows.index(before: rows.endIndex)
+        else {
+            return false
+        }
+        return !row.containerValues.isGlassMenuDivider
+            && !rows[rows.index(after: index)].containerValues.isGlassMenuDivider
+    }
+}
+
+public struct GlassMenuDivider: View {
+    private static let height: CGFloat = 6
+
+    public init() {}
+
+    public var body: some View {
+        Rectangle()
+            .fill(.controlFill)
+            .frame(height: Self.height)
+            .padding(.horizontal, -menuInset)
+            .padding(.vertical, menuInset)
+            .accessibilityHidden(true)
+            .containerValue(\.isGlassMenuDivider, true)
     }
 }
 
 public struct GlassMenuItem: View {
+    private enum Trailing {
+        case icon(Icon)
+        case sample(Text)
+    }
+
     private static let iconSize: CGFloat = 20
     private static let iconStroke: CGFloat = 2
 
+    @Environment(\.glassMenuSize) private var menuSize
     let title: Text
-    let icon: Icon
+    private let trailing: Trailing
     let action: () -> Void
 
     public init(_ title: Text, icon: Icon, action: @escaping () -> Void) {
         self.title = title
-        self.icon = icon
+        trailing = .icon(icon)
+        self.action = action
+    }
+
+    public init(_ title: Text, sample: Text, action: @escaping () -> Void) {
+        self.title = title
+        trailing = .sample(sample)
         self.action = action
     }
 
@@ -92,11 +157,18 @@ public struct GlassMenuItem: View {
                     .textStyle(.body)
                     .lineLimit(1)
                 Spacer(minLength: 0)
-                IconView(icon: icon, size: Self.iconSize, stroke: Self.iconStroke)
+                switch trailing {
+                case .icon(let icon):
+                    IconView(icon: icon, size: Self.iconSize, stroke: Self.iconStroke)
+                case .sample(let sample):
+                    sample
+                        .textStyle(TextStyle.listSerif.weighted(TextStyle.titleBook.weight))
+                        .accessibilityHidden(true)
+                }
             }
             .foregroundStyle(.ink)
             .padding(.horizontal, rowPadding)
-            .frame(height: rowHeight)
+            .frame(height: menuSize.rowHeight)
         }
         .buttonStyle(MenuRowStyle())
     }
@@ -106,6 +178,7 @@ public struct GlassMenuOption: View {
     private static let checkSize: CGFloat = 18
     private static let checkStroke: CGFloat = 2.6
 
+    @Environment(\.glassMenuSize) private var menuSize
     let title: Text
     let isSelected: Bool
     let action: () -> Void
@@ -130,7 +203,7 @@ public struct GlassMenuOption: View {
                 }
             }
             .padding(.horizontal, rowPadding)
-            .frame(height: rowHeight)
+            .frame(height: menuSize.rowHeight)
         }
         .buttonStyle(MenuRowStyle())
         .accessibilityAddTraits(isSelected ? .isSelected : [])

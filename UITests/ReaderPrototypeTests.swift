@@ -12,7 +12,7 @@ final class ReaderPrototypeTests: UITestCase {
     func testOpensGermanFixtureOnFirstPage() {
         let reader = openReader()
 
-        XCTAssertEqual(reader.root.label, "Die Verwandlung")
+        XCTAssertEqual(reader.runningHead.label, "Die Verwandlung")
         XCTAssertEqual(reader.pageCounter.label, "1 of 54")
         XCTAssertEqual(reader.pageCounter.value as? String, "0")
         attachScreenshot("Reader")

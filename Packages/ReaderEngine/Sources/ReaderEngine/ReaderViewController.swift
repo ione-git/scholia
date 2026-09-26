@@ -158,8 +158,9 @@ final class ReaderViewController: UIViewController {
             observations.append(ScrollObservation(pager, keyPath: \.contentOffset) { [weak self] in self?.trackPage() })
         }
         if let initialLocation, let webView = webView(inChapter: initialLocation.chapter) {
+            let function = navigator.presentation.scroll ? "scrollToOffset" : "showOffset"
             _ = try? await webView.callAsyncJavaScript(
-                "return await scholia.showOffset(offset)", arguments: ["offset": initialLocation.offset],
+                "return await scholia.\(function)(offset)", arguments: ["offset": initialLocation.offset],
                 contentWorld: .page)
         }
         isShown = true
@@ -173,11 +174,18 @@ final class ReaderViewController: UIViewController {
     }
 
     private func trackPage() {
-        guard isShown, let page = currentPage(), page != shownPage else {
+        guard isShown, let page = currentPage() else {
+            return
+        }
+        guard page != shownPage else {
+            if navigator.presentation.scroll {
+                locate(page)
+            }
             return
         }
         shownPage = page
         controller?.word = nil
+        controller?.pageSpan = nil
         publishPage()
         locate(page)
     }
@@ -240,18 +248,36 @@ final class ReaderViewController: UIViewController {
 
     private func locate(_ page: ChapterPage) {
         locateTask?.cancel()
-        guard !navigator.presentation.scroll, let webView = webView(inChapter: page.chapter) else {
+        guard let webView = webView(inChapter: page.chapter) else {
             return
         }
+        let script =
+            navigator.presentation.scroll
+            ? "return scholia.visibleOffsets()" : "return [scholia.offsetOfPage(page), scholia.offsetOfPage(page + 1)]"
         locateTask = Task {
-            let offset =
-                try? await webView.callAsyncJavaScript(
-                    "return scholia.offsetOfPage(page)", arguments: ["page": page.page], contentWorld: .page) as? Int
-            guard !Task.isCancelled, let offset else {
+            await resolveFragments(inChapter: page.chapter, in: webView)
+            let offsets =
+                try? await webView.callAsyncJavaScript(script, arguments: ["page": page.page], contentWorld: .page)
+                as? [Int]
+            guard !Task.isCancelled, let offsets, let start = offsets.first, let end = offsets.last else {
                 return
             }
-            controller?.location = ReaderLocation(chapter: page.chapter, offset: offset)
+            controller?.location = ReaderLocation(chapter: page.chapter, offset: start)
+            controller?.pageSpan = ReaderPageSpan(chapter: page.chapter, start: start, end: end)
         }
+    }
+
+    private func resolveFragments(inChapter chapter: Int, in webView: WKWebView) async {
+        let fragments = book.unresolvedFragments(inChapter: chapter)
+        guard
+            !fragments.isEmpty,
+            let offsets = try? await webView.callAsyncJavaScript(
+                "return scholia.offsetsOfElements(ids)", arguments: ["ids": fragments], contentWorld: .page)
+                as? [String: Int]
+        else {
+            return
+        }
+        book.resolveFragments(offsets, inChapter: chapter)
     }
 
     private func countPages() {
@@ -261,15 +287,13 @@ final class ReaderViewController: UIViewController {
         }
         countedLayout = layout
         stopCounting()
-        pageCounts = nil
-        publishPage()
-        guard !layout.isScrolled else {
-            return
-        }
         let key = PageCountCache.key(book: book, style: style, size: layout.size)
-        if let counts = PageCountCache.counts(for: key) {
-            pageCounts = counts
-            publishPage()
+        pageCounts = layout.isScrolled ? nil : PageCountCache.counts(for: key)
+        shownPage = nil
+        controller?.pageSpan = nil
+        publishPage()
+        trackPage()
+        guard !layout.isScrolled, pageCounts == nil else {
             return
         }
         let counter = PageCounter(

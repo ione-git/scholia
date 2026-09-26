@@ -12,7 +12,7 @@ final class ReaderTests: UITestCase {
         let reader = home.openHeroBook()
 
         reader.pageCounter.waitUntil(\.label, equals: "1 of \(bookPages)")
-        XCTAssertEqual(reader.root.label, "Die Verwandlung")
+        XCTAssertEqual(reader.runningHead.label, "Die Verwandlung")
         reader.paragraph(startingWith: "Als Gregor Samsa").waitUntilExists()
         XCTAssertFalse(reader.backButton.exists)
     }
@@ -108,7 +108,7 @@ final class ReaderTests: UITestCase {
         let library = HomeScreen(app: app).waitUntilShown().openLibrary()
 
         let reader = library.openBook("Un matin en ville").waitUntilOpened()
-        XCTAssertEqual(reader.root.label, "Un matin en ville")
+        XCTAssertEqual(reader.runningHead.label, "Un matin en ville")
         reader.paragraph(startingWith: "Le matin, la ville").waitUntilExists()
 
         let back = reader.backToLibrary()
