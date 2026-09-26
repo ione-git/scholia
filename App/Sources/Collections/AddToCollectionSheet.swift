@@ -12,8 +12,6 @@ struct AddToCollectionSheet: View {
     @Query(sort: BookCollection.order) private var collections: [BookCollection]
     @State private var checked: Set<BookCollection>
     @State private var isNamingCollection = false
-    @State private var headerHeight: CGFloat = 0
-    @State private var contentHeight: CGFloat = 0
 
     init(cover: BookCover, title: String, author: String?, selection: Binding<Set<BookCollection>>) {
         self.cover = cover
@@ -40,7 +38,6 @@ struct AddToCollectionSheet: View {
             .padding(.horizontal, .space5)
             .padding(.top, .space6)
             .padding(.bottom, .space3)
-            .onGeometryChange(for: CGFloat.self, of: \.size.height) { headerHeight = $0 }
             ScrollView {
                 VStack(spacing: .space4) {
                     book
@@ -62,11 +59,9 @@ struct AddToCollectionSheet: View {
                     }
                 }
                 .padding(.horizontal, .space5)
-                .onGeometryChange(for: CGFloat.self, of: \.size.height) { contentHeight = $0 }
             }
             .scrollBounceBehavior(.basedOnSize)
         }
-        .presentationDetents([.height(headerHeight + contentHeight)])
         .newCollectionAlert(isPresented: $isNamingCollection) { checked.insert($0) }
     }
 

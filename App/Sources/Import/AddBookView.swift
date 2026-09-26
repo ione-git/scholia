@@ -85,7 +85,7 @@ struct AddBookView: View {
         }
         .modalSheet(isPresented: $isChoosingCollections) {
             AddToCollectionSheet(
-                cover: cover(size: .thumbnail), title: title, author: draft?.author, selection: $collections)
+                cover: cover(size: .thumbnail), title: title, author: trimmedAuthor, selection: $collections)
         }
         .alert(Text("Can’t Add Book"), isPresented: $isShowingSaveFailure) {
             Button("OK") {}
@@ -107,7 +107,7 @@ struct AddBookView: View {
 
     private func cover(size: BookCover.Size) -> BookCover {
         BookCover(
-            title: title, author: draft?.author, color: BookCover.generatedColor(for: title),
+            title: title, author: trimmedAuthor, color: BookCover.generatedColor(for: title),
             image: book.coverImage.map(Image.init(uiImage:)), size: size, isFinished: false,
             finishedValue: Text("Finished"))
     }
@@ -131,11 +131,15 @@ struct AddBookView: View {
             collections.sorted(using: BookCollection.order).map(\.name).formatted(.list(type: .and, width: .narrow)))
     }
 
+    private var trimmedAuthor: String? {
+        let author = author.trimmingCharacters(in: .whitespacesAndNewlines)
+        return author.isEmpty ? nil : author
+    }
+
     private var draft: (title: String, author: String?, language: String)? {
         let title = title.trimmingCharacters(in: .whitespacesAndNewlines)
-        let author = author.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !title.isEmpty, let language else { return nil }
-        return (title, author.isEmpty ? nil : author, language)
+        return (title, trimmedAuthor, language)
     }
 
     private func add() {

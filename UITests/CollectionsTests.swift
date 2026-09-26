@@ -88,6 +88,19 @@ final class CollectionsTests: UITestCase {
         XCTAssertEqual(library.collectionChip("Poetry").label, "Poetry, 0")
     }
 
+    func testAddToCollectionSheetShowsAuthorWhenTitleIsEmpty() throws {
+        let app = launch(
+            LaunchConfiguration(resetsState: true, fixtures: [], opened: [], mocksTranslation: true, now: nil))
+        let addBook = try HomeScreen(app: app).waitUntilShown().openFromOtherApp(.german)
+        addBook.authorField.waitUntil(\.stringValue, equals: "Franz Kafka")
+
+        try addBook.replaceTitle(with: " ")
+        addBook.addButton.waitUntil(\.isEnabled, equals: false)
+
+        let sheet = addBook.chooseCollections()
+        XCTAssertEqual(sheet.bookAuthor.label, "Franz Kafka")
+    }
+
     func testChipFiltersGridByCollection() throws {
         let first = launch(
             LaunchConfiguration(
