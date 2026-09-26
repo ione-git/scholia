@@ -54,6 +54,9 @@
                     link(Text("Translation bubble"), element: "translationBubble") {
                         TranslationBubbleGallery(colorScheme: appearance.colorScheme)
                     }
+                    link(Text("Glass menu"), element: "glassMenu") {
+                        GlassMenuGallery(colorScheme: appearance.colorScheme)
+                    }
                 }
             }
             .navigationTitle("Component Gallery")
@@ -112,6 +115,21 @@
                     }
                 }
                 .padding(.space5)
+                .background(.surfacePaper, in: RoundedRectangle(cornerRadius: .radiusLg))
+                HStack(spacing: .space2) {
+                    button(.back, label: Text("Back"), element: "chromeBack", size: .regular, isActive: false) {}
+                    StackedTitle(
+                        title: Text(verbatim: "Die Verwandlung"), subtitle: Text(verbatim: "Franz Kafka · Erster Teil"),
+                        titleIdentifier: "glassButtonGallery.stackedTitle.title",
+                        subtitleIdentifier: "glassButtonGallery.stackedTitle.subtitle"
+                    )
+                    .frame(maxWidth: .infinity)
+                    button(
+                        .bookmarkFilled, label: Text("Bookmarked. Remove bookmark"), element: "bookmarkFilled",
+                        size: .regular, isActive: false
+                    ) {}
+                }
+                .padding(.space4)
                 .background(.surfacePaper, in: RoundedRectangle(cornerRadius: .radiusLg))
                 HStack(spacing: .space4) {
                     button(
@@ -484,6 +502,32 @@
             TranslationBubble(
                 word: Text(verbatim: word), phase: phase, wordLocale: Locale(identifier: "de"),
                 translationLocale: Locale(identifier: "en"), identifier: "translationBubbleGallery.\(element)")
+        }
+    }
+
+    private struct GlassMenuGallery: View {
+        let colorScheme: ColorScheme?
+
+        var body: some View {
+            GalleryPage(identifier: "glassMenuGallery", colorScheme: colorScheme) {
+                GlassMenu(size: .reader) {
+                    item(Text("Contents"), icon: .contents, element: "contents")
+                    item(Text("Highlights"), icon: .highlighter, element: "highlights")
+                    item(Text("Bookmarks"), icon: .bookmark, element: "bookmarks")
+                    GlassMenuDivider()
+                    GlassMenuItem(Text("Themes & Settings"), sample: Text(verbatim: "Aa")) {}
+                        .accessibilityIdentifier("glassMenuGallery.settings")
+                }
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, .space5)
+                .background(.surfacePaper, in: RoundedRectangle(cornerRadius: .radiusLg))
+            }
+            .navigationTitle("Glass menu")
+        }
+
+        private func item(_ title: Text, icon: Icon, element: String) -> some View {
+            GlassMenuItem(title, icon: icon) {}
+                .accessibilityIdentifier("glassMenuGallery.\(element)")
         }
     }
 
