@@ -20,6 +20,21 @@ final class HomeEmptyTests: UITestCase {
         attachScreenshot("Home-Empty")
     }
 
+    func testLandscapeKeepsEmptyStateBelowHeaderAndScrollsToPill() {
+        XCUIDevice.shared.orientation = .landscapeLeft
+        addTeardownBlock { XCUIDevice.shared.orientation = .portrait }
+        let app = launch(LaunchConfiguration(resetsState: true, fixtures: [], mocksTranslation: true, now: nil))
+        let home = HomeScreen(app: app).waitUntilShown()
+
+        home.emptyCover.waitUntilExists()
+        XCTAssertGreaterThanOrEqual(home.emptyCover.frame.minY, home.addBookButton.frame.maxY - 0.5)
+
+        app.swipeUp()
+
+        home.emptyAddBookButton.waitUntil(\.isHittable, equals: true)
+        XCTAssertLessThanOrEqual(home.emptyAddBookButton.frame.maxY, app.windows.firstMatch.frame.maxY)
+    }
+
     func testAddingFirstBookShowsNormalHome() throws {
         let app = launch(LaunchConfiguration(resetsState: true, fixtures: [], mocksTranslation: true, now: nil))
         let home = HomeScreen(app: app).waitUntilShown()

@@ -20,32 +20,25 @@ struct HomeView: View {
     #endif
 
     var body: some View {
-        Group {
-            if books.isEmpty {
-                ZStack(alignment: .top) {
+        GeometryReader { proxy in
+            ScrollView {
+                VStack(spacing: 0) {
                     header
-                    EmptyHome { isPickingFile = true }
-                        .frame(maxWidth: .infinity, maxHeight: .infinity)
-                        .ignoresSafeArea()
-                }
-            } else {
-                GeometryReader { proxy in
-                    ScrollView {
-                        VStack(spacing: 0) {
-                            header
-                            if let hero = books.first {
-                                HeroBook(book: hero)
-                                    .padding(.top, .space8)
-                                Spacer(minLength: .space6)
-                                LibraryShelf(count: books.count, books: Array(books.dropFirst()))
-                                    .padding(.bottom, .space8)
-                            }
-                        }
-                        .frame(minHeight: proxy.size.height)
+                    if let hero = books.first {
+                        HeroBook(book: hero)
+                            .padding(.top, .space8)
+                        Spacer(minLength: .space6)
+                        LibraryShelf(count: books.count, books: Array(books.dropFirst()))
+                            .padding(.bottom, .space8)
+                    } else {
+                        EmptyHome { isPickingFile = true }
+                            .frame(maxHeight: .infinity)
+                            .padding(.bottom, .controlH + proxy.safeAreaInsets.top - proxy.safeAreaInsets.bottom)
                     }
-                    .scrollBounceBehavior(.basedOnSize)
                 }
+                .frame(minHeight: proxy.size.height)
             }
+            .scrollBounceBehavior(.basedOnSize)
         }
         .background(.surface)
         .toolbar(.hidden, for: .navigationBar)
