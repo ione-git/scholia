@@ -37,6 +37,7 @@ let app = launch(LaunchConfiguration(resetsState: true, fixtures: [.german], ope
 | `opened` | `SCHOLIA_OPENED=drm,german` | these stored books were opened, most recent first: the first at `now`, each next one a minute earlier |
 | `mocksTranslation` | `SCHOLIA_TRANSLATION=mock` | translation provider is the mock |
 | `now` | `SCHOLIA_NOW=<ISO 8601>` | the app's current date and time |
+| `minutesRead` (default 0) | `SCHOLIA_MINUTES_READ=14` | one stored reading session of that many minutes and 0 pages, ending at `now` (daily goal and time left) |
 
 - The app reads `LaunchConfiguration.current` where it builds a dependency (storage, translation provider, clock). A missing key means off, so a plain launch is a normal launch. Parsing exists only in Debug; Release always gets everything off.
 - `resetsState: true` unless the test checks persistence across a relaunch. Fixtures get `now` as their added date; for different added dates seed some books, `terminate()`, and relaunch with `resetsState: false`, the other fixtures and a later `now` (`LibraryTests/testEachSortOrder`). `mocksTranslation: true` always. Set `now` whenever the screen shows dates, reading time or the daily goal.
@@ -44,6 +45,7 @@ let app = launch(LaunchConfiguration(resetsState: true, fixtures: [.german], ope
 - New switch: add a field and key to `LaunchConfiguration` (`init(environment:)` and `environment`), then honour it where the dependency is created.
 - `debug.launchConfiguration` (any screen: `screen.launchConfiguration`) has the configuration the app received as its label (fixtures only if their file is in the bundle) and the app's time zone as its value; see `LaunchConfigurationTests`.
 - `debug.storedLibrary` (any screen: `screen.storedLibrary`) lists the stored books by title, one per line as `title · author · language · file name` (`no author`, `no file` when missing); see `DataModelTests`.
+- `debug.readingSessions` (any screen: `screen.readingSessions`) lists the stored reading sessions by start, one per line as `start – end · N pages`, times in ISO 8601 with fractional seconds; see `GoalTests`. With a fixed `now` a reader session lasts 0 s, so it is stored only if it has forward page turns.
 
 | Fixture | Content |
 |---|---|

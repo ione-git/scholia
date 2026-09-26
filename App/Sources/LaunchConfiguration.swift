@@ -19,6 +19,7 @@ struct LaunchConfiguration {
     var opened: [Fixture]
     var mocksTranslation: Bool
     var now: Date?
+    var minutesRead = 0
 
     static let current = LaunchConfiguration(environment: ProcessInfo.processInfo.environment)
 }
@@ -30,6 +31,7 @@ extension LaunchConfiguration {
         static let opened = "SCHOLIA_OPENED"
         static let translation = "SCHOLIA_TRANSLATION"
         static let now = "SCHOLIA_NOW"
+        static let minutesRead = "SCHOLIA_MINUTES_READ"
     }
 
     init(environment: [String: String]) {
@@ -39,7 +41,8 @@ extension LaunchConfiguration {
                 fixtures: Self.fixtures(environment[Key.fixtures]),
                 opened: Self.fixtures(environment[Key.opened]),
                 mocksTranslation: environment[Key.translation] == "mock",
-                now: environment[Key.now].flatMap { try? Date($0, strategy: .iso8601) }
+                now: environment[Key.now].flatMap { try? Date($0, strategy: .iso8601) },
+                minutesRead: environment[Key.minutesRead].flatMap { Int($0) } ?? 0
             )
         #else
             self.init(resetsState: false, fixtures: [], opened: [], mocksTranslation: false, now: nil)
@@ -66,6 +69,9 @@ extension LaunchConfiguration {
         }
         if let now {
             environment[Key.now] = now.formatted(.iso8601)
+        }
+        if minutesRead > 0 {
+            environment[Key.minutesRead] = String(minutesRead)
         }
         return environment
     }

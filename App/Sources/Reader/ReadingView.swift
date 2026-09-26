@@ -37,6 +37,7 @@ struct ReadingView: View {
         .onChange(of: theme) { recolor() }
         .onChange(of: controller?.location) { _, location in save(location) }
         .onChange(of: controller?.page) { _, page in save(page) }
+        .modifier(ReadingTime(controller: controller))
     }
 
     private var theme: ReaderTheme {
@@ -121,6 +122,7 @@ struct ReadingView: View {
             return
         }
         book.progress = Double(page.number) / Double(page.count)
+        book.pagesLeft = page.count - page.number
         try? modelContext.save()
     }
 }

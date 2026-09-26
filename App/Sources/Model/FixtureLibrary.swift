@@ -3,7 +3,9 @@
     import SwiftData
 
     enum FixtureLibrary {
-        static func seed(_ fixtures: [Fixture], opened: [Fixture], into context: ModelContext, now: Date) throws {
+        static func seed(
+            _ fixtures: [Fixture], opened: [Fixture], minutesRead: Int, into context: ModelContext, now: Date
+        ) throws {
             var stored = Set(try context.fetch(FetchDescriptor<Book>()).map(\.fileName))
             for fixture in fixtures {
                 guard let url = fixture.url, stored.insert(url.lastPathComponent).inserted else { continue }
@@ -18,6 +20,10 @@
             for (position, fixture) in opened.enumerated() {
                 let book = books.first { $0.fileName == fixture.url?.lastPathComponent }
                 book?.openedAt = now.addingTimeInterval(-Double(position) * openedInterval)
+            }
+            if minutesRead > 0 {
+                context.insert(
+                    ReadingSession(start: now.addingTimeInterval(-Double(minutesRead) * 60), end: now, pages: 0))
             }
             try context.save()
         }

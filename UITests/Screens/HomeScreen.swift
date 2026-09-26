@@ -5,7 +5,7 @@ struct HomeScreen: Screen {
 
     var root: XCUIElement { app.staticTexts["home.wordmark"] }
 
-    var goalRing: XCUIElement { app.descendants(matching: .any)["home.goalRing"] }
+    var goalRing: XCUIElement { app.buttons["home.goalRing"] }
     var addBookButton: XCUIElement { app.buttons["home.addBook"] }
     var settingsButton: XCUIElement { app.buttons["home.settings"] }
 
@@ -13,6 +13,7 @@ struct HomeScreen: Screen {
     var heroTitle: XCUIElement { app.staticTexts["home.heroTitle"] }
     var heroAuthor: XCUIElement { app.staticTexts["home.heroAuthor"] }
     var heroProgress: XCUIElement { app.descendants(matching: .any)["home.heroProgress"] }
+    var heroTimeLeft: XCUIElement { app.staticTexts["home.heroTimeLeft"] }
 
     var libraryButton: XCUIElement { app.buttons["home.library"] }
 
@@ -48,6 +49,11 @@ struct HomeScreen: Screen {
     func openUnreadableFromOtherApp(_ fixture: Fixture) throws -> ImportFailureAlert {
         app.open(try fixture.file)
         return ImportFailureAlert(app: app).waitUntilShown()
+    }
+
+    func openGoal() -> GoalPopoverScreen {
+        goalRing.waitUntil(\.isHittable, equals: true).tap()
+        return GoalPopoverScreen(app: app).waitUntilShown()
     }
 
     func openLibrary() -> LibraryScreen {

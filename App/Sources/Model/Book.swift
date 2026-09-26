@@ -13,6 +13,7 @@ final class Book {
     var isFinished: Bool
     var position: ReadingPosition?
     var progress: Double?
+    var pagesLeft: Int?
     var collections: [BookCollection]
     @Relationship(deleteRule: .cascade, inverse: \Highlight.book) var highlights: [Highlight]
     @Relationship(deleteRule: .cascade, inverse: \Bookmark.book) var bookmarks: [Bookmark]
@@ -28,6 +29,7 @@ final class Book {
         isFinished = false
         position = nil
         progress = nil
+        pagesLeft = nil
         collections = []
         highlights = []
         bookmarks = []

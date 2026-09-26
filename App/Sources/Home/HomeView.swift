@@ -14,18 +14,23 @@ struct HomeView: View {
         SortDescriptor(\Book.title),
     ])
     private var books: [Book]
+    @Query private var sessions: [ReadingSession]
+    @Environment(Settings.self) private var settings
+    @State private var today = ReadingStats.day(containing: LaunchConfiguration.current.now ?? .now)
+    @State private var isGoalShown = false
     #if DEBUG
         @State private var prototypeBook: PrototypeBook?
         @State private var isImporting = false
     #endif
 
     var body: some View {
+        let stats = ReadingStats(sessions: sessions, today: today, goalMinutes: settings.dailyGoalMinutes)
         GeometryReader { proxy in
             ScrollView {
                 VStack(spacing: 0) {
-                    header
+                    header(stats)
                     if let hero = books.first {
-                        HeroBook(book: hero)
+                        HeroBook(book: hero, minutesLeft: stats.minutesLeft(in: hero))
                             .padding(.top, .space8)
                         Spacer(minLength: .space6)
                         LibraryShelf(count: books.count, books: Array(books.dropFirst()))
@@ -42,6 +47,9 @@ struct HomeView: View {
         }
         .background(.surface)
         .toolbar(.hidden, for: .navigationBar)
+        .onReceive(NotificationCenter.default.publisher(for: UIApplication.significantTimeChangeNotification)) { _ in
+            today = ReadingStats.day(containing: LaunchConfiguration.current.now ?? .now)
+        }
         #if DEBUG
             .fileImporter(isPresented: $isImporting, allowedContentTypes: [.epub]) { result in
                 guard case .success(let picked) = result else {
@@ -53,12 +61,10 @@ struct HomeView: View {
         #endif
     }
 
-    private var header: some View {
+    private func header(_ stats: ReadingStats) -> some View {
         HStack(spacing: .space2) {
             wordmark
-            GoalRing(value: 0)
-                .accessibilityLabel(Text("Daily goal"))
-                .accessibilityIdentifier("home.goalRing")
+            goalRing(stats)
             Spacer(minLength: 0)
             GlassButton(.add, label: Text("Add a book"), size: .regular, isActive: false) {
                 isPickingFile = true
@@ -71,6 +77,28 @@ struct HomeView: View {
         }
         .frame(height: .controlH)
         .padding(.horizontal, .space5)
+    }
+
+    private func goalRing(_ stats: ReadingStats) -> some View {
+        Button {
+            isGoalShown = true
+        } label: {
+            GoalRing(value: stats.goalProgress, size: .header, isActive: isGoalShown, center: nil)
+                .frame(width: .controlH, height: .controlH)
+                .contentShape(.circle)
+        }
+        .buttonStyle(.plain)
+        .accessibilityLabel(
+            stats.isGoalDone
+                ? Text("Today: goal reached, \(stats.minutesRead) minutes read")
+                : Text("Today: \(stats.minutesRead) of \(stats.goalMinutes) minutes read")
+        )
+        .accessibilityValue(Text(stats.goalProgress, format: .percent.precision(.fractionLength(0))))
+        .accessibilityIdentifier("home.goalRing")
+        .frame(width: GoalRing.Size.header.width, height: GoalRing.Size.header.width)
+        .popover(isPresented: $isGoalShown) {
+            GoalPopover(stats: stats)
+        }
     }
 
     private var wordmark: some View {
@@ -129,6 +157,7 @@ private struct EmptyHome: View {
 
 private struct HeroBook: View {
     let book: Book
+    let minutesLeft: Int?
 
     var body: some View {
         VStack(spacing: .space4) {
@@ -151,12 +180,46 @@ private struct HeroBook: View {
             }
             .multilineTextAlignment(.center)
             .padding(.top, .space2)
-            ProgressBar(value: book.progress ?? 0)
-                .frame(width: BookCover.Size.heroLarge.width)
-                .accessibilityLabel(Text("Progress"))
-                .accessibilityIdentifier("home.heroProgress")
+            VStack(spacing: .space2) {
+                ProgressBar(value: book.progress ?? 0)
+                    .frame(width: BookCover.Size.heroLarge.width)
+                    .accessibilityLabel(Text("Progress"))
+                    .accessibilityIdentifier("home.heroProgress")
+                if let minutesLeft {
+                    TimeLeft(minutes: minutesLeft)
+                }
+            }
         }
         .padding(.horizontal, .space5)
+    }
+}
+
+private struct TimeLeft: View {
+    let minutes: Int
+
+    var body: some View {
+        text
+            .textStyle(.footnote)
+            .foregroundStyle(.inkMuted)
+            .accessibilityLabel(spokenText)
+            .accessibilityIdentifier("home.heroTimeLeft")
+    }
+
+    private var spokenText: Text {
+        let duration = Duration.seconds(minutes * 60).formatted(.units(allowed: [.hours, .minutes], width: .wide))
+        return Text("\(duration) left")
+    }
+
+    private var text: Text {
+        let hours = minutes / 60
+        let rest = minutes % 60
+        if hours == 0 {
+            return Text("\(rest) min left")
+        }
+        if rest == 0 {
+            return Text("\(hours) h left")
+        }
+        return Text("\(hours) h \(rest) min left")
     }
 }
 
