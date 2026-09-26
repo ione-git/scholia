@@ -3,26 +3,40 @@ import XCTest
 private let reminder = "reading-reminder · Time to read · Pick up where you left off."
 
 final class ReminderTests: UITestCase {
-    func testTurningOnAsksPermissionAndSchedulesDailyReminder() throws {
-        let settings = openSettings(resetsState: true)
-        settings.readingReminder.waitUntil(\.label, equals: "none")
-        let permission = try XCTUnwrap(settings.readingReminder.value as? String)
-        XCTAssertNotEqual(permission, "denied", "notifications were denied on this simulator: reinstall the app")
+    func testTurningOnSchedulesDailyReminder() {
+        let settings = openSettings(resetsState: true, notificationPermission: nil)
 
-        settings.reminder.waitUntil(\.isHittable, equals: true).tap()
+        settings.turnOnReminder()
 
-        if permission == "notDetermined" {
-            let prompt = NotificationPermissionScreen().waitUntilShown()
-            XCTAssertEqual(prompt.root.label, "“Scholia” Would Like to Send You Notifications")
-            prompt.allow()
-        }
-        settings.reminder.waitUntil(\.isOn, equals: true)
         settings.readingReminder.waitUntil(\.label, equals: "\(reminder) · 21:00 · repeats")
         XCTAssertEqual(settings.readingReminder.value as? String, "authorized")
     }
 
+    func testDecliningPermissionLeavesReminderOff() {
+        let settings = openSettings(resetsState: true, notificationPermission: .declined)
+        settings.readingReminder.waitUntil(\.label, equals: "none")
+
+        settings.reminder.waitUntil(\.isHittable, equals: true).tap()
+
+        settings.reminder.waitUntil(\.isOn, equals: false)
+        settings.readingReminder.waitUntil(\.label, equals: "none")
+    }
+
+    func testDeniedPermissionShowsNotificationsOffAlert() {
+        let settings = openSettings(resetsState: true, notificationPermission: .denied)
+        settings.readingReminder.waitUntil(\.label, equals: "none")
+
+        settings.reminder.waitUntil(\.isHittable, equals: true).tap()
+
+        let alert = NotificationsOffScreen(app: settings.app).waitUntilShown()
+        XCTAssertEqual(alert.root.label, "Notifications are off")
+        alert.notNow()
+        XCTAssertFalse(settings.reminder.isOn)
+        settings.readingReminder.waitUntil(\.label, equals: "none")
+    }
+
     func testTurningOffCancelsReminder() {
-        let settings = openSettings(resetsState: true)
+        let settings = openSettings(resetsState: true, notificationPermission: nil)
         settings.turnOnReminder()
         settings.readingReminder.waitUntil(\.label, equals: "\(reminder) · 21:00 · repeats")
 
@@ -32,7 +46,7 @@ final class ReminderTests: UITestCase {
     }
 
     func testChangingTimeReschedulesReminder() throws {
-        let settings = openSettings(resetsState: true)
+        let settings = openSettings(resetsState: true, notificationPermission: nil)
         settings.turnOnReminder()
 
         settings.openReminderTime().setMinute("30").close()
@@ -43,23 +57,25 @@ final class ReminderTests: UITestCase {
     }
 
     func testToggleAndTimePersistAcrossRelaunch() throws {
-        var settings = openSettings(resetsState: true)
+        var settings = openSettings(resetsState: true, notificationPermission: nil)
         settings.openReminderTime().setMinute("45").close()
         settings.reminderTime.waitUntil(\.label, equals: try reminderLabel(hour: 21, minute: 45))
         settings.turnOnReminder()
         settings.readingReminder.waitUntil(\.label, equals: "\(reminder) · 21:45 · repeats")
         settings.app.terminate()
 
-        settings = openSettings(resetsState: false)
+        settings = openSettings(resetsState: false, notificationPermission: nil)
 
         settings.reminderTime.waitUntil(\.label, equals: try reminderLabel(hour: 21, minute: 45))
         settings.reminder.waitUntil(\.isOn, equals: true)
         settings.readingReminder.waitUntil(\.label, equals: "\(reminder) · 21:45 · repeats")
     }
 
-    private func openSettings(resetsState: Bool) -> SettingsScreen {
+    private func openSettings(resetsState: Bool, notificationPermission: NotificationPermission?) -> SettingsScreen {
         let app = launch(
-            LaunchConfiguration(resetsState: resetsState, fixtures: [], mocksTranslation: true, now: nil))
+            LaunchConfiguration(
+                resetsState: resetsState, fixtures: [], opened: [], mocksTranslation: true, now: nil,
+                notificationPermission: notificationPermission))
         return HomeScreen(app: app).waitUntilShown().openSettings()
     }
 

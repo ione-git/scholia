@@ -38,7 +38,9 @@ struct SettingsScreen: Screen {
         let asksPermission = readingReminder.waitUntilExists().value as? String == "notDetermined"
         reminder.waitUntil(\.isHittable, equals: true).tap()
         if asksPermission {
-            NotificationPermissionScreen().waitUntilShown().allow()
+            let prompt = NotificationPermissionScreen().waitUntilShown()
+            prompt.root.waitUntil(\.label, equals: "“Scholia” Would Like to Send You Notifications")
+            prompt.allow()
         }
         reminder.waitUntil(\.isOn, equals: true)
     }

@@ -5,7 +5,9 @@ final class LibraryTests: UITestCase {
 
     func testGridShowsEveryBookInThreeColumns() {
         let app = launch(
-            LaunchConfiguration(resetsState: true, fixtures: allFixtures, opened: [], mocksTranslation: true, now: nil))
+            LaunchConfiguration(
+                resetsState: true, fixtures: allFixtures, opened: [], mocksTranslation: true, now: nil,
+                notificationPermission: nil))
         let library = HomeScreen(app: app).waitUntilShown().openLibrary()
 
         XCTAssertEqual(
@@ -29,7 +31,9 @@ final class LibraryTests: UITestCase {
 
     func testSearchFiltersByTitleAndAuthor() {
         let app = launch(
-            LaunchConfiguration(resetsState: true, fixtures: allFixtures, opened: [], mocksTranslation: true, now: nil))
+            LaunchConfiguration(
+                resetsState: true, fixtures: allFixtures, opened: [], mocksTranslation: true, now: nil,
+                notificationPermission: nil))
         let library = HomeScreen(app: app).waitUntilShown().openLibrary()
 
         library.search("kafka")
@@ -55,13 +59,14 @@ final class LibraryTests: UITestCase {
             LaunchConfiguration(
                 resetsState: true, fixtures: [.german, .minimalMetadata, .corrupted], opened: [],
                 mocksTranslation: true,
-                now: try Date("2026-03-01T10:00:00Z", strategy: .iso8601)))
+                now: try Date("2026-03-01T10:00:00Z", strategy: .iso8601), notificationPermission: nil))
         HomeScreen(app: earlier).waitUntilShown()
         earlier.terminate()
         let app = launch(
             LaunchConfiguration(
                 resetsState: false, fixtures: [.frenchNoCover], opened: [.minimalMetadata, .german],
-                mocksTranslation: true, now: try Date("2026-03-02T10:00:00Z", strategy: .iso8601)))
+                mocksTranslation: true, now: try Date("2026-03-02T10:00:00Z", strategy: .iso8601),
+                notificationPermission: nil))
         let library = HomeScreen(app: app).waitUntilShown().openLibrary()
 
         XCTAssertEqual(library.shownTitles, ["Minimal", "Die Verwandlung", "Un matin en ville", "Corrupted"])
@@ -83,7 +88,7 @@ final class LibraryTests: UITestCase {
         let first = launch(
             LaunchConfiguration(
                 resetsState: true, fixtures: [.german, .frenchNoCover, .minimalMetadata], opened: [.frenchNoCover],
-                mocksTranslation: true, now: nil))
+                mocksTranslation: true, now: nil, notificationPermission: nil))
         let library = HomeScreen(app: first).waitUntilShown().openLibrary()
         XCTAssertEqual(library.shownTitles, ["Un matin en ville", "Die Verwandlung", "Minimal"])
         library.sort(by: "title")
@@ -91,7 +96,9 @@ final class LibraryTests: UITestCase {
         first.terminate()
 
         let relaunched = launch(
-            LaunchConfiguration(resetsState: false, fixtures: [], opened: [], mocksTranslation: true, now: nil))
+            LaunchConfiguration(
+                resetsState: false, fixtures: [], opened: [], mocksTranslation: true, now: nil,
+                notificationPermission: nil))
         let reopened = HomeScreen(app: relaunched).waitUntilShown().openLibrary()
 
         XCTAssertEqual(reopened.shownTitles, ["Die Verwandlung", "Minimal", "Un matin en ville"])
@@ -100,7 +107,9 @@ final class LibraryTests: UITestCase {
 
     func testMenuShowsActionsAndSortSubmenu() {
         let app = launch(
-            LaunchConfiguration(resetsState: true, fixtures: allFixtures, opened: [], mocksTranslation: true, now: nil))
+            LaunchConfiguration(
+                resetsState: true, fixtures: allFixtures, opened: [], mocksTranslation: true, now: nil,
+                notificationPermission: nil))
         let library = HomeScreen(app: app).waitUntilShown().openLibrary()
 
         let menu = library.openMenu()

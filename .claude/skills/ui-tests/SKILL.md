@@ -27,7 +27,7 @@ description: Write, run and debug Scholia UI tests (XCUITest) — screen objects
 ## Launch configuration
 
 ```swift
-let app = launch(LaunchConfiguration(resetsState: true, fixtures: [.german], opened: [], mocksTranslation: true, now: nil))
+let app = launch(LaunchConfiguration(resetsState: true, fixtures: [.german], opened: [], mocksTranslation: true, now: nil, notificationPermission: nil))
 ```
 
 | Field | Environment key | Meaning for the app |
@@ -37,6 +37,7 @@ let app = launch(LaunchConfiguration(resetsState: true, fixtures: [.german], ope
 | `opened` | `SCHOLIA_OPENED=drm,german` | these stored books were opened, most recent first: the first at `now`, each next one a minute earlier |
 | `mocksTranslation` | `SCHOLIA_TRANSLATION=mock` | translation provider is the mock |
 | `now` | `SCHOLIA_NOW=<ISO 8601>` | the app's current date and time |
+| `notificationPermission` | `SCHOLIA_NOTIFICATIONS=declined` or `denied` | turning the reminder on gets this answer without asking the system: `declined` as if "Don't Allow" was tapped on the prompt, `denied` as if notifications were already off |
 
 - The app reads `LaunchConfiguration.current` where it builds a dependency (storage, translation provider, clock). A missing key means off, so a plain launch is a normal launch. Parsing exists only in Debug; Release always gets everything off.
 - `resetsState: true` unless the test checks persistence across a relaunch. Fixtures get `now` as their added date; for different added dates seed some books, `terminate()`, and relaunch with `resetsState: false`, the other fixtures and a later `now` (`LibraryTests/testEachSortOrder`). `mocksTranslation: true` always. Set `now` whenever the screen shows dates, reading time or the daily goal.
@@ -45,7 +46,7 @@ let app = launch(LaunchConfiguration(resetsState: true, fixtures: [.german], ope
 - `debug.launchConfiguration` (any screen: `screen.launchConfiguration`) has the configuration the app received as its label (fixtures only if their file is in the bundle) and the app's time zone as its value; see `LaunchConfigurationTests`.
 - `debug.storedLibrary` (any screen: `screen.storedLibrary`) lists the stored books by title, one per line as `title · author · language · file name` (`no author`, `no file` when missing); see `DataModelTests`.
 - `debug.readingReminder` (any screen: `screen.readingReminder`) has the pending local notifications as its label, one per line as `identifier · title · body · HH:mm · repeats` (`none` when there are none), and the notification permission as its value (`notDetermined`, `authorized`, `denied`); see `ReminderTests`.
-- Notification permission is not reset by `resetsState` and cannot be changed in the simulator's Settings app: a simulator asks once, then keeps the answer until the app is uninstalled (`xcrun simctl uninstall <udid> com.ione.scholia`). Turn the reminder on with `SettingsScreen.turnOnReminder()`, which allows the system prompt when it comes; never deny it in a test.
+- Notification permission is not reset by `resetsState` and cannot be changed in the simulator's Settings app: a simulator asks once, then keeps the answer until the app is uninstalled (`xcrun simctl uninstall <udid> com.ione.scholia`). Turn the reminder on with `SettingsScreen.turnOnReminder()`, which checks the system prompt's title and allows it when it comes; never deny it in a test, use `notificationPermission` instead.
 
 | Fixture | Content |
 |---|---|
@@ -73,7 +74,7 @@ struct LibraryScreen: Screen {
 
 final class LibraryTests: UITestCase {
     func testOpensBook() {
-        let app = launch(LaunchConfiguration(resetsState: true, fixtures: [.german], opened: [], mocksTranslation: true, now: nil))
+        let app = launch(LaunchConfiguration(resetsState: true, fixtures: [.german], opened: [], mocksTranslation: true, now: nil, notificationPermission: nil))
         let reader = LibraryScreen(app: app).waitUntilShown().open("Die Verwandlung")
         reader.title.waitUntil(\.label, equals: "Die Verwandlung")
     }

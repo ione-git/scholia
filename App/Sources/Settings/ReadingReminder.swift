@@ -11,6 +11,11 @@ enum ReadingReminder {
     private static let identifier = "reading-reminder"
 
     static func requestPermission() async -> Permission {
+        switch LaunchConfiguration.current.notificationPermission {
+        case .declined: return .declined
+        case .denied: return .turnedOff
+        case nil: break
+        }
         let center = UNUserNotificationCenter.current()
         if await center.notificationSettings().authorizationStatus == .denied {
             return .turnedOff

@@ -6,7 +6,7 @@ final class HomeTests: UITestCase {
             LaunchConfiguration(
                 resetsState: true, fixtures: [.german, .frenchNoCover, .minimalMetadata], opened: [],
                 mocksTranslation: true,
-                now: nil))
+                now: nil, notificationPermission: nil))
         let home = HomeScreen(app: app).waitUntilShown()
 
         home.heroTitle.waitUntil(\.label, equals: "Die Verwandlung")
@@ -28,7 +28,8 @@ final class HomeTests: UITestCase {
     func testSingleBookIsHeroWithEmptyRow() {
         let app = launch(
             LaunchConfiguration(
-                resetsState: true, fixtures: [.minimalMetadata], opened: [], mocksTranslation: true, now: nil))
+                resetsState: true, fixtures: [.minimalMetadata], opened: [], mocksTranslation: true, now: nil,
+                notificationPermission: nil))
         let home = HomeScreen(app: app).waitUntilShown()
 
         home.heroTitle.waitUntil(\.label, equals: "Minimal")
@@ -39,7 +40,9 @@ final class HomeTests: UITestCase {
 
     func testLibraryOpensFromHome() {
         let app = launch(
-            LaunchConfiguration(resetsState: true, fixtures: [.german], opened: [], mocksTranslation: true, now: nil))
+            LaunchConfiguration(
+                resetsState: true, fixtures: [.german], opened: [], mocksTranslation: true, now: nil,
+                notificationPermission: nil))
         let home = HomeScreen(app: app).waitUntilShown()
 
         home.openLibrary().goBack()
@@ -49,7 +52,9 @@ final class HomeTests: UITestCase {
 
     func testHeaderHasGoalRingAndGlassButtonsAndOpensSettings() {
         let app = launch(
-            LaunchConfiguration(resetsState: true, fixtures: [.german], opened: [], mocksTranslation: true, now: nil))
+            LaunchConfiguration(
+                resetsState: true, fixtures: [.german], opened: [], mocksTranslation: true, now: nil,
+                notificationPermission: nil))
         let home = HomeScreen(app: app).waitUntilShown()
 
         XCTAssertEqual(home.goalRing.waitUntilExists().frame.size, CGSize(width: 28, height: 28))
