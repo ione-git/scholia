@@ -4,6 +4,7 @@ public enum Icon: Sendable {
     case back
     case add
     case bookmark
+    case bookmarkFilled
     case more
     case chevron
     case check
@@ -15,6 +16,8 @@ public enum Icon: Sendable {
     case collection
     case info
     case trash
+    case contents
+    case highlighter
 
     static let grid: CGFloat = 24
 
@@ -26,7 +29,7 @@ public enum Icon: Sendable {
         case .add:
             path.addLines([CGPoint(x: 12, y: 5), CGPoint(x: 12, y: 19)])
             path.addLines([CGPoint(x: 5, y: 12), CGPoint(x: 19, y: 12)])
-        case .bookmark:
+        case .bookmark, .bookmarkFilled:
             path.addLines([
                 CGPoint(x: 6, y: 4), CGPoint(x: 18, y: 4), CGPoint(x: 18, y: 21), CGPoint(x: 12, y: 17),
                 CGPoint(x: 6, y: 21),
@@ -123,6 +126,18 @@ public enum Icon: Sendable {
             path.addLines([CGPoint(x: 4, y: 17), CGPoint(x: 7, y: 20), CGPoint(x: 10, y: 17)])
             path.addLines([CGPoint(x: 17, y: 20), CGPoint(x: 17, y: 4)])
             path.addLines([CGPoint(x: 14, y: 7), CGPoint(x: 17, y: 4), CGPoint(x: 20, y: 7)])
+        case .contents:
+            for y: CGFloat in [6, 12, 18] {
+                path.addLines([CGPoint(x: 8, y: y), CGPoint(x: 20, y: y)])
+                path.addLines([CGPoint(x: 4, y: y), CGPoint(x: 4.01, y: y)])
+            }
+        case .highlighter:
+            path.addLines([CGPoint(x: 4, y: 20), CGPoint(x: 10, y: 20)])
+            path.addLines([
+                CGPoint(x: 9.5, y: 16.5), CGPoint(x: 5, y: 12), CGPoint(x: 13, y: 4), CGPoint(x: 17.5, y: 8.5),
+            ])
+            path.closeSubpath()
+            path.addLines([CGPoint(x: 12, y: 7), CGPoint(x: 17, y: 12)])
         }
         let scale = min(rect.width, rect.height) / Self.grid
         return path.applying(
@@ -130,6 +145,7 @@ public enum Icon: Sendable {
     }
 
     var isFilled: Bool { self == .more }
+    var isStrokedAndFilled: Bool { self == .bookmarkFilled }
 }
 
 extension Icon {
@@ -166,6 +182,11 @@ struct IconView: View {
             } else {
                 IconShape(icon: icon)
                     .stroke(style: StrokeStyle(lineWidth: stroke * size / Icon.grid, lineCap: .round, lineJoin: .round))
+                    .background {
+                        if icon.isStrokedAndFilled {
+                            IconShape(icon: icon).fill()
+                        }
+                    }
             }
         }
         .frame(width: size, height: size)

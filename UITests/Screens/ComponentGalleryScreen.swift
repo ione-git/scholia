@@ -32,6 +32,7 @@ struct ComponentGalleryScreen: Screen {
     }
     func openPresentations() -> PresentationGalleryScreen { open("presentations", as: PresentationGalleryScreen.init) }
     func openSelection() -> SelectionGalleryScreen { open("selection", as: SelectionGalleryScreen.init) }
+    func openGlassMenu() -> GlassMenuGalleryScreen { open("glassMenu", as: GlassMenuGalleryScreen.init) }
 }
 
 protocol ComponentGalleryPage: Screen {}
@@ -49,6 +50,15 @@ struct GlassButtonGalleryScreen: ComponentGalleryPage {
     var root: XCUIElement { app.scrollViews["glassButtonGallery.scrollView"] }
 
     func button(_ element: String) -> XCUIElement { app.buttons["glassButtonGallery.\(element)"] }
+    func text(_ element: String) -> XCUIElement { app.staticTexts["glassButtonGallery.\(element)"] }
+}
+
+struct GlassMenuGalleryScreen: ComponentGalleryPage {
+    let app: XCUIApplication
+
+    var root: XCUIElement { app.scrollViews["glassMenuGallery.scrollView"] }
+
+    func item(_ element: String) -> XCUIElement { app.buttons["glassMenuGallery.\(element)"] }
 }
 
 struct ChipGalleryScreen: ComponentGalleryPage {

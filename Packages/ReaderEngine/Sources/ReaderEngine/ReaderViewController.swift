@@ -178,6 +178,7 @@ final class ReaderViewController: UIViewController {
         }
         shownPage = page
         controller?.word = nil
+        controller?.pageSpan = nil
         publishPage()
         locate(page)
     }
@@ -244,13 +245,16 @@ final class ReaderViewController: UIViewController {
             return
         }
         locateTask = Task {
-            let offset =
+            let offsets =
                 try? await webView.callAsyncJavaScript(
-                    "return scholia.offsetOfPage(page)", arguments: ["page": page.page], contentWorld: .page) as? Int
-            guard !Task.isCancelled, let offset else {
+                    "return [scholia.offsetOfPage(page), scholia.offsetOfPage(page + 1)]",
+                    arguments: ["page": page.page],
+                    contentWorld: .page) as? [Int]
+            guard !Task.isCancelled, let offsets, let start = offsets.first, let end = offsets.last else {
                 return
             }
-            controller?.location = ReaderLocation(chapter: page.chapter, offset: offset)
+            controller?.location = ReaderLocation(chapter: page.chapter, offset: start)
+            controller?.pageSpan = ReaderPageSpan(chapter: page.chapter, start: start, end: end)
         }
     }
 
@@ -261,15 +265,13 @@ final class ReaderViewController: UIViewController {
         }
         countedLayout = layout
         stopCounting()
-        pageCounts = nil
-        publishPage()
-        guard !layout.isScrolled else {
-            return
-        }
         let key = PageCountCache.key(book: book, style: style, size: layout.size)
-        if let counts = PageCountCache.counts(for: key) {
-            pageCounts = counts
-            publishPage()
+        pageCounts = layout.isScrolled ? nil : PageCountCache.counts(for: key)
+        shownPage = nil
+        controller?.pageSpan = nil
+        publishPage()
+        trackPage()
+        guard !layout.isScrolled, pageCounts == nil else {
             return
         }
         let counter = PageCounter(

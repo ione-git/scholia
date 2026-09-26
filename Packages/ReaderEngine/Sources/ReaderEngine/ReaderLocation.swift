@@ -10,6 +10,28 @@ public struct ReaderLocation: Codable, Hashable, Sendable {
     }
 }
 
+extension ReaderLocation: Comparable {
+    public static func < (lhs: ReaderLocation, rhs: ReaderLocation) -> Bool {
+        (lhs.chapter, lhs.offset) < (rhs.chapter, rhs.offset)
+    }
+}
+
+public struct ReaderPageSpan: Equatable, Sendable {
+    public var chapter: Int
+    public var start: Int
+    public var end: Int
+
+    public func contains(_ location: ReaderLocation) -> Bool {
+        location.chapter == chapter && start <= location.offset
+            && (location.offset < end || location.offset == start)
+    }
+}
+
+public struct ReaderChapter: Equatable, Sendable {
+    public var title: String
+    public var location: ReaderLocation
+}
+
 public struct ReaderTextRange: Codable, Hashable, Sendable {
     public var chapter: String
     public var text: String
