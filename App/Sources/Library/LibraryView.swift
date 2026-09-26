@@ -132,7 +132,7 @@ private struct LibraryMenu: View {
     @State private var isSortShown = false
 
     var body: some View {
-        GlassMenu {
+        GlassMenu(size: .regular) {
             if isSortShown {
                 GlassMenuHeader(Text("Sort by")) { isSortShown = false }
                     .accessibilityIdentifier("librarySortMenu.back")

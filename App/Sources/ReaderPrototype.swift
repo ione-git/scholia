@@ -24,6 +24,8 @@
                     failed
                 }
             }
+            .accessibilityElement(children: .contain)
+            .accessibilityIdentifier("reader.page")
             .environment(\.colorScheme, theme.isDark ? .dark : .light)
             .statusBarHidden()
             .task { await open() }

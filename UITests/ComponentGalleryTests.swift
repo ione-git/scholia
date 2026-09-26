@@ -10,9 +10,11 @@ final class ComponentGalleryTests: UITestCase {
 
             let glassButtons = gallery.openGlassButtons()
             XCTAssertEqual(glassButtons.root.value as? String, appearance.rawValue)
-            for element in ["back", "add", "bookmark", "menu", "readerBookmark", "readerMenu"] {
+            for element in ["back", "add", "bookmark", "menu", "readerBookmark", "readerMenu", "bookmarkFilled"] {
                 glassButtons.button(element).waitUntilExists()
             }
+            glassButtons.text("stackedTitle.title").waitUntilExists()
+            glassButtons.text("stackedTitle.subtitle").waitUntilExists()
             attachScreenshot("GlassButton\(suffix)")
             gallery = glassButtons.goBack()
 
@@ -65,6 +67,14 @@ final class ComponentGalleryTests: UITestCase {
             let popover = presentations.openPopover()
             XCTAssertEqual(popover.root.value as? String, appearance.rawValue)
             attachScreenshot("Popover\(suffix)")
+            gallery = popover.dismiss().goBack()
+
+            let menu = gallery.openGlassMenu()
+            XCTAssertEqual(menu.root.value as? String, appearance.rawValue)
+            for element in ["contents", "highlights", "bookmarks", "settings"] {
+                menu.item(element).waitUntilExists()
+            }
+            attachScreenshot("GlassMenu\(suffix)")
         }
     }
 
@@ -85,6 +95,17 @@ final class ComponentGalleryTests: UITestCase {
         let readerMenu = glassButtons.button("readerMenu").waitUntil(\.isSelected, equals: false)
         readerMenu.tap()
         readerMenu.waitUntil(\.isSelected, equals: true)
+    }
+
+    func testReaderGlassMenuHasDesignSizesAndHidesTheTypeSample() {
+        let menu = openGallery().openGlassMenu()
+        let items = ["contents", "highlights", "bookmarks", "settings"].map { menu.item($0).waitUntilExists() }
+
+        XCTAssertEqual(items.map(\.frame.height), [48, 48, 48, 48])
+        XCTAssertEqual(items.map(\.frame.width), [252, 252, 252, 252])
+        XCTAssertEqual(items[3].label, "Themes & Settings")
+        XCTAssertEqual(items[3].frame.minY - items[2].frame.maxY, 14, accuracy: 0.5)
+        XCTAssertEqual(items[1].frame.minY - items[0].frame.maxY, 0.5, accuracy: 0.5)
     }
 
     func testChipSelectsOneCollectionAndNewChipAddsOne() {

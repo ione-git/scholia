@@ -5,9 +5,14 @@ private let bookOpenTimeout: TimeInterval = 30
 struct ReaderScreen: Screen {
     let app: XCUIApplication
 
-    var root: XCUIElement { app.staticTexts["reader.runningHead"] }
+    var root: XCUIElement { app.descendants(matching: .any)["reader.page"] }
+    var runningHead: XCUIElement { app.staticTexts["reader.runningHead"] }
+    var title: XCUIElement { app.staticTexts["reader.title"] }
+    var subtitle: XCUIElement { app.staticTexts["reader.subtitle"] }
     var pageCounter: XCUIElement { app.staticTexts["reader.pageCounter"] }
     var backButton: XCUIElement { app.buttons["reader.back"] }
+    var bookmarkButton: XCUIElement { app.buttons["reader.bookmark"] }
+    var menuButton: XCUIElement { app.buttons["reader.menu"] }
     var failure: XCUIElement { app.staticTexts["reader.failure"] }
     var word: XCUIElement { app.staticTexts["reader.word"] }
     var sentence: XCUIElement { app.staticTexts["reader.sentence"] }
@@ -40,6 +45,15 @@ struct ReaderScreen: Screen {
     func hideChrome() {
         tapMargin()
         backButton.waitUntilGone()
+    }
+
+    func openMenu() -> ReaderMenuScreen {
+        menuButton.waitUntil(\.isHittable, equals: true).tap()
+        return ReaderMenuScreen(app: app).waitUntilShown()
+    }
+
+    func toggleBookmark() {
+        bookmarkButton.waitUntil(\.isEnabled, equals: true).tap()
     }
 
     @discardableResult

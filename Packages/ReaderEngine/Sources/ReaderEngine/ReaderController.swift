@@ -6,6 +6,7 @@ public final class ReaderController {
     public let book: ReaderBook
     public internal(set) var page: ReaderPage?
     public internal(set) var location: ReaderLocation?
+    public internal(set) var pageSpan: ReaderPageSpan?
     public internal(set) var word: ReaderWord?
     public var colors: ReaderColors {
         didSet { viewController.apply(colors) }
