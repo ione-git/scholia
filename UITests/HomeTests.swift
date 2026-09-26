@@ -6,7 +6,7 @@ final class HomeTests: UITestCase {
             LaunchConfiguration(
                 resetsState: true, fixtures: [.german, .frenchNoCover, .minimalMetadata], opened: [],
                 mocksTranslation: true,
-                now: nil, notificationPermission: nil))
+                now: nil, notificationPermission: nil, unreadableStore: false))
         let home = HomeScreen(app: app).waitUntilShown()
 
         home.heroTitle.waitUntil(\.label, equals: "Die Verwandlung")
@@ -29,7 +29,7 @@ final class HomeTests: UITestCase {
         let app = launch(
             LaunchConfiguration(
                 resetsState: true, fixtures: [.minimalMetadata], opened: [], mocksTranslation: true, now: nil,
-                notificationPermission: nil))
+                notificationPermission: nil, unreadableStore: false))
         let home = HomeScreen(app: app).waitUntilShown()
 
         home.heroTitle.waitUntil(\.label, equals: "Minimal")
@@ -42,7 +42,7 @@ final class HomeTests: UITestCase {
         let app = launch(
             LaunchConfiguration(
                 resetsState: true, fixtures: [.german], opened: [], mocksTranslation: true, now: nil,
-                notificationPermission: nil))
+                notificationPermission: nil, unreadableStore: false))
         let home = HomeScreen(app: app).waitUntilShown()
 
         home.openLibrary().goBack()
@@ -54,7 +54,7 @@ final class HomeTests: UITestCase {
         let app = launch(
             LaunchConfiguration(
                 resetsState: true, fixtures: [.german], opened: [], mocksTranslation: true, now: nil,
-                notificationPermission: nil))
+                notificationPermission: nil, unreadableStore: false))
         let home = HomeScreen(app: app).waitUntilShown()
 
         XCTAssertEqual(home.goalRing.waitUntilExists().frame.size, CGSize(width: 28, height: 28))

@@ -1,13 +1,15 @@
 import Foundation
 import SwiftData
 
-@Model
-final class ReadingSession {
-    var start: Date
-    var end: Date
+extension SchemaV1 {
+    @Model
+    final class ReadingSession {
+        var start: Date
+        var end: Date
 
-    init(start: Date, end: Date) {
-        self.start = start
-        self.end = end
+        init(start: Date, end: Date) {
+            self.start = start
+            self.end = end
+        }
     }
 }

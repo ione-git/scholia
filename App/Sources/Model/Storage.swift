@@ -6,16 +6,23 @@ enum Storage {
         path: "Books", directoryHint: .isDirectory)
 
     static func makeContainer(_ configuration: LaunchConfiguration) throws -> ModelContainer {
-        let schema = Schema([
-            Book.self, BookCollection.self, Highlight.self, Bookmark.self, ReadingSession.self, Settings.self,
-        ])
+        let store = ModelConfiguration()
+        #if DEBUG
+            if configuration.unreadableStore {
+                try FileManager.default.createDirectory(
+                    at: store.url.deletingLastPathComponent(), withIntermediateDirectories: true)
+                try Data("unreadable".utf8).write(to: store.url)
+            }
+        #endif
         if configuration.resetsState {
-            try ModelContainer(for: schema).erase()
-            if FileManager.default.fileExists(atPath: booksDirectory.path(percentEncoded: false)) {
-                try FileManager.default.removeItem(at: booksDirectory)
+            for url in files(of: store) + [booksDirectory]
+            where FileManager.default.fileExists(atPath: url.path(percentEncoded: false)) {
+                try FileManager.default.removeItem(at: url)
             }
         }
-        let container = try ModelContainer(for: schema)
+        let container = try ModelContainer(
+            for: Schema(versionedSchema: SchemaV1.self), migrationPlan: ScholiaMigrationPlan.self,
+            configurations: store)
         #if DEBUG
             try FixtureLibrary.seed(
                 configuration.fixtures, opened: configuration.opened, into: container.mainContext,
@@ -32,5 +39,14 @@ enum Storage {
         context.insert(settings)
         try context.save()
         return settings
+    }
+
+    private static func files(of store: ModelConfiguration) -> [URL] {
+        let path = store.url.path(percentEncoded: false)
+        let name = store.url.deletingPathExtension().lastPathComponent
+        return [
+            store.url, URL(filePath: path + "-wal"), URL(filePath: path + "-shm"),
+            store.url.deletingLastPathComponent().appending(path: ".\(name)_SUPPORT", directoryHint: .isDirectory),
+        ]
     }
 }

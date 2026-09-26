@@ -8,7 +8,8 @@ final class LaunchConfigurationTests: UITestCase {
             opened: [.german],
             mocksTranslation: true,
             now: try Date("2026-03-14T09:30:00Z", strategy: .iso8601),
-            notificationPermission: nil
+            notificationPermission: nil,
+            unreadableStore: false
         )
         let root = HomeScreen(app: launch(configuration)).waitUntilShown()
         root.launchConfiguration.waitUntil(\.label, equals: configuration.summary)

@@ -12,14 +12,14 @@ final class DataModelTests: UITestCase {
         let seeded = launch(
             LaunchConfiguration(
                 resetsState: true, fixtures: [.german, .frenchNoCover, .minimalMetadata, .corrupted, .drm], opened: [],
-                mocksTranslation: true, now: nil, notificationPermission: nil))
+                mocksTranslation: true, now: nil, notificationPermission: nil, unreadableStore: false))
         HomeScreen(app: seeded).waitUntilShown().storedLibrary.waitUntil(\.label, equals: library)
         seeded.terminate()
 
         let relaunched = launch(
             LaunchConfiguration(
                 resetsState: false, fixtures: [], opened: [], mocksTranslation: true, now: nil,
-                notificationPermission: nil))
+                notificationPermission: nil, unreadableStore: false))
         HomeScreen(app: relaunched).waitUntilShown().storedLibrary.waitUntil(\.label, equals: library)
     }
 
@@ -27,7 +27,7 @@ final class DataModelTests: UITestCase {
         let first = launch(
             LaunchConfiguration(
                 resetsState: true, fixtures: [.german, .frenchNoCover], opened: [], mocksTranslation: true, now: nil,
-                notificationPermission: nil))
+                notificationPermission: nil, unreadableStore: false))
         HomeScreen(app: first).waitUntilShown().storedLibrary.waitUntil(
             \.label,
             equals: """
@@ -39,7 +39,7 @@ final class DataModelTests: UITestCase {
         let reset = launch(
             LaunchConfiguration(
                 resetsState: true, fixtures: [.german], opened: [], mocksTranslation: true, now: nil,
-                notificationPermission: nil))
+                notificationPermission: nil, unreadableStore: false))
         HomeScreen(app: reset).waitUntilShown().storedLibrary.waitUntil(
             \.label, equals: "Die Verwandlung · Franz Kafka · de · german.epub")
     }
@@ -48,7 +48,7 @@ final class DataModelTests: UITestCase {
         let first = launch(
             LaunchConfiguration(
                 resetsState: true, fixtures: [.german], opened: [], mocksTranslation: true, now: nil,
-                notificationPermission: nil))
+                notificationPermission: nil, unreadableStore: false))
         HomeScreen(app: first).waitUntilShown().storedLibrary.waitUntil(
             \.label, equals: "Die Verwandlung · Franz Kafka · de · german.epub")
         first.terminate()
@@ -56,12 +56,21 @@ final class DataModelTests: UITestCase {
         let again = launch(
             LaunchConfiguration(
                 resetsState: false, fixtures: [.german, .frenchNoCover], opened: [], mocksTranslation: true, now: nil,
-                notificationPermission: nil))
+                notificationPermission: nil, unreadableStore: false))
         HomeScreen(app: again).waitUntilShown().storedLibrary.waitUntil(
             \.label,
             equals: """
                 Die Verwandlung · Franz Kafka · de · german.epub
                 Un matin en ville · Scholia · fr · french-no-cover.epub
                 """)
+    }
+
+    func testResetRecoversFromUnreadableStore() {
+        let app = launch(
+            LaunchConfiguration(
+                resetsState: true, fixtures: [.german], opened: [], mocksTranslation: true, now: nil,
+                notificationPermission: nil, unreadableStore: true))
+        HomeScreen(app: app).waitUntilShown().storedLibrary.waitUntil(
+            \.label, equals: "Die Verwandlung · Franz Kafka · de · german.epub")
     }
 }

@@ -8,7 +8,7 @@ final class SettingsTests: UITestCase {
         let app = launch(
             LaunchConfiguration(
                 resetsState: true, fixtures: [], opened: [], mocksTranslation: true, now: nil,
-                notificationPermission: nil))
+                notificationPermission: nil, unreadableStore: false))
         let settings = HomeScreen(app: app).waitUntilShown().openSettings()
 
         XCTAssertEqual(settings.translateTo.waitUntilExists().label, "Translate to, English")
@@ -49,7 +49,7 @@ final class SettingsTests: UITestCase {
         let app = launch(
             LaunchConfiguration(
                 resetsState: true, fixtures: [], opened: [], mocksTranslation: true, now: nil,
-                notificationPermission: nil))
+                notificationPermission: nil, unreadableStore: false))
         var settings = HomeScreen(app: app).waitUntilShown().openSettings()
 
         settings.chooseTranslationLanguage("de")
@@ -69,7 +69,7 @@ final class SettingsTests: UITestCase {
         let relaunched = launch(
             LaunchConfiguration(
                 resetsState: false, fixtures: [], opened: [], mocksTranslation: true, now: nil,
-                notificationPermission: nil))
+                notificationPermission: nil, unreadableStore: false))
         settings = HomeScreen(app: relaunched).waitUntilShown().openSettings()
 
         XCTAssertEqual(settings.translateTo.waitUntilExists().label, "Translate to, German")
@@ -91,7 +91,7 @@ final class SettingsTests: UITestCase {
         let app = launch(
             LaunchConfiguration(
                 resetsState: true, fixtures: [], opened: [], mocksTranslation: true, now: nil,
-                notificationPermission: nil))
+                notificationPermission: nil, unreadableStore: false))
         let home = HomeScreen(app: app).waitUntilShown()
         waitUntilBackground(home.background, is: lightBackground)
         var settings = home.openSettings()
@@ -122,7 +122,7 @@ final class SettingsTests: UITestCase {
         app.launchEnvironment =
             LaunchConfiguration(
                 resetsState: true, fixtures: [], opened: [], mocksTranslation: true, now: nil,
-                notificationPermission: nil
+                notificationPermission: nil, unreadableStore: false
             )
             .environment
         app.launchArguments = ["-AppleLanguages", "(\(deviceLanguage))"]

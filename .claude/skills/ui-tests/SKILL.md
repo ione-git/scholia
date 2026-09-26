@@ -27,7 +27,7 @@ description: Write, run and debug Scholia UI tests (XCUITest) — screen objects
 ## Launch configuration
 
 ```swift
-let app = launch(LaunchConfiguration(resetsState: true, fixtures: [.german], opened: [], mocksTranslation: true, now: nil, notificationPermission: nil))
+let app = launch(LaunchConfiguration(resetsState: true, fixtures: [.german], opened: [], mocksTranslation: true, now: nil, notificationPermission: nil, unreadableStore: false))
 ```
 
 | Field | Environment key | Meaning for the app |
@@ -38,6 +38,7 @@ let app = launch(LaunchConfiguration(resetsState: true, fixtures: [.german], ope
 | `mocksTranslation` | `SCHOLIA_TRANSLATION=mock` | translation provider is the mock |
 | `now` | `SCHOLIA_NOW=<ISO 8601>` | the app's current date and time |
 | `notificationPermission` | `SCHOLIA_NOTIFICATIONS=declined` or `denied` | turning the reminder on gets this answer without asking the system: `declined` as if "Don't Allow" was tapped on the prompt, `denied` as if notifications were already off |
+| `unreadableStore` | `SCHOLIA_UNREADABLE_STORE=1` | before anything else, the store file is overwritten with bytes that are not a database, like a store left by another branch's schema; only for testing that `resetsState` recovers (`DataModelTests`), `false` everywhere else |
 
 - The app reads `LaunchConfiguration.current` where it builds a dependency (storage, translation provider, clock). A missing key means off, so a plain launch is a normal launch. Parsing exists only in Debug; Release always gets everything off.
 - `resetsState: true` unless the test checks persistence across a relaunch. Fixtures get `now` as their added date; for different added dates seed some books, `terminate()`, and relaunch with `resetsState: false`, the other fixtures and a later `now` (`LibraryTests/testEachSortOrder`). `mocksTranslation: true` always. Set `now` whenever the screen shows dates, reading time or the daily goal.
@@ -75,7 +76,7 @@ struct LibraryScreen: Screen {
 
 final class LibraryTests: UITestCase {
     func testOpensBook() {
-        let app = launch(LaunchConfiguration(resetsState: true, fixtures: [.german], opened: [], mocksTranslation: true, now: nil, notificationPermission: nil))
+        let app = launch(LaunchConfiguration(resetsState: true, fixtures: [.german], opened: [], mocksTranslation: true, now: nil, notificationPermission: nil, unreadableStore: false))
         let reader = LibraryScreen(app: app).waitUntilShown().open("Die Verwandlung")
         reader.title.waitUntil(\.label, equals: "Die Verwandlung")
     }

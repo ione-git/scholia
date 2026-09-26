@@ -57,7 +57,7 @@ final class TranslationTests: UITestCase {
         let app = launch(
             LaunchConfiguration(
                 resetsState: true, fixtures: [], opened: [], mocksTranslation: true, now: nil,
-                notificationPermission: nil))
+                notificationPermission: nil, unreadableStore: false))
         let settings = HomeScreen(app: app).waitUntilShown().openSettings()
 
         settings.openTranslationLanguages()
@@ -71,7 +71,7 @@ final class TranslationTests: UITestCase {
         let app = launch(
             LaunchConfiguration(
                 resetsState: true, fixtures: [], opened: [], mocksTranslation: true, now: nil,
-                notificationPermission: nil))
+                notificationPermission: nil, unreadableStore: false))
         var settings = HomeScreen(app: app).waitUntilShown().openSettings()
         settings.chooseTranslationLanguage("fr")
         settings.translateTo.waitUntil(\.label, equals: "Translate to, French")
@@ -80,7 +80,7 @@ final class TranslationTests: UITestCase {
         let relaunched = launch(
             LaunchConfiguration(
                 resetsState: false, fixtures: [], opened: [], mocksTranslation: true, now: nil,
-                notificationPermission: nil))
+                notificationPermission: nil, unreadableStore: false))
         settings = HomeScreen(app: relaunched).waitUntilShown().openSettings()
         XCTAssertEqual(settings.translateTo.waitUntilExists().label, "Translate to, French")
         let reader = settings.goBack().openReaderPrototype()
@@ -95,7 +95,7 @@ final class TranslationTests: UITestCase {
         let app = launch(
             LaunchConfiguration(
                 resetsState: true, fixtures: [], opened: [], mocksTranslation: true, now: nil,
-                notificationPermission: nil))
+                notificationPermission: nil, unreadableStore: false))
         return HomeScreen(app: app).waitUntilShown().openReaderPrototype()
     }
 
