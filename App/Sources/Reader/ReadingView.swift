@@ -29,7 +29,18 @@ struct ReadingView: View {
                     .accessibilityIdentifier("reader.failure")
             }
             page
+            if let controller, let word = controller.word {
+                TranslationBubblePlacement(anchor: word.rect, topLimit: .navTop + .controlH) {
+                    WordBubble(word: word, language: book.language)
+                        .accessibilityAction(.escape) { controller.clearWord() }
+                }
+                .id(word.range)
+                .ignoresSafeArea()
+            }
         }
+        #if DEBUG
+            .background { WordTintDiagnostics(painted: controller?.paintedWordTints ?? 0) }
+        #endif
         .environment(\.colorScheme, theme.isDark ? .dark : .light)
         .statusBarHidden()
         .toolbar(.hidden, for: .navigationBar)
@@ -83,6 +94,7 @@ struct ReadingView: View {
             let readerBook = try await ReaderBook.open(book.fileURL)
             let controller = ReaderController(
                 book: readerBook,
+                language: book.language,
                 location: book.position.map { ReaderLocation(chapter: $0.chapter, offset: $0.offset) },
                 style: .book,
                 colors: theme.colors,
@@ -124,3 +136,16 @@ struct ReadingView: View {
         try? modelContext.save()
     }
 }
+
+#if DEBUG
+    private struct WordTintDiagnostics: View {
+        let painted: Int
+
+        var body: some View {
+            Color.clear
+                .accessibilityElement()
+                .accessibilityIdentifier("debug.paintedWordTints")
+                .accessibilityLabel(Text(verbatim: "\(painted)"))
+        }
+    }
+#endif

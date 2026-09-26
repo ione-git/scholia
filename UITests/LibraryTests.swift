@@ -7,7 +7,7 @@ final class LibraryTests: UITestCase {
         let app = launch(
             LaunchConfiguration(
                 resetsState: true, fixtures: allFixtures, opened: [], inProgress: [], highlighted: [],
-                mocksTranslation: true, now: nil,
+                translation: .immediate, now: nil,
                 notificationPermission: nil))
         let library = HomeScreen(app: app).waitUntilShown().openLibrary()
 
@@ -34,7 +34,7 @@ final class LibraryTests: UITestCase {
         let app = launch(
             LaunchConfiguration(
                 resetsState: true, fixtures: allFixtures, opened: [], inProgress: [], highlighted: [],
-                mocksTranslation: true, now: nil,
+                translation: .immediate, now: nil,
                 notificationPermission: nil))
         let library = HomeScreen(app: app).waitUntilShown().openLibrary()
 
@@ -61,7 +61,7 @@ final class LibraryTests: UITestCase {
             LaunchConfiguration(
                 resetsState: true, fixtures: [.german, .minimalMetadata, .corrupted], opened: [], inProgress: [],
                 highlighted: [],
-                mocksTranslation: true,
+                translation: .immediate,
                 now: try Date("2026-03-01T10:00:00Z", strategy: .iso8601), notificationPermission: nil))
         HomeScreen(app: earlier).waitUntilShown()
         earlier.terminate()
@@ -69,7 +69,7 @@ final class LibraryTests: UITestCase {
             LaunchConfiguration(
                 resetsState: false, fixtures: [.frenchNoCover], opened: [.minimalMetadata, .german], inProgress: [],
                 highlighted: [],
-                mocksTranslation: true, now: try Date("2026-03-02T10:00:00Z", strategy: .iso8601),
+                translation: .immediate, now: try Date("2026-03-02T10:00:00Z", strategy: .iso8601),
                 notificationPermission: nil))
         let library = HomeScreen(app: app).waitUntilShown().openLibrary()
 
@@ -93,7 +93,7 @@ final class LibraryTests: UITestCase {
             LaunchConfiguration(
                 resetsState: true, fixtures: [.german, .frenchNoCover, .minimalMetadata], opened: [.frenchNoCover],
                 inProgress: [], highlighted: [],
-                mocksTranslation: true, now: nil, notificationPermission: nil))
+                translation: .immediate, now: nil, notificationPermission: nil))
         let library = HomeScreen(app: first).waitUntilShown().openLibrary()
         XCTAssertEqual(library.shownTitles, ["Un matin en ville", "Die Verwandlung", "Minimal"])
         library.sort(by: "title")
@@ -102,7 +102,7 @@ final class LibraryTests: UITestCase {
 
         let relaunched = launch(
             LaunchConfiguration(
-                resetsState: false, fixtures: [], opened: [], inProgress: [], highlighted: [], mocksTranslation: true,
+                resetsState: false, fixtures: [], opened: [], inProgress: [], highlighted: [], translation: .immediate,
                 now: nil,
                 notificationPermission: nil))
         let reopened = HomeScreen(app: relaunched).waitUntilShown().openLibrary()
@@ -115,7 +115,7 @@ final class LibraryTests: UITestCase {
         let app = launch(
             LaunchConfiguration(
                 resetsState: true, fixtures: allFixtures, opened: [], inProgress: [], highlighted: [],
-                mocksTranslation: true, now: nil,
+                translation: .immediate, now: nil,
                 notificationPermission: nil))
         let library = HomeScreen(app: app).waitUntilShown().openLibrary()
 
