@@ -16,19 +16,16 @@ struct LibraryScreen: Screen {
 
     func collectionChip(_ name: String) -> XCUIElement { app.buttons[Self.collectionChipPrefix + name] }
 
-    var collectionChips: [String] {
-        app.buttons.matching(NSPredicate(format: "identifier BEGINSWITH %@", Self.collectionChipPrefix))
-            .allElementsBoundByIndex
+    var collectionChips: [String]? {
+        elements(identifiedBy: Self.collectionChipPrefix)?
             .sorted { $0.frame.minX < $1.frame.minX }
             .map { String($0.identifier.dropFirst(Self.collectionChipPrefix.count)) }
     }
 
     func book(_ title: String) -> XCUIElement { app.descendants(matching: .any)["library.book.\(title)"] }
 
-    var shownTitles: [String] {
-        app.descendants(matching: .any)
-            .matching(NSPredicate(format: "identifier BEGINSWITH %@", "library.book."))
-            .allElementsBoundByIndex
+    var shownTitles: [String]? {
+        elements(identifiedBy: "library.book.")?
             .sorted { ($0.frame.minY, $0.frame.minX) < ($1.frame.minY, $1.frame.minX) }
             .map(\.label)
     }
