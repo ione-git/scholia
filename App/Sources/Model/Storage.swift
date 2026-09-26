@@ -1,4 +1,5 @@
 import Foundation
+import ReaderEngine
 import SwiftData
 
 enum Storage {
@@ -14,6 +15,7 @@ enum Storage {
             if FileManager.default.fileExists(atPath: booksDirectory.path(percentEncoded: false)) {
                 try FileManager.default.removeItem(at: booksDirectory)
             }
+            try PageCountCache.removeAll()
         }
         let container = try ModelContainer(for: schema)
         #if DEBUG

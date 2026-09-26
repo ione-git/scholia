@@ -71,8 +71,15 @@
     return nodes;
   }
 
+  function isRightToLeft() {
+    return getComputedStyle(document.documentElement).direction === "rtl";
+  }
+
   function pageOf(rect) {
-    return Math.floor((rect.left + window.scrollX) / window.innerWidth);
+    const width = window.innerWidth;
+    return isRightToLeft()
+      ? Math.floor((width - rect.right - window.scrollX) / width)
+      : Math.floor((rect.left + window.scrollX) / width);
   }
 
   function boxes(range) {
@@ -142,7 +149,8 @@
           }
         }
       }
-      document.scrollingElement.scrollTo({ left: page * window.innerWidth, behavior: "instant" });
+      const direction = isRightToLeft() ? -1 : 1;
+      document.scrollingElement.scrollTo({ left: direction * page * window.innerWidth, behavior: "instant" });
       return page;
     },
 

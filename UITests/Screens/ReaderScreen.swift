@@ -101,4 +101,14 @@ struct ReaderScreen: Screen {
         app.swipeRight()
         pageCounter.waitUntil(\.label, equals: counter, file: file, line: line)
     }
+
+    func turnForwardRightToLeft(expecting counter: String, file: StaticString = #filePath, line: UInt = #line) {
+        app.swipeRight()
+        pageCounter.waitUntil(\.label, equals: counter, file: file, line: line)
+    }
+
+    func turnBackwardRightToLeft(expecting counter: String, file: StaticString = #filePath, line: UInt = #line) {
+        app.swipeLeft()
+        pageCounter.waitUntil(\.label, equals: counter, file: file, line: line)
+    }
 }

@@ -3,6 +3,8 @@ import XCTest
 final class ReaderTests: UITestCase {
     private let bookPages = 54
     private let firstChapterPages = 18
+    private let arabicBookPages = 9
+    private let arabicFirstChapterPages = 3
 
     func testOpensHeroBookOnFirstPage() {
         let home = HomeScreen(app: launchWithGermanBook()).waitUntilShown()
@@ -47,7 +49,7 @@ final class ReaderTests: UITestCase {
         reader.turnForward(expecting: "3 of \(bookPages)")
 
         let home = reader.backToHome()
-        home.heroProgress.waitUntil(\.stringValue, equals: percent(3))
+        home.heroProgress.waitUntil(\.stringValue, equals: percent(3, of: bookPages))
 
         let reopened = home.openHeroBook()
         reopened.pageCounter.waitUntil(\.label, equals: "3 of \(bookPages)")
@@ -57,7 +59,7 @@ final class ReaderTests: UITestCase {
         let relaunched = launch(
             LaunchConfiguration(resetsState: false, fixtures: [], opened: [], mocksTranslation: true, now: nil))
         let relaunchedHome = HomeScreen(app: relaunched).waitUntilShown()
-        relaunchedHome.heroProgress.waitUntil(\.stringValue, equals: percent(4))
+        relaunchedHome.heroProgress.waitUntil(\.stringValue, equals: percent(4, of: bookPages))
         relaunchedHome.openHeroBook().pageCounter.waitUntil(\.label, equals: "4 of \(bookPages)")
     }
 
@@ -71,6 +73,24 @@ final class ReaderTests: UITestCase {
         let reopened = reader.backToHome().openHeroBook()
 
         reopened.pageCounter.waitUntil(\.label, equals: "\(firstChapterPages + 2) of \(bookPages)")
+    }
+
+    func testRightToLeftBookCountsPagesAndReopensAtSamePage() {
+        let app = launch(
+            LaunchConfiguration(resetsState: true, fixtures: [.arabic], opened: [], mocksTranslation: true, now: nil))
+        let reader = HomeScreen(app: app).waitUntilShown().openHeroBook()
+        reader.pageCounter.waitUntil(\.label, equals: "1 of \(arabicBookPages)")
+        reader.paragraph(startingWith: "في الصباح تستيقظ المدينة").waitUntilExists()
+
+        for page in 2...arabicFirstChapterPages + 2 {
+            reader.turnForwardRightToLeft(expecting: "\(page) of \(arabicBookPages)")
+        }
+        reader.turnBackwardRightToLeft(expecting: "\(arabicFirstChapterPages + 1) of \(arabicBookPages)")
+        reader.turnBackwardRightToLeft(expecting: "\(arabicFirstChapterPages) of \(arabicBookPages)")
+
+        let home = reader.backToHome()
+        home.heroProgress.waitUntil(\.stringValue, equals: percent(arabicFirstChapterPages, of: arabicBookPages))
+        home.openHeroBook().pageCounter.waitUntil(\.label, equals: "\(arabicFirstChapterPages) of \(arabicBookPages)")
     }
 
     func testOpensFromLibraryAndBackReturnsToLibrary() {
@@ -117,7 +137,7 @@ final class ReaderTests: UITestCase {
             LaunchConfiguration(resetsState: true, fixtures: [.german], opened: [], mocksTranslation: true, now: nil))
     }
 
-    private func percent(_ page: Int) -> String {
-        (Double(page) / Double(bookPages)).formatted(.percent.precision(.fractionLength(0)))
+    private func percent(_ page: Int, of pages: Int) -> String {
+        (Double(page) / Double(pages)).formatted(.percent.precision(.fractionLength(0)))
     }
 }

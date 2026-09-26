@@ -107,15 +107,21 @@ private final class PageCountMessages: NSObject, WKScriptMessageHandler {
     }
 }
 
-enum PageCountCache {
+public enum PageCountCache {
     private static let directory = URL.cachesDirectory.appending(path: "PageCounts", directoryHint: .isDirectory)
+
+    public static func removeAll() throws {
+        if FileManager.default.fileExists(atPath: directory.path(percentEncoded: false)) {
+            try FileManager.default.removeItem(at: directory)
+        }
+    }
 
     static func key(book: ReaderBook, style: ReaderStyle, size: CGSize) -> String {
         let fileSize = (try? book.url.resourceValues(forKeys: [.fileSizeKey]).fileSize) ?? 0
         return [
             book.url.lastPathComponent, "\(fileSize)", style.font.family, "\(style.fontSize)", "\(style.lineHeight)",
-            "\(style.sideMargin)", "\(style.topMargin)", "\(style.minimumBottomMargin)", "\(size.width)",
-            "\(size.height)",
+            "\(style.paragraphIndent)", "\(style.sideMargin)", "\(style.topMargin)", "\(style.minimumBottomMargin)",
+            "\(size.width)", "\(size.height)",
         ]
         .joined(separator: "|")
     }

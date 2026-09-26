@@ -53,6 +53,7 @@ let app = launch(LaunchConfiguration(resetsState: true, fixtures: [.german], ope
 |---|---|
 | `.german` | "Die Verwandlung", Franz Kafka, `de`, cover, nav with Erster/Zweiter/Dritter Teil, ~2,400 words each; Zweiter Teil opens with a verse in `<br/>` lines and `<div>` paragraphs |
 | `.frenchNoCover` | "Un matin en ville", Scholia, `fr`, no cover, Premier/Deuxième chapitre |
+| `.arabic` | "صباح في المدينة", Scholia, `ar` (right-to-left), no cover, three chapters of 3 pages each on iPhone |
 | `.minimalMetadata` | cover; only identifier, title "Minimal", language `en`; no author |
 | `.corrupted` | truncated zip, cannot be opened; seeded as "Corrupted", no author, `en` |
 | `.drm` | "Encrypted", `META-INF/encryption.xml` (aes128-cbc), chapter bytes scrambled |
