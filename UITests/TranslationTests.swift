@@ -17,7 +17,7 @@ final class TranslationTests: UITestCase {
         reader.translationRequests.waitUntil(\.label, equals: "Als · de → en")
     }
 
-    func testSameWordInSameSentenceIsTranslatedOnce() throws {
+    func testSameWordIsTranslatedOncePerSentence() throws {
         let reader = openReader()
         try tapWord(onLine: 0, x: 3, in: reader)
         reader.word.waitUntil(\.label, equals: "Als")
@@ -27,11 +27,16 @@ final class TranslationTests: UITestCase {
         try tapWord(onLine: 0, x: 3, in: reader)
         reader.word.waitUntil(\.label, equals: "Als")
         try tapWord(onLine: 2, x: 20, in: reader)
+        reader.word.waitUntil(\.label, equals: "seinem")
+        reader.translationRequests.waitUntil(
+            \.label, equals: "Als · de → en\npanzerartig · de → en\nseinem · de → en")
+
+        try tapWord(onLine: 3, x: 255, in: reader)
 
         reader.word.waitUntil(\.label, equals: "seinem")
         reader.translation.waitUntil(\.label, equals: mockTranslation)
         reader.translationRequests.waitUntil(
-            \.label, equals: "Als · de → en\npanzerartig · de → en\nseinem · de → en")
+            \.label, equals: "Als · de → en\npanzerartig · de → en\nseinem · de → en\nseinem · de → en")
     }
 
     func testTranslateToListsProviderLanguages() {

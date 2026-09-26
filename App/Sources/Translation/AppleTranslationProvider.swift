@@ -3,7 +3,7 @@ import NaturalLanguage
 import Translation
 
 struct AppleTranslationProvider: TranslationProvider {
-    private static let partsOfSpeech: [NLTag: PartOfSpeech] = [
+    private nonisolated static let partsOfSpeech: [NLTag: PartOfSpeech] = [
         .noun: .noun, .verb: .verb, .adjective: .adjective, .adverb: .adverb, .pronoun: .pronoun,
         .determiner: .determiner, .particle: .particle, .preposition: .preposition, .number: .number,
         .conjunction: .conjunction, .interjection: .interjection,
@@ -26,14 +26,15 @@ struct AppleTranslationProvider: TranslationProvider {
     }
 
     func translate(_ request: TranslationRequest) async throws -> WordTranslation {
-        let translation = try await Self.translate(
+        async let translation = Self.translate(
             request.word, from: Locale.Language(identifier: request.source),
             to: Locale.Language(identifier: request.target))
-        let grammar = grammar(of: request)
+        async let grammar = Self.grammar(of: request)
         let dictionary = MockTranslationProvider.translation
+        let (lemma, partOfSpeech) = await grammar
         return WordTranslation(
-            translation: translation, ipa: dictionary.ipa, lemma: grammar.lemma,
-            partOfSpeech: grammar.partOfSpeech, meaningInContext: dictionary.meaningInContext,
+            translation: try await translation, ipa: dictionary.ipa, lemma: lemma,
+            partOfSpeech: partOfSpeech, meaningInContext: dictionary.meaningInContext,
             meanings: dictionary.meanings)
     }
 
@@ -49,7 +50,10 @@ struct AppleTranslationProvider: TranslationProvider {
         try await TranslationSession(installedSource: source, target: target).translate(word).targetText
     }
 
-    private func grammar(of request: TranslationRequest) -> (lemma: String?, partOfSpeech: PartOfSpeech?) {
+    @concurrent
+    private nonisolated static func grammar(of request: TranslationRequest) async -> (
+        lemma: String?, partOfSpeech: PartOfSpeech?
+    ) {
         let sentence = request.sentence
         let tagger = NLTagger(tagSchemes: [.lemma, .lexicalClass])
         tagger.string = sentence

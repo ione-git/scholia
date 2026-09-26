@@ -16,6 +16,11 @@ struct LanguagePackDownload: ViewModifier {
 
     func body(content: Content) -> some View {
         content
+            .onAppear {
+                if isEnabled {
+                    queue = Array(pairs)
+                }
+            }
             .onChange(of: pairs) { old, new in
                 guard isEnabled else {
                     return
