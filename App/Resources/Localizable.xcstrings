@@ -241,6 +241,9 @@
     "Open EPUB…" : {
       "shouldTranslate" : false
     },
+    "Page %lld" : {
+      "comment" : "Contents row: start page of the chapter"
+    },
     "Paper" : {
 
     },

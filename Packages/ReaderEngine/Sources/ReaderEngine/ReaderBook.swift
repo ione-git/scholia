@@ -41,8 +41,12 @@ public final class ReaderBook {
     }
 
     public func chapter(containing location: ReaderLocation) -> ReaderChapter? {
+        indexOfChapter(containing: location).map { tableOfContents[$0] }
+    }
+
+    public func indexOfChapter(containing location: ReaderLocation) -> Int? {
         let start = tableOfContents.map(\.location).filter { $0 <= location }.max()
-        return tableOfContents.last { $0.location == start }
+        return tableOfContents.lastIndex { $0.location == start }
     }
 
     func unresolvedFragments(inChapter chapter: Int) -> [String] {

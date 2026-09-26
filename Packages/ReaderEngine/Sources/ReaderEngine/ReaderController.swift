@@ -8,6 +8,7 @@ public final class ReaderController {
     public internal(set) var location: ReaderLocation?
     public internal(set) var pageSpan: ReaderPageSpan?
     public internal(set) var word: ReaderWord?
+    var startPages: [Int]?
     public var colors: ReaderColors {
         didSet { viewController.apply(colors) }
     }
@@ -37,6 +38,24 @@ public final class ReaderController {
             book: book, location: location, style: style, colors: colors, pageTurn: pageTurn,
             highlightTitle: highlightTitle)
         viewController.controller = self
+    }
+
+    public func go(to location: ReaderLocation) {
+        viewController.go(to: .location(location))
+    }
+
+    public func go(toChapterAt index: Int) {
+        viewController.go(to: .chapter(index))
+    }
+
+    public func startPage(of chapter: ReaderChapter) -> Int? {
+        guard
+            chapter.unresolvedFragment == nil, chapter.location.offset == 0, let startPages,
+            startPages.indices.contains(chapter.location.chapter)
+        else {
+            return nil
+        }
+        return startPages[chapter.location.chapter]
     }
 }
 
