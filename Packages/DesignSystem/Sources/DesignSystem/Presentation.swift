@@ -85,7 +85,12 @@ public struct SheetButtonStyle: PrimitiveButtonStyle {
     public enum Role: Sendable {
         case cancel
         case done
+        case back
     }
+
+    private static let backIconSize: CGFloat = 20
+    private static let backIconStroke: CGFloat = 2.2
+    private static let backIconSpacing: CGFloat = 2
 
     let role: Role
 
@@ -95,11 +100,16 @@ public struct SheetButtonStyle: PrimitiveButtonStyle {
 
     public func makeBody(configuration: Configuration) -> some View {
         Button(action: configuration.trigger) {
-            configuration.label
-                .textStyle(role == .done ? .title3 : TextStyle.title3.weighted(TextStyle.body.weight))
-                .foregroundStyle(.accent)
-                .frame(minHeight: .controlH)
-                .contentShape(.rect)
+            HStack(spacing: Self.backIconSpacing) {
+                if role == .back {
+                    IconView(icon: .back, size: Self.backIconSize, stroke: Self.backIconStroke)
+                }
+                configuration.label
+                    .textStyle(role == .done ? .title3 : TextStyle.title3.weighted(TextStyle.body.weight))
+            }
+            .foregroundStyle(.accent)
+            .frame(minHeight: .controlH)
+            .contentShape(.rect)
         }
         .buttonStyle(.plain)
     }
@@ -108,4 +118,5 @@ public struct SheetButtonStyle: PrimitiveButtonStyle {
 extension PrimitiveButtonStyle where Self == SheetButtonStyle {
     public static var sheetCancel: SheetButtonStyle { SheetButtonStyle(.cancel) }
     public static var sheetDone: SheetButtonStyle { SheetButtonStyle(.done) }
+    public static var sheetBack: SheetButtonStyle { SheetButtonStyle(.back) }
 }

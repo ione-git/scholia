@@ -108,3 +108,15 @@ public struct ListRowChevron: View {
             .foregroundStyle(.inkFaint)
     }
 }
+
+public struct ListRowCheckmark: View {
+    private static let size: CGFloat = 18
+    private static let stroke: CGFloat = 2.6
+
+    public init() {}
+
+    public var body: some View {
+        IconView(icon: .check, size: Self.size, stroke: Self.stroke)
+            .foregroundStyle(.accent)
+    }
+}

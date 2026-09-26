@@ -24,6 +24,25 @@ struct HomeScreen: Screen {
         try app.screenshot().color(at: CGPoint(x: 0.02, y: 0.9))
     }
 
+    func heroCoverColor() throws -> RGBColor {
+        try heroCover.screenshot().color(at: CGPoint(x: 0.5, y: 0.3))
+    }
+
+    func pickFile() -> FilePickerScreen {
+        addBookButton.waitUntil(\.isHittable, equals: true).tap()
+        return FilePickerScreen(app: app).waitUntilShown()
+    }
+
+    func openFromOtherApp(_ fixture: Fixture) throws -> AddBookScreen {
+        app.open(try fixture.file)
+        return AddBookScreen(app: app).waitUntilShown()
+    }
+
+    func openUnreadableFromOtherApp(_ fixture: Fixture) throws -> ImportFailureAlert {
+        app.open(try fixture.file)
+        return ImportFailureAlert(app: app).waitUntilShown()
+    }
+
     func openLibrary() -> LibraryScreen {
         libraryButton.waitUntilExists().tap()
         return LibraryScreen(app: app).waitUntilShown()
