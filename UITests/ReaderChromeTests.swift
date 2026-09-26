@@ -4,6 +4,7 @@ final class ReaderChromeTests: UITestCase {
     private let bookPages = 54
     private let arabicBookPages = 9
     private let arabicChapterPages = 3
+    private let frenchBookPages = 10
     private let menuEntries = ["Contents", "Highlights", "Bookmarks", "Themes & Settings"]
 
     func testChromeIsHiddenOnOpenAndMarginTapTogglesIt() {
@@ -22,6 +23,7 @@ final class ReaderChromeTests: UITestCase {
         XCTAssertEqual(reader.menuButton.waitUntilExists().label, "Menu")
         XCTAssertEqual(reader.menuButton.frame.size, CGSize(width: 48, height: 48))
         XCTAssertEqual(reader.menuButton.frame.maxX, reader.app.frame.width - 20)
+        XCTAssertEqual(reader.menuButton.frame.maxY, reader.app.frame.height - 24)
         XCTAssertEqual(reader.menuButton.frame.midY, reader.pageCounter.frame.midY, accuracy: 0.5)
         XCTAssertEqual(reader.title.label, "Die Verwandlung")
         reader.subtitle.waitUntil(\.label, equals: "Franz Kafka · Erster Teil")
@@ -60,7 +62,22 @@ final class ReaderChromeTests: UITestCase {
         reader.showChrome()
 
         XCTAssertEqual(reader.title.label, "Minimal")
-        reader.subtitle.waitUntil(\.label, equals: "Minimal")
+        reader.subtitle.waitUntil(\.label, equals: "Chapter One")
+    }
+
+    func testSubtitleFollowsChaptersThatShareOneFile() {
+        let app = launch(
+            LaunchConfiguration(
+                resetsState: true, fixtures: [.frenchNoCover], opened: [], mocksTranslation: true, now: nil))
+        let reader = HomeScreen(app: app).waitUntilShown().openHeroBook()
+        reader.showChrome()
+        reader.subtitle.waitUntil(\.label, equals: "Scholia · Premier chapitre")
+
+        for page in 2...frenchBookPages {
+            reader.turnForward(expecting: "\(page) of \(frenchBookPages)")
+        }
+
+        reader.subtitle.waitUntil(\.label, equals: "Scholia · Deuxième chapitre")
     }
 
     func testMenuShowsFourEntriesWithoutSearch() {

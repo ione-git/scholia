@@ -74,7 +74,7 @@ struct ReaderChrome: View {
             }
         }
         .frame(maxWidth: .infinity)
-        .frame(height: TextStyle.caption.lineHeight)
+        .frame(height: showsControls ? GlassButton.Size.reader.diameter : TextStyle.caption.lineHeight)
         .overlay(alignment: .trailing) {
             if showsControls {
                 GlassButton(
@@ -88,7 +88,7 @@ struct ReaderChrome: View {
                 .accessibilityIdentifier("reader.menu")
             }
         }
-        .padding(.bottom, .space8 + .space1)
+        .padding(.bottom, showsControls ? .space6 : .space8 + .space1)
     }
 
     private var bookmarkButton: some View {
@@ -119,6 +119,6 @@ struct ReaderChrome: View {
     }
 
     static var menuBottomInset: CGFloat {
-        .space8 + .space1 + TextStyle.caption.lineHeight / 2 + GlassButton.Size.reader.diameter / 2 + .space3
+        .space6 + GlassButton.Size.reader.diameter + .space3
     }
 }
