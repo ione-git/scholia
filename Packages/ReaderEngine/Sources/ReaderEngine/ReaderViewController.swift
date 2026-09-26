@@ -126,6 +126,7 @@ final class ReaderViewController: UIViewController {
                 as? [String: Any],
             let text = found["text"] as? String,
             let sentence = found["sentence"] as? String,
+            let offsetInSentence = found["offsetInSentence"] as? Int,
             let x = found["x"] as? CGFloat,
             let y = found["y"] as? CGFloat,
             let width = found["width"] as? CGFloat,
@@ -138,6 +139,7 @@ final class ReaderViewController: UIViewController {
         return ReaderWord(
             text: text,
             sentence: sentence,
+            offsetInSentence: offsetInSentence,
             rect: webView.convert(CGRect(x: x, y: y, width: width, height: height), to: view),
             range: ReaderTextRange(chapter: chapter, text: text, before: before, after: after)
         )

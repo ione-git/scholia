@@ -7,6 +7,8 @@ struct ReaderScreen: Screen {
     var pageCounter: XCUIElement { app.staticTexts["reader.pageCounter"] }
     var word: XCUIElement { app.staticTexts["reader.word"] }
     var sentence: XCUIElement { app.staticTexts["reader.sentence"] }
+    var translation: XCUIElement { app.staticTexts["reader.translation"] }
+    var translationRequests: XCUIElement { app.descendants(matching: .any)["debug.translationRequests"] }
     var wordTint: XCUIElement { app.descendants(matching: .any)["reader.wordTint"] }
     var highlights: XCUIElement { app.descendants(matching: .any)["debug.highlights"] }
     var paintedHighlights: XCUIElement { app.descendants(matching: .any)["debug.paintedHighlights"] }

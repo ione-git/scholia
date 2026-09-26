@@ -6,6 +6,7 @@ import SwiftUI
 struct ScholiaApp: App {
     private let container: ModelContainer
     private let settings: Settings
+    private let translationService: TranslationService
 
     init() {
         DesignSystem.registerFonts()
@@ -16,6 +17,9 @@ struct ScholiaApp: App {
         } catch {
             fatalError("Storage: \(error)")
         }
+        translationService = TranslationService(
+            provider: LaunchConfiguration.current.mocksTranslation
+                ? MockTranslationProvider() : AppleTranslationProvider())
         ReadingReminder.schedule(for: settings)
     }
 
@@ -23,6 +27,7 @@ struct ScholiaApp: App {
         WindowGroup {
             RootView()
                 .environment(settings)
+                .environment(translationService)
                 #if DEBUG
                     .background { LaunchDiagnostics(configuration: .current) }
                     .background { LibraryDiagnostics() }

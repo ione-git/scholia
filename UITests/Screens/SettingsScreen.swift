@@ -12,10 +12,18 @@ struct SettingsScreen: Screen {
     var reminderTime: XCUIElement { app.buttons["settings.reminderTime"] }
     var sortBooks: XCUIElement { app.buttons["settings.sortBooks"] }
     var version: XCUIElement { app.staticTexts["settings.version"] }
+    var translationLanguages: XCUIElementQuery {
+        app.buttons.matching(NSPredicate(format: "identifier BEGINSWITH %@", "settings.translateTo."))
+    }
 
     func onWordTap(_ style: String) -> XCUIElement { app.buttons["settings.onWordTap.\(style)"] }
 
     func theme(_ theme: String) -> XCUIElement { app.buttons["settings.theme.\(theme)"] }
+
+    func openTranslationLanguages() {
+        translateTo.waitUntil(\.isHittable, equals: true).tap()
+        translationLanguages.firstMatch.waitUntil(\.isHittable, equals: true)
+    }
 
     func chooseTranslationLanguage(_ identifier: String) {
         choose("settings.translateTo.\(identifier)", from: translateTo)
