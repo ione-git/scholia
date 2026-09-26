@@ -189,6 +189,8 @@ def archive(files):
 
 
 def main():
+    german_cover = png(600, 900, (47, 74, 58), (96, 128, 108))
+    minimal_cover = png(600, 900, (140, 59, 46), (196, 110, 92))
     german = epub(
         "urn:scholia:fixture:german",
         "Die Verwandlung",
@@ -199,7 +201,7 @@ def main():
             ("Zweiter Teil", VERSE + prose(KAFKA * 10)),
             ("Dritter Teil", prose(KAFKA * 10)),
         ],
-        png(600, 900, (47, 74, 58), (96, 128, 108)),
+        german_cover,
     )
     french = epub(
         "urn:scholia:fixture:french-no-cover",
@@ -228,7 +230,7 @@ def main():
             "en",
             None,
             [("Minimal", prose(ENGLISH))],
-            png(600, 900, (140, 59, 46), (196, 110, 92)),
+            minimal_cover,
         )
     )
     drm = epub("urn:scholia:fixture:drm", "Encrypted", "de", "Franz Kafka", [("Erster Teil", prose(KAFKA))], None)
@@ -243,6 +245,8 @@ def main():
         "minimal-metadata.epub": minimal,
         "corrupted.epub": minimal[: len(minimal) // 2],
         "drm.epub": archive(drm),
+        "german-cover.png": german_cover,
+        "minimal-metadata-cover.png": minimal_cover,
     }
     OUTPUT.mkdir(exist_ok=True)
     for name, data in books.items():

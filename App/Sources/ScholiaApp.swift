@@ -42,6 +42,7 @@ struct ScholiaApp: App {
                     .background { LibraryDiagnostics() }
                     .background { ReminderDiagnostics(settings: settings) }
                     .background { AppearanceDiagnostics() }
+                    .background { SafeAreaDiagnostics() }
                 #endif
         }
         .modelContainer(container)

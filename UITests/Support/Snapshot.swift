@@ -30,11 +30,13 @@ extension UITestCase {
     }
 
     private func settledScreenshot(of app: XCUIApplication, file: StaticString, line: UInt) -> UIImage {
-        let systemBars = systemBarInsets()
-        var previous = screenshot(of: app, without: systemBars)
+        let isLandscape = app.frame.width > app.frame.height
+        let systemBars = isLandscape ? landscapeSystemBarInsets(of: app) : systemBarInsets()
+        let capture = { isLandscape ? self.upright(XCUIScreen.main.screenshot().image) : app.screenshot().image }
+        var previous = crop(capture(), without: systemBars)
         let deadline = Date.now.addingTimeInterval(settleTimeout)
         while Date.now < deadline {
-            let current = screenshot(of: app, without: systemBars)
+            let current = crop(capture(), without: systemBars)
             if current.pngData() == previous.pngData() {
                 return current
             }
@@ -53,8 +55,18 @@ extension UITestCase {
             top: statusBar.exists ? statusBar.frame.maxY : 0, left: 0, bottom: homeIndicator.first ?? 0, right: 0)
     }
 
-    private func screenshot(of app: XCUIApplication, without systemBars: UIEdgeInsets) -> UIImage {
-        let image = app.screenshot().image
+    private func landscapeSystemBarInsets(of app: XCUIApplication) -> UIEdgeInsets {
+        let safeArea = app.descendants(matching: .any)["debug.safeArea"].frame
+        return UIEdgeInsets(top: safeArea.minY, left: 0, bottom: app.frame.maxY - safeArea.maxY, right: 0)
+    }
+
+    private func upright(_ image: UIImage) -> UIImage {
+        let format = UIGraphicsImageRendererFormat()
+        format.scale = image.scale
+        return UIGraphicsImageRenderer(size: image.size, format: format).image { _ in image.draw(at: .zero) }
+    }
+
+    private func crop(_ image: UIImage, without systemBars: UIEdgeInsets) -> UIImage {
         guard let full = image.cgImage else { return image }
         let bounds = CGRect(x: 0, y: 0, width: full.width, height: full.height)
         let content = bounds.inset(
