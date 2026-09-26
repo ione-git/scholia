@@ -20,6 +20,14 @@ struct SettingsScreen: Screen {
 
     func theme(_ theme: String) -> XCUIElement { app.buttons["settings.theme.\(theme)"] }
 
+    func chooseWordTapStyle(_ style: String) {
+        select(onWordTap(style))
+    }
+
+    func chooseTheme(_ name: String) {
+        select(theme(name))
+    }
+
     func openTranslationLanguages() {
         translateTo.waitUntil(\.isHittable, equals: true).tap()
         translationLanguages.firstMatch.waitUntil(\.isHittable, equals: true)
@@ -53,6 +61,10 @@ struct SettingsScreen: Screen {
         reminder.waitUntil(\.isOn, equals: true)
     }
 
+    func tapReminder() {
+        reminder.waitUntil(\.isHittable, equals: true).tap()
+    }
+
     func turnOffReminder() {
         reminder.waitUntil(\.isHittable, equals: true).tap()
         reminder.waitUntil(\.isOn, equals: false)
@@ -63,6 +75,11 @@ struct SettingsScreen: Screen {
         backButton.waitUntilExists().tap()
         root.waitUntilGone()
         return HomeScreen(app: app).waitUntilShown()
+    }
+
+    private func select(_ segment: XCUIElement) {
+        segment.waitUntil(\.isHittable, equals: true).tap()
+        segment.waitUntil(\.isSelected, equals: true)
     }
 
     private func choose(_ item: String, from menu: XCUIElement) {

@@ -44,8 +44,9 @@ final class DataModelTests: UITestCase {
                 resetsState: true, fixtures: [.german], opened: [], inProgress: [], highlighted: [],
                 mocksTranslation: true, now: nil,
                 notificationPermission: nil))
-        HomeScreen(app: reset).waitUntilShown().storedLibrary.waitUntil(
-            \.label, equals: "Die Verwandlung · Franz Kafka · de · german.epub")
+        let home = HomeScreen(app: reset).waitUntilShown()
+        home.storedLibrary.waitUntil(\.label, equals: "Die Verwandlung · Franz Kafka · de · german.epub")
+        XCTAssertEqual(home.storedLibrary.stringValue, "german.epub")
     }
 
     func testSeedingAgainKeepsOneCopyOfEachBook() {

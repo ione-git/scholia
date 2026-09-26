@@ -13,6 +13,7 @@ enum ReadingReminder {
 
     static func requestPermission() async -> Permission {
         switch LaunchConfiguration.current.notificationPermission {
+        case .authorized: return .granted
         case .declined: return .declined
         case .denied: return .turnedOff
         case nil: break

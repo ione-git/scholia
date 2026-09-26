@@ -61,8 +61,9 @@ let dark = launch(configuration, appearance: .dark)
 | `highlighted` | `SCHOLIA_HIGHLIGHTED=german` | these stored books have 7 highlights, added if the book has none |
 | `mocksTranslation` | `SCHOLIA_TRANSLATION=mock` | translation provider is the mock |
 | `now` | `SCHOLIA_NOW=<ISO 8601>` | the app's current date and time |
-| `notificationPermission` | `SCHOLIA_NOTIFICATIONS=declined` or `denied` | turning the reminder on gets this answer without asking the system: `declined` as if "Don't Allow" was tapped on the prompt, `denied` as if notifications were already off |
+| `notificationPermission` | `SCHOLIA_NOTIFICATIONS=authorized`, `declined` or `denied` | turning the reminder on gets this answer without asking the system: `authorized` as if Allow was tapped; scheduling still goes through the real notification center, so `debug.readingReminder` is not deterministic; `declined` as if "Don't Allow" was tapped on the prompt, `denied` as if notifications were already off |
 
+- `LaunchConfiguration.withoutBooks` (test target) is a reset launch with no books and the translation mock; copy it and change the fields a test needs (`resetsState`, `notificationPermission`).
 - The app reads `LaunchConfiguration.current` where it builds a dependency (storage, translation provider, clock). A missing key means off, so a plain launch is a normal launch. Parsing exists only in Debug; Release always gets everything off.
 - `resetsState: true` unless the test checks persistence across a relaunch. Fixtures get `now` as their added date; for different added dates seed some books, `terminate()`, and relaunch with `resetsState: false`, the other fixtures and a later `now` (`LibraryTests/testEachSortOrder`). `mocksTranslation: true` always. Set `now` whenever the screen shows dates, reading time or the daily goal.
 - Rendering is the same on every Mac and on CI:
@@ -70,13 +71,14 @@ let dark = launch(configuration, appearance: .dark)
   - `launch` sets `TZ` to GMT (another zone: `launch(configuration, timeZone: …)`); the app needs nothing, `TimeZone.current` and `Calendar.current` follow `TZ`.
   - `launch` turns animations off: `SCHOLIA_ANIMATIONS=off` (`TestAnimations`) makes the app call `UIView.setAnimationsEnabled(false)` and strip SwiftUI animations at the root (`transaction.animation = nil`, `disablesAnimations = true`). Debug only.
 - `launch(_:appearance:)` sets the simulator to light or dark before launching and restores it after the test. Use it for every snapshot test and for flows about the theme.
+- `launch(_:deviceLanguage:)` (with appearance: `launch(_:appearance:deviceLanguage:)`) launches with `-AppleLanguages (<code>)`, the device language the app sees; the region stays `en_US`. Tests never set `launchArguments` or `XCUIDevice.shared.appearance` before a launch themselves.
 - New switch: add a field and key to `LaunchConfiguration` (`init(environment:)` and `environment`), then honour it where the dependency is created.
 - `debug.launchConfiguration` (any screen: `screen.launchConfiguration`) has the configuration the app received as its label (fixtures only if their file is in the bundle) and the app's time zone as its value; see `LaunchConfigurationTests`.
 - `debug.storedLibrary` (any screen: `screen.storedLibrary`) lists the stored books by title, one per line as `title · author · language · file name` (`no author`, `no file` when missing); see `DataModelTests`. Its value lists the files in the app's books folder, sorted, one per line (`BookActionsTests/testRemoveAsksThenDeletesBookAndFile`).
 - `debug.storedHighlights` (any screen: `screen.storedHighlights`) has the number of stored highlights as its label, including any left without a book (`SelectBooksTests/testSelectedBooksAreRemovedWithTheirHighlights`).
 - `debug.readingReminder` (any screen: `screen.readingReminder`) has the pending local notifications as its label, one per line as `identifier · title · body · HH:mm · repeats` (`none` when there are none), and the notification permission as its value (`notDetermined`, `authorized`, `denied`), read at launch and after each change of the reminder toggle or time, once the schedule is updated; see `ReminderTests`.
 - `debug.colorScheme` (any screen: `screen.colorScheme`) has the colour scheme the app renders in as its label, `light` or `dark`, after the Theme setting and the system appearance; see `SettingsTests/testThemeOverridesSystemAppearance`.
-- Notification permission is not reset by `resetsState` and cannot be changed in the simulator's Settings app: a simulator asks once, then keeps the answer until the app is uninstalled (`xcrun simctl uninstall <udid> com.ione.scholia`). Turn the reminder on with `SettingsScreen.turnOnReminder()`, which checks the system prompt's title and allows it when it comes; never deny it in a test, use `notificationPermission` instead.
+- Notification permission is not reset by `resetsState` and cannot be changed in the simulator's Settings app: a simulator asks once, then keeps the answer until the app is uninstalled (`xcrun simctl uninstall <udid> com.ione.scholia`). Turn the reminder on with `SettingsScreen.turnOnReminder()`, which checks the system prompt's title and allows it when it comes; never deny it in a test, use `notificationPermission` instead. A test that needs the reminder on but does not check scheduling (snapshots) launches with `notificationPermission: .authorized`, then `tapReminder()` and waits for `isOn`; never `turnOnReminder()` there, it waits for a prompt that `.authorized` skips.
 - Translation mock (`App/Sources/Translation/MockTranslationProvider.swift`): every word gets the same `MockTranslationProvider.translation` (translation "vermin"), target languages are `TargetLanguage.identifiers`, no language packs. The reader prototype's `debug.translationRequests` lists the requests that reached the mock, one per line as `word · offset in sentence (UTF-16) · source → target`; cached repeats do not appear; see `TranslationTests`.
 
 | Fixture | Content |
@@ -116,7 +118,7 @@ The worked example is `UITests/SettingsTests.swift`:
 
 ```swift
 func testOpensFromHomeAndGoesBack() {
-    let home = HomeScreen(app: launch(withoutBooks)).waitUntilShown()
+    let home = HomeScreen(app: launch(.withoutBooks)).waitUntilShown()
 
     let settings = home.openSettings()
     XCTAssertEqual(settings.backButton.label, "Back to Home")
@@ -126,7 +128,7 @@ func testOpensFromHomeAndGoesBack() {
 }
 ```
 
-- Name: `test<WhatTheUserGets>`: `testOpensFromHomeAndGoesBack`, `testEveryValuePersistsAcrossRelaunch`, `testThemeOverridesSystemAppearance`.
+- Name: `test<WhatTheUserGets>`: `testOpensFromHomeAndGoesBack`, `testChoicesPersistAcrossRelaunch`, `testThemeOverridesSystemAppearance`.
 - Arrange (launch configuration, navigate), act (one user action or a short sequence), assert the end state the user cares about. Every test asserts an outcome, not only that a screen appeared.
 - Outcomes are read through identifiers: `exists`, `waitUntilGone()`, `isSelected`, `isEnabled`, `isOn`, a row's `.label` or `.value` after the action changed it, `debug.*` diagnostics.
 - The screen's look belongs to its snapshot tests, not to a flow (see Anti-patterns).
@@ -145,8 +147,11 @@ func testSettingsSnapshotDark() {
 }
 
 private func openSettingsWithReminder(appearance: XCUIDevice.Appearance) -> SettingsScreen {
-    let settings = HomeScreen(app: launch(withoutBooks, appearance: appearance)).waitUntilShown().openSettings()
-    settings.turnOnReminder()
+    var configuration = LaunchConfiguration.withoutBooks
+    configuration.notificationPermission = .authorized
+    let settings = openSettings(launch(configuration, appearance: appearance, deviceLanguage: "ru"))
+    settings.tapReminder()
+    settings.reminder.waitUntil(\.isOn, equals: true)
     return settings
 }
 ```
@@ -199,8 +204,8 @@ One simulator per worktree; never share it with another agent.
 ```sh
 scripts/sim create Scholia-<issue>
 make test DESTINATION='platform=iOS Simulator,id=<udid>'
-make test DESTINATION='platform=iOS Simulator,id=<udid>' ONLY=ScholiaUITests/SmokeTests
-make test DESTINATION='platform=iOS Simulator,id=<udid>' ONLY=ScholiaUITests/SmokeTests/testAppLaunches
+make test DESTINATION='platform=iOS Simulator,id=<udid>' ONLY=ScholiaUITests/SettingsTests
+make test DESTINATION='platform=iOS Simulator,id=<udid>' ONLY=ScholiaUITests/SettingsTests/testOpensFromHomeAndGoesBack
 scripts/sim delete Scholia-<issue>
 ```
 
@@ -214,8 +219,8 @@ Every run writes `build/Results-<timestamp>.xcresult`; the path is printed first
 
 ```sh
 xcrun xcresulttool get test-results summary --path <bundle>
-xcrun xcresulttool get test-results test-details --path <bundle> --test-id 'SmokeTests/testAppLaunches()'
-xcrun xcresulttool export attachments --path <bundle> --output-path /tmp/att --test-id 'SmokeTests/testAppLaunches()'
+xcrun xcresulttool get test-results test-details --path <bundle> --test-id 'SettingsTests/testOpensFromHomeAndGoesBack()'
+xcrun xcresulttool export attachments --path <bundle> --output-path /tmp/att --test-id 'SettingsTests/testOpensFromHomeAndGoesBack()'
 ```
 
 - `summary` → `testFailures[].failureText`; `test-details` → call stack down to the test.

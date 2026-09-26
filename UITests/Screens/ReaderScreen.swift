@@ -25,6 +25,14 @@ struct ReaderScreen: Screen {
         app.webViews.staticTexts.matching(NSPredicate(format: "label BEGINSWITH %@", text)).firstMatch
     }
 
+    func tapWord(onLine index: Int, x: CGFloat) throws {
+        let line = try TokenValues.load().lineHeight("reading-body")
+        paragraph(startingWith: "Als Gregor Samsa").waitUntilExists()
+            .coordinate(withNormalizedOffset: .zero)
+            .withOffset(CGVector(dx: x, dy: line * CGFloat(index) + line / 2))
+            .tap()
+    }
+
     @discardableResult
     func waitUntilOpened(file: StaticString = #filePath, line: UInt = #line) -> ReaderScreen {
         waitUntilShown(file: file, line: line)
