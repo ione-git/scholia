@@ -173,6 +173,7 @@ struct BookInfoView: View {
         book.collections = Array(collections)
         if resetsProgress {
             book.position = nil
+            book.progress = nil
         }
         try? context.save()
         dismiss()
