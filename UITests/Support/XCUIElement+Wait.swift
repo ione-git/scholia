@@ -1,6 +1,6 @@
 import XCTest
 
-private let timeout: TimeInterval = 10
+let timeout: TimeInterval = 10
 
 extension XCUIElement {
     var stringValue: String? { value as? String }
