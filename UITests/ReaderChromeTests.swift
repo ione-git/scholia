@@ -179,6 +179,7 @@ final class ReaderChromeTests: UITestCase {
 
         app = relaunch()
         reader = HomeScreen(app: app).waitUntilShown().openHeroBook()
+        reader.pageCounter.waitUntil(\.label, equals: "2 of \(bookPages)")
         reader.showChrome()
         reader.bookmarkButton.waitUntil(\.isEnabled, equals: true)
         XCTAssertFalse(reader.bookmarkButton.isSelected)
