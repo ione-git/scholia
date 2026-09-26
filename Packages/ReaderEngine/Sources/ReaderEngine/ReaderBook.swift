@@ -5,9 +5,11 @@ import ReadiumStreamer
 public final class ReaderBook {
     public let title: String?
     public let language: String?
+    let url: URL
     let publication: Publication
 
-    private init(publication: Publication) {
+    private init(url: URL, publication: Publication) {
+        self.url = url
         self.publication = publication
         title = publication.metadata.title
         language = publication.metadata.languages.first
@@ -28,7 +30,7 @@ public final class ReaderBook {
         guard !publication.isRestricted else {
             throw .protected
         }
-        return ReaderBook(publication: publication)
+        return ReaderBook(url: url, publication: publication)
     }
 }
 

@@ -12,6 +12,7 @@ final class Book {
     var openedAt: Date?
     var isFinished: Bool
     var position: ReadingPosition?
+    var progress: Double?
     var collections: [BookCollection]
     @Relationship(deleteRule: .cascade, inverse: \Highlight.book) var highlights: [Highlight]
     @Relationship(deleteRule: .cascade, inverse: \Bookmark.book) var bookmarks: [Bookmark]
@@ -26,6 +27,7 @@ final class Book {
         openedAt = nil
         isFinished = false
         position = nil
+        progress = nil
         collections = []
         highlights = []
         bookmarks = []

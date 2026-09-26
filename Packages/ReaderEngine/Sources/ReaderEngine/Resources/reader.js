@@ -60,7 +60,92 @@
     }
   }
 
+  function textNodes() {
+    const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);
+    const nodes = [];
+    let start = 0;
+    while (walker.nextNode()) {
+      nodes.push({ node: walker.currentNode, start });
+      start += walker.currentNode.data.length;
+    }
+    return nodes;
+  }
+
+  function pageOf(rect) {
+    return Math.floor((rect.left + window.scrollX) / window.innerWidth);
+  }
+
+  function boxes(range) {
+    return Array.from(range.getClientRects()).filter((rect) => rect.width > 0 || rect.height > 0);
+  }
+
+  function pageOfCharacter(node, from) {
+    const range = document.createRange();
+    for (let index = from; index < node.data.length; index++) {
+      range.setStart(node, index);
+      range.setEnd(node, index + 1);
+      const rect = boxes(range)[0];
+      if (rect) {
+        return pageOf(rect);
+      }
+    }
+    return null;
+  }
+
+  function lastPage() {
+    return Math.max(0, Math.round(document.scrollingElement.scrollWidth / window.innerWidth) - 1);
+  }
+
   window.scholia = {
+    offsetOfPage(page) {
+      if (page <= 0) {
+        return 0;
+      }
+      const nodes = textNodes();
+      for (const { node, start } of nodes) {
+        const range = document.createRange();
+        range.selectNodeContents(node);
+        const rects = boxes(range);
+        if (rects.length === 0 || pageOf(rects[rects.length - 1]) < page) {
+          continue;
+        }
+        let low = 0;
+        let high = node.data.length - 1;
+        while (low < high) {
+          const middle = (low + high) >> 1;
+          const found = pageOfCharacter(node, middle);
+          if (found === null || found >= page) {
+            high = middle;
+          } else {
+            low = middle + 1;
+          }
+        }
+        return start + low;
+      }
+      const last = nodes[nodes.length - 1];
+      return last ? last.start + last.node.data.length : 0;
+    },
+
+    async showOffset(offset) {
+      await document.fonts.ready;
+      let page = 0;
+      if (offset > 0) {
+        page = lastPage();
+        for (const { node, start } of textNodes()) {
+          if (start + node.data.length <= offset) {
+            continue;
+          }
+          const found = pageOfCharacter(node, Math.max(0, offset - start));
+          if (found !== null) {
+            page = Math.min(found, page);
+            break;
+          }
+        }
+      }
+      document.scrollingElement.scrollTo({ left: page * window.innerWidth, behavior: "instant" });
+      return page;
+    },
+
     wordAt(x, y, language) {
       const caret = document.caretRangeFromPoint(x, y);
       if (!caret || caret.startContainer.nodeType !== Node.TEXT_NODE) {
