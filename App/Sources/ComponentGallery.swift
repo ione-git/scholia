@@ -229,6 +229,7 @@
         let colorScheme: ColorScheme?
         @State private var onWordTap = "bubble"
         @State private var goal = 20
+        @State private var isFictionChecked = true
 
         var body: some View {
             GalleryPage(identifier: "listRowGallery", colorScheme: colorScheme) {
@@ -257,6 +258,24 @@
                     }
                     .buttonStyle(.plain)
                     .accessibilityIdentifier("listRowGallery.dailyGoal")
+                }
+                GroupedList {
+                    Button {
+                        isFictionChecked.toggle()
+                    } label: {
+                        ListRow(Text("Fiction"), height: .regular) { ListRowCheckbox(isChecked: isFictionChecked) }
+                    }
+                    .buttonStyle(.plain)
+                    .accessibilityAddTraits(isFictionChecked ? .isSelected : [])
+                    .accessibilityIdentifier("listRowGallery.checkbox")
+                }
+                GroupedList {
+                    Button {
+                    } label: {
+                        ListActionRow(Text("New Collection…"), icon: .add)
+                    }
+                    .buttonStyle(.plain)
+                    .accessibilityIdentifier("listRowGallery.action")
                 }
             }
             .navigationTitle("List rows")

@@ -131,13 +131,19 @@ final class ComponentGalleryTests: UITestCase {
         XCTAssertEqual(rows.translateTo.waitUntilExists().frame.height, 50)
         XCTAssertEqual(rows.onWordTap.waitUntilExists().frame.height, 56)
         XCTAssertEqual(rows.dailyGoal.waitUntilExists().frame.height, 50)
+        XCTAssertEqual(rows.checkbox.waitUntilExists().frame.height, 50, accuracy: 0.5)
+        XCTAssertEqual(rows.action.waitUntilExists().frame.height, 50, accuracy: 0.5)
+        XCTAssertEqual(rows.action.label, "New Collection…")
         rows.segment("bubble").waitUntil(\.isSelected, equals: true)
+        rows.checkbox.waitUntil(\.isSelected, equals: true)
 
         rows.segment("card").waitUntilExists().tap()
         rows.dailyGoal.tap()
+        rows.checkbox.tap()
 
         rows.segment("card").waitUntil(\.isSelected, equals: true)
         rows.segment("bubble").waitUntil(\.isSelected, equals: false)
+        rows.checkbox.waitUntil(\.isSelected, equals: false)
         XCTAssertTrue(rows.dailyGoal.label.contains("25 min"), rows.dailyGoal.label)
     }
 
