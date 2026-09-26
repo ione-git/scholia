@@ -30,7 +30,13 @@
     "Add Book" : {
 
     },
+    "Add a Book" : {
+
+    },
     "Add a book" : {
+
+    },
+    "Add an EPUB from Files, or share one to Scholia from any app." : {
 
     },
     "Add to Collection" : {
@@ -184,6 +190,9 @@
       "shouldTranslate" : false
     },
     "Night" : {
+
+    },
+    "No books yet" : {
 
     },
     "None" : {
