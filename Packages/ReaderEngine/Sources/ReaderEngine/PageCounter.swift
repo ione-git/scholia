@@ -9,8 +9,9 @@ final class PageCounter: NSObject {
     let navigator: EPUBNavigatorViewController
     private let book: ReaderBook
     private let contentInset: () -> UIEdgeInsets
-    private var received: [Int] = []
-    private var waiting: CheckedContinuation<Int?, Never>?
+    private let script: String
+    private var received: [PageCount] = []
+    private var waiting: CheckedContinuation<PageCount?, Never>?
     private var isCancelled = false
 
     init(
@@ -22,15 +23,17 @@ final class PageCounter: NSObject {
         configuration.preloadNextPositionCount = 0
         self.book = book
         self.contentInset = contentInset
+        let fragments = try! JSONEncoder().encode(Set(book.tableOfContents.compactMap(\.fragment)).sorted())
+        script = "\(Self.script)\nreportPageCount(\(String(decoding: fragments, as: UTF8.self)));"
         navigator = try! EPUBNavigatorViewController(
             publication: book.publication, initialLocation: nil, config: configuration)
         super.init()
         navigator.delegate = self
     }
 
-    func count() async -> [Int]? {
+    func count() async -> [PageCount]? {
         await withTaskCancellationHandler {
-            var counts: [Int] = []
+            var counts: [PageCount] = []
             for link in book.publication.readingOrder {
                 if !counts.isEmpty {
                     guard await navigator.go(to: link, options: NavigatorGoOptions(animated: false)) else {
@@ -48,7 +51,7 @@ final class PageCounter: NSObject {
         }
     }
 
-    private func nextCount() async -> Int? {
+    private func nextCount() async -> PageCount? {
         guard !isCancelled else {
             return nil
         }
@@ -58,7 +61,7 @@ final class PageCounter: NSObject {
         return await withCheckedContinuation { waiting = $0 }
     }
 
-    fileprivate func receive(_ count: Int) {
+    fileprivate func receive(_ count: PageCount) {
         guard let waiting else {
             received.append(count)
             return
@@ -87,8 +90,10 @@ extension PageCounter: EPUBNavigatorDelegate {
     func navigator(
         _ navigator: EPUBNavigatorViewController, setupUserScripts userContentController: WKUserContentController
     ) {
-        userContentController.addUserScript(
-            WKUserScript(source: Self.script, injectionTime: .atDocumentEnd, forMainFrameOnly: true))
+        for source in [ReaderViewController.script, script] {
+            userContentController.addUserScript(
+                WKUserScript(source: source, injectionTime: .atDocumentEnd, forMainFrameOnly: true))
+        }
         userContentController.add(PageCountMessages(counter: self), name: "pageCount")
     }
 }
@@ -101,10 +106,20 @@ private final class PageCountMessages: NSObject, WKScriptMessageHandler {
     }
 
     func userContentController(_ userContentController: WKUserContentController, didReceive message: WKScriptMessage) {
-        if let count = message.body as? Int {
-            counter?.receive(count)
+        guard
+            let body = message.body as? [String: Any],
+            let pages = body["pages"] as? Int,
+            let fragmentPages = body["fragmentPages"] as? [String: Int]
+        else {
+            return
         }
+        counter?.receive(PageCount(pages: pages, fragmentPages: fragmentPages))
     }
+}
+
+struct PageCount: Codable, Equatable {
+    var pages: Int
+    var fragmentPages: [String: Int]
 }
 
 public enum PageCountCache {
@@ -126,14 +141,14 @@ public enum PageCountCache {
         .joined(separator: "|")
     }
 
-    static func counts(for key: String) -> [Int]? {
+    static func counts(for key: String) -> [PageCount]? {
         guard let data = try? Data(contentsOf: file(for: key)) else {
             return nil
         }
-        return try? JSONDecoder().decode([Int].self, from: data)
+        return try? JSONDecoder().decode([PageCount].self, from: data)
     }
 
-    static func store(_ counts: [Int], for key: String) {
+    static func store(_ counts: [PageCount], for key: String) {
         guard let data = try? JSONEncoder().encode(counts) else {
             return
         }

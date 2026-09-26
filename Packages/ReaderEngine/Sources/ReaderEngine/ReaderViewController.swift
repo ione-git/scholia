@@ -24,7 +24,7 @@ final class ReaderViewController: UIViewController {
     private weak var pager: UIScrollView?
     private var observations: [ScrollObservation] = []
     private var shownPage: ChapterPage?
-    private var pageCounts: [Int]?
+    private var pageCounts: [PageCount]?
     private var countedLayout: PageLayout?
     private var pageCounter: PageCounter?
     private var countTask: Task<Void, Never>?
@@ -320,8 +320,9 @@ final class ReaderViewController: UIViewController {
 
     private func publishPage() {
         let startPages = pageCounts.map(Self.startPages(of:))
-        if controller?.startPages != startPages {
-            controller?.startPages = startPages
+        let chapterStartPages = pageCounts.flatMap(chapterStartPages(in:))
+        if controller?.startPages != chapterStartPages {
+            controller?.startPages = chapterStartPages
         }
         guard let shownPage, let pageCounts, let startPages, pageCounts.indices.contains(shownPage.chapter) else {
             controller?.page = nil
@@ -329,15 +330,26 @@ final class ReaderViewController: UIViewController {
         }
         controller?.page = ReaderPage(
             chapter: shownPage.chapter,
-            number: startPages[shownPage.chapter] + min(shownPage.page, pageCounts[shownPage.chapter] - 1),
-            count: pageCounts.reduce(0, +)
+            number: startPages[shownPage.chapter] + min(shownPage.page, pageCounts[shownPage.chapter].pages - 1),
+            count: pageCounts.map(\.pages).reduce(0, +)
         )
     }
 
-    private static func startPages(of pageCounts: [Int]) -> [Int] {
+    private func chapterStartPages(in pageCounts: [PageCount]) -> [Int]? {
+        guard pageCounts.count == book.publication.readingOrder.count else {
+            return nil
+        }
+        let startPages = Self.startPages(of: pageCounts)
+        return book.tableOfContents.map { chapter in
+            let file = chapter.location.chapter
+            return startPages[file] + (chapter.fragment.flatMap { pageCounts[file].fragmentPages[$0] } ?? 0)
+        }
+    }
+
+    private static func startPages(of pageCounts: [PageCount]) -> [Int] {
         var start = 1
         return pageCounts.map { count in
-            defer { start += count }
+            defer { start += count.pages }
             return start
         }
     }
@@ -711,7 +723,7 @@ extension ReaderViewController: EPUBNavigatorDelegate {
         !isPainting
     }
 
-    private static let script = try! String(
+    static let script = try! String(
         contentsOf: Bundle.module.url(forResource: "reader", withExtension: "js")!, encoding: .utf8)
 }
 

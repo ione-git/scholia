@@ -27,27 +27,27 @@ final class ReaderContentsTests: UITestCase {
     func testCurrentChapterIsMarked() {
         let contents = openContents(.german)
 
-        contents.chapter(at: 0).waitUntil(\.isSelected, equals: true)
-        XCTAssertFalse(contents.chapter(at: 1).isSelected)
-        XCTAssertFalse(contents.chapter(at: 2).isSelected)
+        contents.chapter("Erster Teil").waitUntil(\.isSelected, equals: true)
+        XCTAssertFalse(contents.chapter("Zweiter Teil").isSelected)
+        XCTAssertFalse(contents.chapter("Dritter Teil").isSelected)
     }
 
     func testTappingChapterJumpsToItsStart() {
         let contents = openContents(.german).waitUntilStartPagesShown()
 
-        let reader = contents.jump(toChapterAt: 1)
+        let reader = contents.jump(to: "Zweiter Teil")
 
         reader.pageCounter.waitUntil(\.label, equals: "19 of \(bookPages)")
         reader.subtitle.waitUntil(\.label, equals: "Franz Kafka · Zweiter Teil")
         let reopened = reader.openMenu().open("contents")
-        reopened.chapter(at: 1).waitUntil(\.isSelected, equals: true)
-        XCTAssertFalse(reopened.chapter(at: 0).isSelected)
+        reopened.chapter("Zweiter Teil").waitUntil(\.isSelected, equals: true)
+        XCTAssertFalse(reopened.chapter("Erster Teil").isSelected)
     }
 
     func testTappingChapterInRightToLeftBookJumpsToItsStart() {
         let contents = openContents(.arabic).waitUntilStartPagesShown()
 
-        let reader = contents.jump(toChapterAt: 2)
+        let reader = contents.jump(to: arabicChapters[2])
 
         reader.pageCounter.waitUntil(\.label, equals: "7 of \(arabicBookPages)")
         reader.subtitle.waitUntil(\.label, equals: "Scholia · \u{2068}\(arabicChapters[2])\u{2069}")
@@ -55,13 +55,13 @@ final class ReaderContentsTests: UITestCase {
 
     func testTappingChapterThatSharesAFileJumpsToIt() {
         let contents = openContents(.frenchNoCover).waitUntilStartPagesShown()
-        XCTAssertEqual(contents.chapter(at: 1).stringValue, "")
+        XCTAssertEqual(contents.chapter("Deuxième chapitre").stringValue, "Page \(frenchSecondChapterPage)")
 
-        let reader = contents.jump(toChapterAt: 1)
+        let reader = contents.jump(to: "Deuxième chapitre")
 
         reader.pageCounter.waitUntil(\.label, equals: "\(frenchSecondChapterPage) of \(frenchBookPages)")
         reader.subtitle.waitUntil(\.label, equals: "Scholia · Deuxième chapitre")
-        reader.openMenu().open("contents").chapter(at: 1).waitUntil(\.isSelected, equals: true)
+        reader.openMenu().open("contents").chapter("Deuxième chapitre").waitUntil(\.isSelected, equals: true)
     }
 
     func testTabsShowHighlightAndBookmarkCounts() {
@@ -73,6 +73,20 @@ final class ReaderContentsTests: UITestCase {
 
         XCTAssertEqual(index.tab("highlights").label, "Highlights, 0")
         XCTAssertEqual(index.tab("bookmarks").label, "Bookmarks, 1")
+    }
+
+    func testContentsScreenshotsInLightAndDark() {
+        let original = XCUIDevice.shared.appearance
+        addTeardownBlock { @MainActor in
+            XCUIDevice.shared.appearance = original
+        }
+        for appearance in [XCUIDevice.Appearance.light, .dark] {
+            XCUIDevice.shared.appearance = appearance
+            let contents = openContents(.german).waitUntilStartPagesShown()
+            contents.chapter("Erster Teil").waitUntil(\.isSelected, equals: true)
+            attachScreenshot("Reader-Contents-2\(appearance == .dark ? "-Dark" : "")")
+            contents.app.terminate()
+        }
     }
 
     private func openContents(_ fixture: Fixture) -> ReaderIndexScreen {

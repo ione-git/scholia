@@ -30,6 +30,7 @@ public struct ReaderPageSpan: Equatable, Sendable {
 public struct ReaderChapter: Equatable, Sendable {
     public var title: String
     public var location: ReaderLocation
+    let fragment: String?
     var unresolvedFragment: String?
 }
 

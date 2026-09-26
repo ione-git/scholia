@@ -68,8 +68,8 @@ public final class ReaderBook {
             let chapter = readingOrder.firstIndexWithHREF(url.removingFragment()).flatMap { index in
                 link.title.map {
                     ReaderChapter(
-                        title: $0, location: ReaderLocation(chapter: index, offset: 0), unresolvedFragment: url.fragment
-                    )
+                        title: $0, location: ReaderLocation(chapter: index, offset: 0), fragment: url.fragment,
+                        unresolvedFragment: url.fragment)
                 }
             }
             return [chapter].compactMap { $0 } + chapters(in: link.children, readingOrder: readingOrder)

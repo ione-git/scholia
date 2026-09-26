@@ -29,7 +29,7 @@ struct ReaderContentsList: View {
     }
 
     private func row(_ chapter: ReaderChapter, at index: Int, isCurrent: Bool) -> some View {
-        let page = controller.startPage(of: chapter)
+        let page = controller.startPage(ofChapterAt: index)
         return Button {
             dismiss()
             controller.go(toChapterAt: index)
@@ -41,6 +41,6 @@ struct ReaderContentsList: View {
             page.map { String(localized: "Page \($0)", comment: "Contents row: start page of the chapter") } ?? ""
         )
         .accessibilityAddTraits(isCurrent ? .isSelected : [])
-        .accessibilityIdentifier("readerIndex.chapter.\(index)")
+        .accessibilityIdentifier("readerIndex.chapter.\(chapter.title)")
     }
 }

@@ -124,8 +124,8 @@ def section(title, body, attributes=""):
     return f'<section epub:type="chapter"{attributes}>\n<h1>{escape(title)}</h1>\n{body}\n</section>'
 
 
-def chapter(language, title, body):
-    return xhtml(language, title, section(title, body))
+def chapter(language, title, body, attributes=""):
+    return xhtml(language, title, section(title, body, attributes))
 
 
 def anchored_chapters(language, title, chapters):
@@ -170,10 +170,16 @@ def package(identifier, title, language, creator, documents, cover):
 """
 
 
-def epub(identifier, title, language, creator, chapters, cover, in_one_file=False):
+def epub(identifier, title, language, creator, chapters, cover, in_one_file=False, anchored=False):
     if in_one_file:
         documents = [anchored_chapters(language, title, chapters)]
         hrefs = [f"chapter-1.xhtml#chapter-{index}" for index in range(1, len(chapters) + 1)]
+    elif anchored:
+        documents = [
+            chapter(language, heading, body, f' id="chapter-{index}"')
+            for index, (heading, body) in enumerate(chapters, 1)
+        ]
+        hrefs = [f"chapter-{index}.xhtml#chapter-{index}" for index in range(1, len(chapters) + 1)]
     else:
         documents = [chapter(language, heading, body) for heading, body in chapters]
         hrefs = [f"chapter-{index}.xhtml" for index in range(1, len(chapters) + 1)]
@@ -233,6 +239,7 @@ def main():
             ("الفصل الثالث", prose(ARABIC * 4)),
         ],
         None,
+        anchored=True,
     )
     minimal = archive(
         epub(

@@ -48,14 +48,11 @@ public final class ReaderController {
         viewController.go(to: .chapter(index))
     }
 
-    public func startPage(of chapter: ReaderChapter) -> Int? {
-        guard
-            chapter.unresolvedFragment == nil, chapter.location.offset == 0, let startPages,
-            startPages.indices.contains(chapter.location.chapter)
-        else {
+    public func startPage(ofChapterAt index: Int) -> Int? {
+        guard let startPages, startPages.indices.contains(index) else {
             return nil
         }
-        return startPages[chapter.location.chapter]
+        return startPages[index]
     }
 }
 

@@ -7,24 +7,25 @@ struct ReaderIndexScreen: Screen {
     var title: XCUIElement { app.staticTexts["readerIndex.title"] }
     var subtitle: XCUIElement { app.staticTexts["readerIndex.subtitle"] }
 
-    var chapters: [XCUIElement] {
+    var chapters: [XCUIElement] { chapterRows.allElementsBoundByIndex }
+
+    private var chapterRows: XCUIElementQuery {
         app.buttons.matching(NSPredicate(format: "identifier BEGINSWITH %@", "readerIndex.chapter."))
-            .allElementsBoundByIndex
     }
 
     func tab(_ name: String) -> XCUIElement { app.buttons["readerIndex.tab.\(name)"] }
 
-    func chapter(at index: Int) -> XCUIElement { app.buttons["readerIndex.chapter.\(index)"] }
+    func chapter(_ title: String) -> XCUIElement { app.buttons["readerIndex.chapter.\(title)"] }
 
     @discardableResult
     func waitUntilStartPagesShown(file: StaticString = #filePath, line: UInt = #line) -> ReaderIndexScreen {
-        chapter(at: 0).waitUntil(\.stringValue, equals: "Page 1", file: file, line: line)
+        chapterRows.firstMatch.waitUntil(\.stringValue, equals: "Page 1", file: file, line: line)
         return self
     }
 
     @discardableResult
-    func jump(toChapterAt index: Int) -> ReaderScreen {
-        chapter(at: index).waitUntil(\.isHittable, equals: true).tap()
+    func jump(to title: String) -> ReaderScreen {
+        chapter(title).waitUntil(\.isHittable, equals: true).tap()
         root.waitUntilGone()
         return ReaderScreen(app: app).waitUntilShown()
     }
