@@ -11,18 +11,17 @@ concurrency:
 
 jobs:
   test:
-    runs-on: macos-26
+    if: github.event_name == 'push' || github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: [self-hosted, scholia]
+    timeout-minutes: 60
     env:
-      DEVELOPER_DIR: /Applications/Xcode_26.4.1.app/Contents/Developer
+      DEVELOPER_DIR: /Applications/Xcode.app/Contents/Developer
+      DERIVED_DATA: ${{ github.workspace }}/../DerivedData
     steps:
       - uses: actions/checkout@v7
-      - run: brew install xcodegen
+      - run: command -v xcodegen || brew install xcodegen
       - run: make lint
-      - uses: actions/cache@v6
-        with:
-          path: build/DerivedData/SourcePackages
-          key: spm-${{ hashFiles('Package.resolved') }}
-      - run: UDID=$(scripts/sim create CI) && echo "UDID=$UDID" >> "$GITHUB_ENV"
+      - run: UDID=$(scripts/sim create CI-${{ runner.name }}) && echo "UDID=$UDID" >> "$GITHUB_ENV"
       - run: make test DESTINATION="platform=iOS Simulator,id=$UDID" TEST_FLAGS="-retry-tests-on-failure -test-iterations 2"
       - if: failure()
         uses: actions/upload-artifact@v7
