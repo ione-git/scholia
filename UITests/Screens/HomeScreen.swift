@@ -18,6 +18,11 @@ struct HomeScreen: Screen {
 
     var libraryButton: XCUIElement { app.buttons["home.library"] }
 
+    var emptyCover: XCUIElement { app.buttons["home.emptyCover"] }
+    var emptyTitle: XCUIElement { app.staticTexts["home.emptyTitle"] }
+    var emptyMessage: XCUIElement { app.staticTexts["home.emptyMessage"] }
+    var emptyAddBookButton: XCUIElement { app.buttons["home.emptyAddBook"] }
+
     func book(_ title: String) -> XCUIElement { app.descendants(matching: .any)["home.book.\(title)"] }
 
     func background() throws -> RGBColor {
@@ -29,7 +34,11 @@ struct HomeScreen: Screen {
     }
 
     func pickFile() -> FilePickerScreen {
-        addBookButton.waitUntil(\.isHittable, equals: true).tap()
+        pickFile(tapping: addBookButton)
+    }
+
+    func pickFile(tapping button: XCUIElement) -> FilePickerScreen {
+        button.waitUntil(\.isHittable, equals: true).tap()
         return FilePickerScreen(app: app).waitUntilShown()
     }
 

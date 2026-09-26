@@ -30,6 +30,10 @@ struct HomeView: View {
                         Spacer(minLength: .space6)
                         LibraryShelf(count: books.count, books: Array(books.dropFirst()))
                             .padding(.bottom, .space8)
+                    } else {
+                        EmptyHome { isPickingFile = true }
+                            .frame(maxHeight: .infinity)
+                            .padding(.bottom, .controlH + proxy.safeAreaInsets.top - proxy.safeAreaInsets.bottom)
                     }
                 }
                 .frame(minHeight: proxy.size.height)
@@ -94,6 +98,33 @@ struct HomeView: View {
                 .accessibilityIdentifier("home.openEPUB")
         }
     #endif
+}
+
+private struct EmptyHome: View {
+    let addBook: () -> Void
+
+    var body: some View {
+        VStack(spacing: .space6) {
+            CoverPlaceholder(label: Text("Add a book"), action: addBook)
+                .accessibilityIdentifier("home.emptyCover")
+            VStack(spacing: .space2) {
+                Text("No books yet")
+                    .textStyle(.titleBook)
+                    .foregroundStyle(.ink)
+                    .accessibilityIdentifier("home.emptyTitle")
+                Text("Add an EPUB from Files, or share one to Scholia from any app.")
+                    .textStyle(TextStyle.callout.weighted(TextStyle.body.weight))
+                    .foregroundStyle(.inkMuted)
+                    .accessibilityIdentifier("home.emptyMessage")
+                    .padding(.horizontal, .space8)
+            }
+            .multilineTextAlignment(.center)
+            Button("Add a Book", action: addBook)
+                .buttonStyle(.solid(.compact))
+                .accessibilityIdentifier("home.emptyAddBook")
+        }
+        .padding(.horizontal, .space5)
+    }
 }
 
 private struct HeroBook: View {
