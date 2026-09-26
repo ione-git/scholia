@@ -22,7 +22,7 @@ jobs:
       - run: command -v xcodegen || brew install xcodegen
       - run: make lint
       - run: UDID=$(scripts/sim create CI-${{ runner.name }}) && echo "UDID=$UDID" >> "$GITHUB_ENV"
-      - run: make test DESTINATION="platform=iOS Simulator,id=$UDID" TEST_FLAGS="-retry-tests-on-failure -test-iterations 2"
+      - run: make test DESTINATION="platform=iOS Simulator,id=$UDID" TEST_FLAGS="-retry-tests-on-failure -test-iterations 2 -parallel-testing-enabled YES -parallel-testing-worker-count 3"
       - if: failure()
         uses: actions/upload-artifact@v7
         with:
