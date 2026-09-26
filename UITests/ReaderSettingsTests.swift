@@ -27,9 +27,6 @@ final class ReaderSettingsTests: UITestCase {
                 XCTAssertFalse(sheet.theme(other).isSelected, other)
             }
         }
-        sheet.closeByTappingPage(reader)
-        reader.hideChrome()
-        attachScreenshot("Reader-Black")
         app.terminate()
 
         app = relaunch()
@@ -70,13 +67,13 @@ final class ReaderSettingsTests: UITestCase {
         sheet.step(sheet.smaller, expecting: sizeValue(1))
         sheet.smaller.waitUntil(\.isEnabled, equals: false)
 
-        sheet.size.adjust(toNormalizedSliderPosition: 1)
+        sheet.slideSize(to: 1)
         sheet.size.waitUntil(\.stringValue, equals: sizeValue(7))
         reader.appearance.waitUntil(\.label, equals: try style(step: 7))
         sheet.larger.waitUntil(\.isEnabled, equals: false)
         XCTAssertTrue(sheet.smaller.isEnabled)
 
-        sheet.size.adjust(toNormalizedSliderPosition: 1.0 / 3)
+        sheet.slideSize(to: 1.0 / 3)
         sheet.size.waitUntil(\.stringValue, equals: sizeValue(defaultStep))
         reader.appearance.waitUntil(\.label, equals: try style(step: defaultStep))
         reader.pageCounter.waitUntil(\.label, equals: "1 of \(bookPages)")
@@ -102,12 +99,13 @@ final class ReaderSettingsTests: UITestCase {
         reader.pageCounter.waitUntil(\.label, equals: "1 of \(bookPages)")
     }
 
-    func testFadeTurnsPagesWithSwipes() {
+    func testFadeTurnsPagesWithSwipes() throws {
         let reader = HomeScreen(app: launchWithGermanBook()).waitUntilShown().openHeroBook()
         let sheet = reader.openSettings()
 
         sheet.choose(sheet.pageTurn("fade"))
         XCTAssertFalse(sheet.pageTurn("slide").isSelected)
+        reader.appearance.waitUntil(\.label, equals: try style(pageTurn: "fade"))
         sheet.closeByTappingPage(reader)
 
         reader.turnForward(expecting: "2 of \(bookPages)")
@@ -115,24 +113,53 @@ final class ReaderSettingsTests: UITestCase {
         reader.turnBackward(expecting: "2 of \(bookPages)")
     }
 
-    func testScrollAdvancesVerticallyAndReopensAtSamePlace() throws {
+    func testScrollAdvancesVerticallyCountsPagesAndReopensAtSamePlace() throws {
         let app = launchWithGermanBook()
         let reader = HomeScreen(app: app).waitUntilShown().openHeroBook()
         let sheet = reader.openSettings()
 
         sheet.choose(sheet.pageTurn("scroll"))
-        reader.pageCounter.waitUntilGone()
+        reader.appearance.waitUntil(\.label, equals: try style(pageTurn: "scroll"))
+        reader.pageCounter.waitUntil(\.label, equals: "1 of \(bookPages)")
         reader.appearance.waitUntil(\.stringValue, satisfies: { span(in: $0) != nil })
         let top = try XCTUnwrap(span(in: reader.appearance.stringValue))
         sheet.closeByTappingPage(reader)
         reader.hideChrome()
-        app.swipeUp()
+        scrollDown(app)
 
         reader.appearance.waitUntil(\.stringValue, satisfies: { (span(in: $0)?.start ?? 0) > top.start })
         let scrolled = try XCTUnwrap(span(in: reader.appearance.stringValue))
-        let reopened = reader.backToHome().openHeroBookInScrollMode()
+        reader.pageCounter.waitUntil(\.label, satisfies: { number(in: $0) > 1 })
+        let page = number(in: reader.pageCounter.label)
+        let home = reader.backToHome()
+        home.heroProgress.waitUntil(\.stringValue, equals: percent(page, of: bookPages))
+        let reopened = home.openHeroBook()
         reopened.appearance.waitUntil(\.stringValue, satisfies: { span(in: $0)?.contains(scrolled.start) == true })
-        XCTAssertFalse(reopened.pageCounter.exists)
+        reopened.pageCounter.waitUntil(\.label, satisfies: { number(in: $0) > 1 })
+    }
+
+    func testSlideAfterScrollShowsPagesAtScrolledPlace() throws {
+        let app = launchWithGermanBook()
+        let reader = HomeScreen(app: app).waitUntilShown().openHeroBook()
+        var sheet = reader.openSettings()
+        sheet.choose(sheet.pageTurn("scroll"))
+        reader.appearance.waitUntil(\.label, equals: try style(pageTurn: "scroll"))
+        sheet.closeByTappingPage(reader)
+        reader.hideChrome()
+        scrollDown(app)
+        reader.appearance.waitUntil(\.stringValue, satisfies: { (span(in: $0)?.start ?? 0) > 0 })
+        let scrolled = try XCTUnwrap(span(in: reader.appearance.stringValue))
+        sheet = reader.openSettings()
+
+        sheet.choose(sheet.pageTurn("slide"))
+
+        XCTAssertFalse(sheet.pageTurn("scroll").isSelected)
+        reader.appearance.waitUntil(\.label, equals: try style(pageTurn: "slide"))
+        reader.appearance.waitUntil(\.stringValue, satisfies: { span(in: $0)?.contains(scrolled.start) == true })
+        reader.pageCounter.waitUntil(\.label, satisfies: { number(in: $0) > 1 })
+        let page = number(in: reader.pageCounter.label)
+        sheet.closeByTappingPage(reader)
+        reader.turnForward(expecting: "\(page + 1) of \(bookPages)")
     }
 
     func testSizeChangeKeepsReadingPlace() throws {
@@ -148,6 +175,28 @@ final class ReaderSettingsTests: UITestCase {
 
         reader.appearance.waitUntil(\.label, equals: try style(step: 4))
         reader.appearance.waitUntil(\.stringValue, satisfies: { span(in: $0)?.contains(before.start) == true })
+    }
+
+    func testFontChosenWhileSizeChangeLoadsKeepsTrackingPages() throws {
+        let reader = HomeScreen(app: launchWithGermanBook()).waitUntilShown().openHeroBook()
+        for page in 2...4 {
+            reader.turnForward(expecting: "\(page) of \(bookPages)")
+        }
+        reader.appearance.waitUntil(\.stringValue, satisfies: { (span(in: $0)?.start ?? 0) > 0 })
+        let before = try XCTUnwrap(span(in: reader.appearance.stringValue))
+        let sheet = reader.openSettings()
+
+        sheet.larger.tap()
+        sheet.font("charter").tap()
+
+        reader.appearance.waitUntil(
+            \.label, equals: try style(theme: "paper", family: "Charter", step: 4, spacing: \.normal, pageTurn: "slide")
+        )
+        reader.appearance.waitUntil(\.stringValue, satisfies: { span(in: $0)?.contains(before.start) == true })
+        reader.pageCounter.waitUntil(\.label, satisfies: { number(in: $0) > 1 })
+        let counter = reader.pageCounter.label
+        sheet.closeByTappingPage(reader)
+        reader.turnForward(expecting: "\(number(in: counter) + 1) of \(total(in: counter))")
     }
 
     func testRotationLockHoldsInReaderAndContentsAndReleasesOnLeaving() throws {
@@ -194,7 +243,6 @@ final class ReaderSettingsTests: UITestCase {
         XCUIDevice.shared.appearance = .dark
         let reader = HomeScreen(app: launchWithGermanBook()).waitUntilShown().openHeroBook()
         reader.appearance.waitUntil(\.label, equals: try style(theme: "night"))
-        attachScreenshot("Reader-Dark")
         let sheet = reader.openSettings()
         sheet.theme("night").waitUntil(\.isSelected, equals: true)
         XCTAssertFalse(sheet.theme("paper").isSelected)
@@ -217,6 +265,19 @@ final class ReaderSettingsTests: UITestCase {
         sheet.theme("night").waitUntil(\.isSelected, equals: true)
     }
 
+    func testTappingShownNightInDarkKeepsChosenDayTheme() throws {
+        let reader = HomeScreen(app: launch(germanBook, appearance: .dark)).waitUntilShown().openHeroBook()
+        reader.appearance.waitUntil(\.label, equals: try style(theme: "night"))
+        let sheet = reader.openSettings()
+        sheet.theme("night").waitUntil(\.isSelected, equals: true)
+
+        sheet.theme("night").tap()
+        XCUIDevice.shared.appearance = .light
+
+        reader.appearance.waitUntil(\.label, equals: try style(theme: "paper"))
+        sheet.theme("paper").waitUntil(\.isSelected, equals: true)
+    }
+
     func testTapOnPageClosesSheetAndKeepsChrome() {
         let reader = HomeScreen(app: launchWithGermanBook()).waitUntilShown().openHeroBook()
         let sheet = reader.openSettings()
@@ -234,12 +295,12 @@ final class ReaderSettingsTests: UITestCase {
         var sheet = reader.openSettings()
         sheet.choose(sheet.theme("sepia"))
         sheet.choose(sheet.font("charter"))
-        sheet.step(sheet.larger, expecting: sizeValue(4))
-        sheet.step(sheet.larger, expecting: sizeValue(5))
+        sheet.slideSize(to: 4.0 / 6)
+        sheet.size.waitUntil(\.stringValue, equals: sizeValue(5))
         sheet.choose(sheet.lineSpacing("loose"))
         sheet.choose(sheet.pageTurn("fade"))
         sheet.setLockRotation(true)
-        let changed = try style(theme: "sepia", family: "Charter", step: 5, spacing: \.loose)
+        let changed = try style(theme: "sepia", family: "Charter", step: 5, spacing: \.loose, pageTurn: "fade")
         reader.appearance.waitUntil(\.label, equals: changed)
         app.terminate()
 
@@ -257,21 +318,40 @@ final class ReaderSettingsTests: UITestCase {
         reader.turnForward(expecting: "2 of \(reader.pageCounter.label.components(separatedBy: " of ").last ?? "")")
     }
 
-    func testSettingsSheetScreenshotsInLightAndDark() {
-        let original = XCUIDevice.shared.appearance
-        addTeardownBlock { @MainActor in
-            XCUIDevice.shared.appearance = original
-        }
-        for appearance in [XCUIDevice.Appearance.light, .dark] {
-            XCUIDevice.shared.appearance = appearance
-            let app = launchWithGermanBook()
-            let reader = HomeScreen(app: app).waitUntilShown().openHeroBook()
-            let sheet = reader.openSettings()
-            sheet.setLockRotation(true)
-            sheet.theme(appearance == .dark ? "night" : "paper").waitUntil(\.isSelected, equals: true)
-            attachScreenshot(appearance == .dark ? "Sheet-Dark" : "Reader-Menu-Settings")
-            app.terminate()
-        }
+    func testReaderMenuSettingsSnapshotLight() {
+        assertSnapshot(of: openSettingsWithLockedRotation(appearance: .light), named: "Reader-Menu-Settings")
+    }
+
+    func testReaderMenuSettingsSnapshotDark() {
+        assertSnapshot(of: openSettingsWithLockedRotation(appearance: .dark), named: "Reader-Menu-Settings")
+    }
+
+    func testReaderBlackSnapshotLight() throws {
+        assertSnapshot(of: try openBlackPageWithBubble(appearance: .light), named: "Reader-Black")
+    }
+
+    func testReaderBlackSnapshotDark() throws {
+        assertSnapshot(of: try openBlackPageWithBubble(appearance: .dark), named: "Reader-Black")
+    }
+
+    private func openSettingsWithLockedRotation(appearance: XCUIDevice.Appearance) -> ReaderSettingsScreen {
+        let reader = HomeScreen(app: launch(germanBook, appearance: appearance)).waitUntilShown().openHeroBook()
+        let sheet = reader.openSettings()
+        sheet.setLockRotation(true)
+        return sheet
+    }
+
+    private func openBlackPageWithBubble(appearance: XCUIDevice.Appearance) throws -> ReaderScreen {
+        let reader = HomeScreen(app: launch(germanBook, appearance: appearance)).waitUntilShown().openHeroBook()
+        let sheet = reader.openSettings()
+        sheet.choose(sheet.theme("black"))
+        sheet.closeByTappingPage(reader)
+        reader.hideChrome()
+        try reader.tapWord(onLine: 3, x: 3)
+        reader.bubbleWord.waitUntil(\.label, equals: "Ungeziefer")
+        reader.bubbleTranslation.waitUntilExists()
+        reader.paintedWordTints.waitUntil(\.label, equals: "1")
+        return reader
     }
 
     private func launchWithRotationLock() throws -> XCUIApplication {
@@ -293,27 +373,43 @@ final class ReaderSettingsTests: UITestCase {
                 now: nil, notificationPermission: nil))
     }
 
+    private func scrollDown(_ app: XCUIApplication) {
+        for _ in 1...3 {
+            app.swipeUp()
+        }
+    }
+
+    private func percent(_ page: Int, of pages: Int) -> String {
+        (Double(page) / Double(pages)).formatted(.percent.precision(.fractionLength(0)))
+    }
+
     private func sizeValue(_ step: Int) -> String {
         "\(step) of 7"
     }
 
     private func style(theme: String) throws -> String {
-        try style(theme: theme, family: "Literata", step: defaultStep, spacing: \.normal)
+        try style(theme: theme, family: "Literata", step: defaultStep, spacing: \.normal, pageTurn: "slide")
     }
 
     private func style(family: String) throws -> String {
-        try style(theme: "paper", family: family, step: defaultStep, spacing: \.normal)
+        try style(theme: "paper", family: family, step: defaultStep, spacing: \.normal, pageTurn: "slide")
     }
 
     private func style(step: Int) throws -> String {
-        try style(theme: "paper", family: "Literata", step: step, spacing: \.normal)
+        try style(theme: "paper", family: "Literata", step: step, spacing: \.normal, pageTurn: "slide")
     }
 
     private func style(spacing: KeyPath<ReadingStep, Int>) throws -> String {
-        try style(theme: "paper", family: "Literata", step: defaultStep, spacing: spacing)
+        try style(theme: "paper", family: "Literata", step: defaultStep, spacing: spacing, pageTurn: "slide")
     }
 
-    private func style(theme: String, family: String, step: Int, spacing: KeyPath<ReadingStep, Int>) throws -> String {
+    private func style(pageTurn: String) throws -> String {
+        try style(theme: "paper", family: "Literata", step: defaultStep, spacing: \.normal, pageTurn: pageTurn)
+    }
+
+    private func style(
+        theme: String, family: String, step: Int, spacing: KeyPath<ReadingStep, Int>, pageTurn: String
+    ) throws -> String {
         let tokens = try TokenValues.load()
         let colors: (page: RGB, text: RGB) =
             switch theme {
@@ -323,7 +419,8 @@ final class ReaderSettingsTests: UITestCase {
             default: (try tokens.color("surface-paper", dark: false), try tokens.color("ink", dark: false))
             }
         let size = try tokens.readingScale()[step - 1]
-        return "\(colors.page) · \(colors.text) · \(family) · \(size.fontSize)/\(size[keyPath: spacing])"
+        return
+            "\(colors.page) · \(colors.text) · \(family) · \(size.fontSize)/\(size[keyPath: spacing]) · \(pageTurn)"
     }
 }
 
@@ -346,13 +443,10 @@ private func span(in value: String?) -> Span? {
     return Span(chapter: chapter, start: start, end: end)
 }
 
-private func total(in counter: String) -> Int {
-    Int(counter.components(separatedBy: " of ").last ?? "") ?? 0
+private func number(in counter: String) -> Int {
+    Int(counter.components(separatedBy: " of ").first ?? "") ?? 0
 }
 
-extension HomeScreen {
-    fileprivate func openHeroBookInScrollMode() -> ReaderScreen {
-        heroCover.waitUntil(\.isHittable, equals: true).tap()
-        return ReaderScreen(app: app).waitUntilShown()
-    }
+private func total(in counter: String) -> Int {
+    Int(counter.components(separatedBy: " of ").last ?? "") ?? 0
 }

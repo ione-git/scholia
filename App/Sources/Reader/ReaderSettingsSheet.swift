@@ -90,14 +90,11 @@ struct ReaderSettingsSheet: View {
             }
             .disabled(settings.textSizeStep <= ReaderStyle.sizeSteps.lowerBound)
             .accessibilityIdentifier("readerSettings.smaller")
-            Slider(value: sizeStep, in: sizeRange, step: 1) {
-                Text("Text size")
-            } onEditingChanged: { isEditing in
+            StepSlider(value: sizeStep, in: ReaderStyle.sizeSteps, label: Text("Text size")) { isEditing in
                 if !isEditing {
                     modelContext.saveLogged()
                 }
             }
-            .tint(.accent)
             .accessibilityValue(Text("\(settings.textSizeStep) of \(ReaderStyle.sizeSteps.upperBound)"))
             .accessibilityIdentifier("readerSettings.size")
             TextSizeButton(.larger, label: Text("Larger text")) {
@@ -150,15 +147,10 @@ struct ReaderSettingsSheet: View {
         }
     }
 
-    private var sizeRange: ClosedRange<Double> {
-        Double(ReaderStyle.sizeSteps.lowerBound)...Double(ReaderStyle.sizeSteps.upperBound)
-    }
-
-    private var sizeStep: Binding<Double> {
+    private var sizeStep: Binding<Int> {
         Binding {
-            Double(settings.textSizeStep)
-        } set: { value in
-            let step = Int(value.rounded())
+            settings.textSizeStep
+        } set: { step in
             if step != settings.textSizeStep {
                 settings.textSizeStep = step
             }

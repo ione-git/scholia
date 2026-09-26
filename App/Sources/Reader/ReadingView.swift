@@ -155,9 +155,10 @@ struct ReadingView: View {
     }
 
     private func pick(_ picked: ReaderTheme) {
-        if picked != theme {
-            transition.begin(in: window.window)
+        guard picked != theme else {
+            return
         }
+        transition.begin(in: window.window)
         pickedTheme = picked.shown(in: colorScheme) == picked ? nil : picked
         settings.update(\.readerTheme, to: picked, in: modelContext)
     }
@@ -217,6 +218,7 @@ struct ReadingView: View {
             return [
                 style.background, style.text, style.fontFamily,
                 "\(style.fontSize.formatted())/\(style.lineHeight.formatted())",
+                controller.appearance.pageTurn.rawValue,
             ]
             .joined(separator: " · ")
         }

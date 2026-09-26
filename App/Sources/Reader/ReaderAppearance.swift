@@ -57,6 +57,7 @@ extension ReaderFont {
     private static let literataChip = chipFont(ReaderFont.literata.typeface.family)
     private static let charterChip = chipFont(ReaderFont.charter.typeface.family)
     private static let georgiaChip = chipFont(ReaderFont.georgia.typeface.family)
+    private static let systemChip = TextStyle.callout.weighted(TextStyle.body.weight).font
 
     var typeface: ReaderTypeface {
         switch self {
@@ -88,12 +89,12 @@ extension ReaderFont {
         case .literata: Self.literataChip
         case .charter: Self.charterChip
         case .georgia: Self.georgiaChip
-        case .system: .subheadline
+        case .system: Self.systemChip
         }
     }
 
     private static func chipFont(_ family: String) -> Font {
-        .custom(family, size: TextStyle.callout.size, relativeTo: .subheadline)
+        .custom(family, fixedSize: TextStyle.callout.size)
     }
 }
 

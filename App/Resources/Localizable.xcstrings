@@ -195,7 +195,7 @@
       "shouldTranslate" : false
     },
     "Fade" : {
-      "shouldTranslate" : false
+
     },
     "Fiction" : {
       "shouldTranslate" : false
@@ -387,7 +387,7 @@
       "shouldTranslate" : false
     },
     "Scroll" : {
-      "shouldTranslate" : false
+
     },
     "Search" : {
 
@@ -423,7 +423,7 @@
       "shouldTranslate" : false
     },
     "Slide" : {
-      "shouldTranslate" : false
+
     },
     "Smaller text" : {
 

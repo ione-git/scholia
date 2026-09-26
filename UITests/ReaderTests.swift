@@ -1,6 +1,9 @@
 import XCTest
 
 final class ReaderTests: UITestCase {
+    private let germanBook = LaunchConfiguration(
+        resetsState: true, fixtures: [.german], opened: [], inProgress: [], highlighted: [], translation: .immediate,
+        now: nil, notificationPermission: nil)
     private let bookPages = 54
     private let firstChapterPages = 18
     private let arabicBookPages = 9
@@ -21,7 +24,6 @@ final class ReaderTests: UITestCase {
         let reader = HomeScreen(app: launchWithGermanBook()).waitUntilShown().openHeroBook()
 
         reader.turnForward(expecting: "2 of \(bookPages)")
-        attachScreenshot("Reader")
         reader.turnBackward(expecting: "1 of \(bookPages)")
         for page in 2...firstChapterPages + 1 {
             reader.turnForward(expecting: "\(page) of \(bookPages)")
@@ -141,12 +143,20 @@ final class ReaderTests: UITestCase {
         reader.backToLibrary()
     }
 
+    func testReaderSnapshotLight() {
+        assertSnapshot(of: openGermanBook(appearance: .light), named: "Reader")
+    }
+
+    func testReaderSnapshotDark() {
+        assertSnapshot(of: openGermanBook(appearance: .dark), named: "Reader")
+    }
+
+    private func openGermanBook(appearance: XCUIDevice.Appearance) -> ReaderScreen {
+        HomeScreen(app: launch(germanBook, appearance: appearance)).waitUntilShown().openHeroBook()
+    }
+
     private func launchWithGermanBook() -> XCUIApplication {
-        launch(
-            LaunchConfiguration(
-                resetsState: true, fixtures: [.german], opened: [], inProgress: [], highlighted: [],
-                translation: .immediate, now: nil,
-                notificationPermission: nil))
+        launch(germanBook)
     }
 
     private func percent(_ page: Int, of pages: Int) -> String {

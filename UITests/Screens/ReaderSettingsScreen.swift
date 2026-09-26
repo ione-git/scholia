@@ -24,6 +24,14 @@ struct ReaderSettingsScreen: Screen {
         size.waitUntil(\.stringValue, equals: value, file: file, line: line)
     }
 
+    func slideSize(to position: CGFloat, file: StaticString = #filePath, line: UInt = #line) {
+        let steps = (size.waitUntilExists(file: file, line: line).stringValue ?? "").components(separatedBy: " of ")
+            .compactMap { Int($0) }
+        let thumb = CGFloat(steps[0] - 1) / CGFloat(steps[1] - 1)
+        size.coordinate(withNormalizedOffset: CGVector(dx: thumb, dy: 0.5))
+            .press(forDuration: 0.1, thenDragTo: size.coordinate(withNormalizedOffset: CGVector(dx: position, dy: 0.5)))
+    }
+
     func setLockRotation(_ isOn: Bool, file: StaticString = #filePath, line: UInt = #line) {
         let value = isOn ? "1" : "0"
         guard lockRotation.waitUntilExists(file: file, line: line).stringValue != value else {

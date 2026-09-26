@@ -175,7 +175,7 @@ final class ReaderViewController: UIViewController {
 
     private func render(_ target: ReaderAppearance, generation current: Int) async {
         defer {
-            if current == generation {
+            if current == generation, !Task.isCancelled {
                 revealCover()
             }
         }
@@ -184,7 +184,7 @@ final class ReaderViewController: UIViewController {
         }
         let restore = controller?.location ?? restoreLocation
         let changesLayout =
-            layoutStyle(appearance) != layoutStyle(target) || isScrolled(appearance) != isScrolled(target)
+            !isShown || layoutStyle(appearance) != layoutStyle(target) || isScrolled(appearance) != isScrolled(target)
         let changesFont = appearance.style.font != target.style.font
         if changesLayout {
             coverPage()
@@ -450,6 +450,9 @@ final class ReaderViewController: UIViewController {
             return nil
         }
         observe(scrollView)
+        if navigator.presentation.scroll {
+            return ChapterPage(chapter: chapter, page: scrolledPage(in: scrollView, chapter: chapter))
+        }
         let width = scrollView.bounds.width
         guard width > 0, scrollView.contentSize.width >= width else {
             return nil
@@ -457,6 +460,19 @@ final class ReaderViewController: UIViewController {
         let count = Int((scrollView.contentSize.width / width).rounded())
         let page = Int((distanceFromStart(of: scrollView.bounds, in: scrollView) / width).rounded())
         return ChapterPage(chapter: chapter, page: min(max(page, 0), count - 1))
+    }
+
+    private func scrolledPage(in scrollView: UIScrollView, chapter: Int) -> Int {
+        guard let pageCounts, pageCounts.indices.contains(chapter) else {
+            return 0
+        }
+        let inset = scrollView.adjustedContentInset
+        let scrollable = scrollView.contentSize.height + inset.top + inset.bottom - scrollView.bounds.height
+        guard scrollable > 0 else {
+            return 0
+        }
+        let fraction = (scrollView.contentOffset.y + inset.top) / scrollable
+        return min(max(Int(fraction * CGFloat(pageCounts[chapter])), 0), pageCounts[chapter] - 1)
     }
 
     private func visibleChapter() -> Int? {
@@ -564,18 +580,19 @@ final class ReaderViewController: UIViewController {
         countedLayout = layout
         stopCounting()
         let key = PageCountCache.key(book: book, style: appearance.style, size: layout.size)
-        pageCounts = layout.isScrolled ? nil : PageCountCache.counts(for: key)
+        pageCounts = PageCountCache.counts(for: key)
         shownPage = nil
         controller?.pageSpan = nil
         publishPage()
         trackPage()
-        guard !layout.isScrolled, pageCounts == nil else {
+        guard pageCounts == nil else {
             return
         }
+        var paged = appearance
+        paged.pageTurn = .slide
         let counter = PageCounter(
             book: book,
-            configuration: Self.configuration(
-                appearance: appearance, typefaces: typefaces, highlightTitle: highlightTitle),
+            configuration: Self.configuration(appearance: paged, typefaces: typefaces, highlightTitle: highlightTitle),
             contentInset: { [weak self] in self?.contentInset ?? .zero })
         counter.navigator.view.isUserInteractionEnabled = false
         counter.navigator.view.accessibilityElementsHidden = true
@@ -592,6 +609,9 @@ final class ReaderViewController: UIViewController {
             }
             PageCountCache.store(counts, for: key)
             pageCounts = counts
+            if navigator.presentation.scroll {
+                shownPage = currentPage()
+            }
             publishPage()
         }
     }
@@ -914,7 +934,13 @@ extension ReaderViewController: EPUBNavigatorDelegate {
         if isShown {
             trackPage()
         } else {
-            Task { await show() }
+            let epoch = epoch
+            Task {
+                guard epoch == self.epoch else {
+                    return
+                }
+                await show()
+            }
         }
     }
 
