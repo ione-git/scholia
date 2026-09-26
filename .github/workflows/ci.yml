@@ -12,6 +12,7 @@ concurrency:
 jobs:
   test:
     runs-on: macos-26
+    timeout-minutes: 60
     env:
       DEVELOPER_DIR: /Applications/Xcode_26.4.1.app/Contents/Developer
     steps:
@@ -22,8 +23,9 @@ jobs:
         with:
           path: build/DerivedData/SourcePackages
           key: spm-${{ hashFiles('Package.resolved') }}
-      - run: UDID=$(scripts/sim create CI) && echo "UDID=$UDID" >> "$GITHUB_ENV"
-      - run: make test DESTINATION="platform=iOS Simulator,id=$UDID" TEST_FLAGS="-retry-tests-on-failure -test-iterations 2"
+      - timeout-minutes: 10
+        run: UDID=$(scripts/sim create CI) && echo "UDID=$UDID" >> "$GITHUB_ENV"
+      - run: make test DESTINATION="platform=iOS Simulator,id=$UDID" TEST_FLAGS="-retry-tests-on-failure -test-iterations 2 -test-timeouts-enabled YES -default-test-execution-time-allowance 180 -maximum-test-execution-time-allowance 300"
       - if: failure()
         uses: actions/upload-artifact@v7
         with:
