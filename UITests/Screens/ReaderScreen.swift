@@ -49,6 +49,7 @@ struct ReaderScreen: Screen {
         backButton.waitUntilGone()
     }
 
+    @discardableResult
     func openMenu() -> ReaderMenuScreen {
         menuButton.waitUntil(\.isHittable, equals: true).tap()
         return ReaderMenuScreen(app: app).waitUntilShown()

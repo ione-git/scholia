@@ -30,6 +30,7 @@ public struct ReaderPageSpan: Equatable, Sendable {
 public struct ReaderChapter: Equatable, Sendable {
     public var title: String
     public var location: ReaderLocation
+    var unresolvedFragment: String?
 }
 
 public struct ReaderTextRange: Codable, Hashable, Sendable {
