@@ -6,8 +6,11 @@ struct LibraryView: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(Settings.self) private var settings
     @Query private var books: [Book]
+    @Query(sort: BookCollection.order) private var collections: [BookCollection]
     @State private var query = ""
+    @State private var shownCollection: BookCollection?
     @State private var isMenuShown = false
+    @State private var isNamingCollection = false
 
     var body: some View {
         ScrollView {
@@ -19,16 +22,18 @@ struct LibraryView: View {
         .scrollDismissesKeyboard(.immediately)
         .safeAreaBar(edge: .top) { header }
         .glassMenu(isPresented: $isMenuShown, alignment: .topTrailing) {
-            LibraryMenu(isShown: $isMenuShown)
+            LibraryMenu(isShown: $isMenuShown, isNamingCollection: $isNamingCollection)
                 .padding(.top, .controlH + .space2)
                 .padding(.trailing, .space5)
         }
+        .newCollectionAlert(isPresented: $isNamingCollection) { _ in }
         .background(.surface)
         .toolbar(.hidden, for: .navigationBar)
     }
 
     private var shownBooks: [Book] {
         let query = query.trimmingCharacters(in: .whitespaces)
+        let books = shownCollection?.books ?? self.books
         return settings.librarySort.sorted(query.isEmpty ? books : books.filter { $0.matches(query) })
     }
 
@@ -53,12 +58,39 @@ struct LibraryView: View {
                 .accessibilityIdentifier("library.more")
             }
             .frame(height: .controlH)
+            .padding(.horizontal, .space5)
             SearchField(
                 text: $query, prompt: Text("Search titles and authors"), label: Text("Search titles and authors")
             )
             .accessibilityIdentifier("library.searchField")
+            .padding(.horizontal, .space5)
+            if !collections.isEmpty {
+                chips
+            }
         }
-        .padding(.horizontal, .space5)
+    }
+
+    private var chips: some View {
+        ScrollView(.horizontal) {
+            HStack(spacing: .space2) {
+                Chip(Text("All"), count: books.count, isSelected: shownCollection == nil) { shownCollection = nil }
+                    .accessibilityIdentifier("library.allChip")
+                ForEach(collections) { collection in
+                    Chip(
+                        Text(collection.name), count: collection.books.count, isSelected: shownCollection == collection
+                    ) {
+                        shownCollection = collection
+                    }
+                    .accessibilityIdentifier("library.collectionChip.\(collection.name)")
+                }
+                NewCollectionChip(label: Text("New collection")) { isNamingCollection = true }
+                    .accessibilityIdentifier("library.newCollectionChip")
+            }
+        }
+        .contentMargins(.horizontal, .space5)
+        .scrollIndicators(.hidden)
+        .fixedSize(horizontal: false, vertical: true)
+        .accessibilityIdentifier("library.collections")
     }
 }
 
@@ -93,6 +125,7 @@ private struct LibraryMenu: View {
     @Environment(\.modelContext) private var modelContext
     @Environment(Settings.self) private var settings
     @Binding var isShown: Bool
+    @Binding var isNamingCollection: Bool
     @State private var isSortShown = false
 
     var body: some View {
@@ -111,8 +144,11 @@ private struct LibraryMenu: View {
             } else {
                 GlassMenuItem(Text("Select Books"), icon: .select) { isShown = false }
                     .accessibilityIdentifier("libraryMenu.selectBooks")
-                GlassMenuItem(Text("New Collection"), icon: .newCollection) { isShown = false }
-                    .accessibilityIdentifier("libraryMenu.newCollection")
+                GlassMenuItem(Text("New Collection"), icon: .newCollection) {
+                    isShown = false
+                    isNamingCollection = true
+                }
+                .accessibilityIdentifier("libraryMenu.newCollection")
                 GlassMenuItem(
                     Text("Sort by \(Text(settings.librarySort.shortTitle).foregroundStyle(.inkMuted))"), icon: .sort
                 ) {

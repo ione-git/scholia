@@ -120,3 +120,56 @@ public struct ListRowCheckmark: View {
             .foregroundStyle(.accent)
     }
 }
+
+public struct ListRowCheckbox: View {
+    private static let size: CGFloat = 24
+    private static let checkSize: CGFloat = 14
+    private static let checkStroke: CGFloat = 3
+    private static let borderWidth: CGFloat = 1.5
+
+    let isChecked: Bool
+
+    public init(isChecked: Bool) {
+        self.isChecked = isChecked
+    }
+
+    public var body: some View {
+        ZStack {
+            if isChecked {
+                Circle().fill(.accent)
+                IconView(icon: .check, size: Self.checkSize, stroke: Self.checkStroke)
+                    .foregroundStyle(.onAccent)
+            } else {
+                Circle().strokeBorder(.inkFaint, lineWidth: Self.borderWidth)
+            }
+        }
+        .frame(width: Self.size, height: Self.size)
+        .accessibilityHidden(true)
+    }
+}
+
+public struct ListActionRow: View {
+    private static let iconSize: CGFloat = 20
+    private static let iconStroke: CGFloat = 2
+    private static let iconSpacing: CGFloat = 10
+
+    let title: Text
+    let icon: Icon
+
+    public init(_ title: Text, icon: Icon) {
+        self.title = title
+        self.icon = icon
+    }
+
+    public var body: some View {
+        HStack(spacing: Self.iconSpacing) {
+            IconView(icon: icon, size: Self.iconSize, stroke: Self.iconStroke)
+            title
+                .textStyle(TextStyle.body.weighted(TextStyle.callout.weight))
+            Spacer(minLength: 0)
+        }
+        .foregroundStyle(.accent)
+        .frame(minHeight: ListRow<EmptyView>.Height.regular.value)
+        .contentShape(.rect)
+    }
+}

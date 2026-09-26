@@ -78,6 +78,8 @@ struct ListRowGalleryScreen: ComponentGalleryPage {
     var translateTo: XCUIElement { app.descendants(matching: .any)["listRowGallery.translateTo"] }
     var onWordTap: XCUIElement { app.descendants(matching: .any)["listRowGallery.onWordTap"] }
     var dailyGoal: XCUIElement { app.buttons["listRowGallery.dailyGoal"] }
+    var checkbox: XCUIElement { app.buttons["listRowGallery.checkbox"] }
+    var action: XCUIElement { app.buttons["listRowGallery.action"] }
 
     func segment(_ element: String) -> XCUIElement { app.buttons["listRowGallery.\(element)"] }
 }

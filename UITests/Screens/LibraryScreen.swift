@@ -8,6 +8,20 @@ struct LibraryScreen: Screen {
     var backButton: XCUIElement { app.buttons["library.back"] }
     var moreButton: XCUIElement { app.buttons["library.more"] }
     var searchField: XCUIElement { app.searchFields["library.searchField"] }
+    var collectionRow: XCUIElement { app.scrollViews["library.collections"] }
+    var allChip: XCUIElement { app.buttons["library.allChip"] }
+    var newCollectionChip: XCUIElement { app.buttons["library.newCollectionChip"] }
+
+    private static let collectionChipPrefix = "library.collectionChip."
+
+    func collectionChip(_ name: String) -> XCUIElement { app.buttons[Self.collectionChipPrefix + name] }
+
+    var collectionChips: [String] {
+        app.buttons.matching(NSPredicate(format: "identifier BEGINSWITH %@", Self.collectionChipPrefix))
+            .allElementsBoundByIndex
+            .sorted { $0.frame.minX < $1.frame.minX }
+            .map { String($0.identifier.dropFirst(Self.collectionChipPrefix.count)) }
+    }
 
     func book(_ title: String) -> XCUIElement { app.descendants(matching: .any)["library.book.\(title)"] }
 
@@ -23,6 +37,18 @@ struct LibraryScreen: Screen {
         searchField.waitUntilExists().tap()
         let current = searchField.value as? String ?? ""
         searchField.typeText(String(repeating: XCUIKeyboardKey.delete.rawValue, count: current.count) + text)
+    }
+
+    @discardableResult
+    func show(_ chip: XCUIElement) -> Self {
+        chip.waitUntil(\.isHittable, equals: true).tap()
+        chip.waitUntil(\.isSelected, equals: true)
+        return self
+    }
+
+    func newCollection() -> NewCollectionAlert {
+        newCollectionChip.waitUntil(\.isHittable, equals: true).tap()
+        return NewCollectionAlert(app: app).waitUntilShown()
     }
 
     func openMenu() -> LibraryMenuScreen {
@@ -53,6 +79,12 @@ struct LibraryMenuScreen: Screen {
 
     var selectBooks: XCUIElement { app.buttons["libraryMenu.selectBooks"] }
     var newCollection: XCUIElement { app.buttons["libraryMenu.newCollection"] }
+
+    func openNewCollection() -> NewCollectionAlert {
+        newCollection.waitUntil(\.isHittable, equals: true).tap()
+        root.waitUntilGone()
+        return NewCollectionAlert(app: app).waitUntilShown()
+    }
 
     func openSort() -> LibrarySortMenuScreen {
         root.waitUntil(\.isHittable, equals: true).tap()

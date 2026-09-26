@@ -40,7 +40,7 @@
 
     },
     "Add to Collection" : {
-      "shouldTranslate" : false
+
     },
     "Add to Library" : {
 
@@ -49,7 +49,7 @@
 
     },
     "All" : {
-      "shouldTranslate" : false
+
     },
     "All %lld" : {
 
@@ -102,8 +102,14 @@
     "Close menu" : {
 
     },
+    "Collection" : {
+
+    },
     "Collection %lld" : {
       "shouldTranslate" : false
+    },
+    "Collection name" : {
+
     },
     "Colours" : {
       "shouldTranslate" : false
@@ -117,6 +123,9 @@
     "Contents" : {
       "shouldTranslate" : false
     },
+    "Create" : {
+
+    },
     "Curl" : {
       "shouldTranslate" : false
     },
@@ -127,7 +136,7 @@
 
     },
     "Done" : {
-      "shouldTranslate" : false
+
     },
     "EPUB · %@" : {
 
@@ -139,6 +148,9 @@
       "shouldTranslate" : false
     },
     "Fade" : {
+      "shouldTranslate" : false
+    },
+    "Fiction" : {
       "shouldTranslate" : false
     },
     "Finished" : {
@@ -186,8 +198,11 @@
     "New Collection" : {
 
     },
+    "New Collection…" : {
+
+    },
     "New collection" : {
-      "shouldTranslate" : false
+
     },
     "Night" : {
 

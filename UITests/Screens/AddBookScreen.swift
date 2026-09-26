@@ -11,6 +11,7 @@ struct AddBookScreen: Screen {
     var titleField: XCUIElement { app.textFields["addBook.title"] }
     var authorField: XCUIElement { app.textFields["addBook.author"] }
     var languageButton: XCUIElement { app.buttons["addBook.language"] }
+    var collectionButton: XCUIElement { app.buttons["addBook.collection"] }
     var addButton: XCUIElement { app.buttons["addBook.add"] }
 
     func coverColor() throws -> RGBColor {
@@ -40,6 +41,11 @@ struct AddBookScreen: Screen {
     func chooseLanguage() -> LanguagePickerScreen {
         languageButton.waitUntil(\.isHittable, equals: true).tap()
         return LanguagePickerScreen(app: app).waitUntilShown()
+    }
+
+    func chooseCollections() -> AddToCollectionScreen {
+        collectionButton.waitUntil(\.isHittable, equals: true).tap()
+        return AddToCollectionScreen(app: app).waitUntilShown()
     }
 
     @discardableResult

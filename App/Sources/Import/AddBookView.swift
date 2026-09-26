@@ -12,6 +12,8 @@ struct AddBookView: View {
     @State private var author: String
     @State private var language: String?
     @State private var isChoosingLanguage = false
+    @State private var collections: Set<BookCollection> = []
+    @State private var isChoosingCollections = false
     @State private var isAdding = false
     @State private var isShowingSaveFailure = false
 
@@ -53,6 +55,15 @@ struct AddBookView: View {
                             }
                             .buttonStyle(.plain)
                             .accessibilityIdentifier("addBook.language")
+                            Button {
+                                isChoosingCollections = true
+                            } label: {
+                                ListRow(Text("Collection"), height: .regular) {
+                                    ListRowValue(collectionValue)
+                                }
+                            }
+                            .buttonStyle(.plain)
+                            .accessibilityIdentifier("addBook.collection")
                         }
                         Button("Add to Library", action: add)
                             .buttonStyle(.solid)
@@ -72,6 +83,10 @@ struct AddBookView: View {
                 LanguagePicker(selection: $language, detected: book.language)
             }
         }
+        .modalSheet(isPresented: $isChoosingCollections) {
+            AddToCollectionSheet(
+                cover: cover(size: .thumbnail), title: title, author: trimmedAuthor, selection: $collections)
+        }
         .alert(Text("Can’t Add Book"), isPresented: $isShowingSaveFailure) {
             Button("OK") {}
         } message: {
@@ -81,17 +96,20 @@ struct AddBookView: View {
 
     private var file: some View {
         VStack(spacing: .space2) {
-            BookCover(
-                title: title, author: draft?.author, color: BookCover.generatedColor(for: title),
-                image: book.coverImage.map(Image.init(uiImage:)), size: .grid, isFinished: false,
-                finishedValue: Text("Finished")
-            )
-            .accessibilityIdentifier("addBook.cover")
+            cover(size: .grid)
+                .accessibilityIdentifier("addBook.cover")
             fileInfo
                 .textStyle(.caption)
                 .foregroundStyle(.inkMuted)
                 .accessibilityIdentifier("addBook.fileInfo")
         }
+    }
+
+    private func cover(size: BookCover.Size) -> BookCover {
+        BookCover(
+            title: title, author: trimmedAuthor, color: BookCover.generatedColor(for: title),
+            image: book.coverImage.map(Image.init(uiImage:)), size: size, isFinished: false,
+            finishedValue: Text("Finished"))
     }
 
     private var fileInfo: Text {
@@ -107,11 +125,21 @@ struct AddBookView: View {
         return Text(language: language, isDetected: language == book.language)
     }
 
+    private var collectionValue: Text {
+        guard !collections.isEmpty else { return Text("None") }
+        return Text(
+            collections.sorted(using: BookCollection.order).map(\.name).formatted(.list(type: .and, width: .narrow)))
+    }
+
+    private var trimmedAuthor: String? {
+        let author = author.trimmingCharacters(in: .whitespacesAndNewlines)
+        return author.isEmpty ? nil : author
+    }
+
     private var draft: (title: String, author: String?, language: String)? {
         let title = title.trimmingCharacters(in: .whitespacesAndNewlines)
-        let author = author.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !title.isEmpty, let language else { return nil }
-        return (title, author.isEmpty ? nil : author, language)
+        return (title, trimmedAuthor, language)
     }
 
     private func add() {
@@ -126,6 +154,7 @@ struct AddBookView: View {
                 fileName: fileName, title: draft.title, author: draft.author, language: draft.language,
                 cover: book.cover, addedAt: LaunchConfiguration.current.now ?? .now)
             context.insert(added)
+            added.collections = Array(collections)
             do {
                 try context.save()
                 onAdded()
