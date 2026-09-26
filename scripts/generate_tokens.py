@@ -84,6 +84,7 @@ def text_styles(groups):
             else:
                 line_height = number(size * line_height)
             tracking = number(size * float(style.get("letterSpacing", "0em").removesuffix("em")))
+            text_indent = number(size * float(style.get("textIndent", "0em").removesuffix("em")))
             uppercase = "text-transform: uppercase" in style.get("usage", "")
             names.append(f".{camel(style['name'])}")
             lines += [
@@ -94,6 +95,7 @@ def text_styles(groups):
                 f"        lineHeight: {line_height},",
                 f"        weight: {style['fontWeight']},",
                 f"        tracking: {tracking},",
+                f"        textIndent: {text_indent},",
                 f"        isUppercase: {'true' if uppercase else 'false'}",
                 "    )",
             ]

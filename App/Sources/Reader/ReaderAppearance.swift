@@ -12,6 +12,7 @@ extension ReaderStyle {
             ),
             fontSize: TextStyle.readingBody.size,
             lineHeight: TextStyle.readingBody.lineHeight,
+            paragraphIndent: TextStyle.readingBody.textIndent,
             sideMargin: .space7,
             topMargin: .navTop + .controlH + .space8,
             minimumBottomMargin: .controlH + .space10,

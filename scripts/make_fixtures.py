@@ -42,6 +42,15 @@ FRENCH = [
     "une page après l'autre.",
 ]
 
+ARABIC = [
+    "في الصباح تستيقظ المدينة ببطء. يفتح الخبازون أبواب محلاتهم، وتملأ رائحة الخبز الساخن الشارع. تعبر سيدة "
+    "عجوز الساحة وهي تحمل سلتها، وتلقي التحية على بائع الصحف، ثم تجلس على مقعد قريب من النافورة.",
+    "تنظر سلمى إلى كل ذلك من نافذتها. تمسك بين يديها فنجان قهوة، وتفكر في الرحلة التي تستعد لها منذ أشهر. "
+    "غدًا ستركب القطار إلى البحر، ولا تعرف بعد متى ستعود.",
+    "في المطبخ يعلن المذياع حالة الطقس لهذا اليوم: سماء صافية، وقليل من الريح، وبعض الغيوم في المساء. تبتسم "
+    "سلمى. إنها تحب الأيام البسيطة والشوارع الهادئة والكتب التي تُقرأ ببطء، صفحة بعد صفحة.",
+]
+
 ENGLISH = [
     "This book has a cover and only the metadata that every EPUB must declare: an identifier, a title, a "
     "language and a modification date. It has no author.",
@@ -200,6 +209,18 @@ def main():
         [("Premier chapitre", prose(FRENCH * 6)), ("Deuxième chapitre", prose(FRENCH * 6))],
         None,
     )
+    arabic = epub(
+        "urn:scholia:fixture:arabic",
+        "صباح في المدينة",
+        "ar",
+        "Scholia",
+        [
+            ("الفصل الأول", prose(ARABIC * 4)),
+            ("الفصل الثاني", prose(ARABIC * 4)),
+            ("الفصل الثالث", prose(ARABIC * 4)),
+        ],
+        None,
+    )
     minimal = archive(
         epub(
             "urn:scholia:fixture:minimal-metadata",
@@ -218,6 +239,7 @@ def main():
     books = {
         "german.epub": archive(german),
         "french-no-cover.epub": archive(french),
+        "arabic.epub": archive(arabic),
         "minimal-metadata.epub": minimal,
         "corrupted.epub": minimal[: len(minimal) // 2],
         "drm.epub": archive(drm),

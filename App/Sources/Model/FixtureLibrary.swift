@@ -30,6 +30,7 @@
             switch self {
             case .german: "Die Verwandlung"
             case .frenchNoCover: "Un matin en ville"
+            case .arabic: "صباح في المدينة"
             case .minimalMetadata: "Minimal"
             case .corrupted: "Corrupted"
             case .drm: "Encrypted"
@@ -39,7 +40,7 @@
         fileprivate var author: String? {
             switch self {
             case .german, .drm: "Franz Kafka"
-            case .frenchNoCover: "Scholia"
+            case .frenchNoCover, .arabic: "Scholia"
             case .minimalMetadata, .corrupted: nil
             }
         }
@@ -48,6 +49,7 @@
             switch self {
             case .german, .drm: "de"
             case .frenchNoCover: "fr"
+            case .arabic: "ar"
             case .minimalMetadata, .corrupted: "en"
             }
         }

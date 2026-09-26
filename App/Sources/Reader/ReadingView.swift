@@ -46,7 +46,7 @@ struct ReadingView: View {
     private var page: some View {
         VStack(spacing: 0) {
             Text(book.title)
-                .textStyle(.labelCaps)
+                .textStyle(TextStyle.labelCaps.weighted(TextStyle.caption.weight))
                 .foregroundStyle(.inkMuted)
                 .lineLimit(1)
                 .frame(height: .controlH)

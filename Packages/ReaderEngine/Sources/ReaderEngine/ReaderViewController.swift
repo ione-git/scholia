@@ -176,7 +176,7 @@ final class ReaderViewController: UIViewController {
         guard let pager, pager.bounds.width > 0 else {
             return nil
         }
-        let chapter = Int((pager.contentOffset.x / pager.bounds.width).rounded())
+        let chapter = Int((distanceFromStart(of: pager.bounds, in: pager) / pager.bounds.width).rounded())
         guard let scrollView = webView(inChapter: chapter)?.scrollView else {
             return nil
         }
@@ -186,8 +186,12 @@ final class ReaderViewController: UIViewController {
             return nil
         }
         let count = Int((scrollView.contentSize.width / width).rounded())
-        let page = Int((scrollView.contentOffset.x / width).rounded())
+        let page = Int((distanceFromStart(of: scrollView.bounds, in: scrollView) / width).rounded())
         return ChapterPage(chapter: chapter, page: min(max(page, 0), count - 1))
+    }
+
+    private func distanceFromStart(of rect: CGRect, in scrollView: UIScrollView) -> CGFloat {
+        navigator.presentation.readingProgression == .rtl ? scrollView.contentSize.width - rect.maxX : rect.minX
     }
 
     private func observe(_ scrollView: UIScrollView) {
@@ -204,9 +208,9 @@ final class ReaderViewController: UIViewController {
         guard let pager else {
             return nil
         }
-        let x = CGFloat(chapter) * pager.bounds.width
+        let distance = CGFloat(chapter) * pager.bounds.width
         return pager.subviews.lazy
-            .filter { abs($0.frame.minX - x) < 1 }
+            .filter { abs(self.distanceFromStart(of: $0.frame, in: pager) - distance) < 1 }
             .compactMap { $0.descendants(of: WKWebView.self).first }
             .first
     }
@@ -487,6 +491,7 @@ final class ReaderViewController: UIViewController {
             fontFamilyDeclarations: [fontDeclaration(style.font)],
             readiumCSSRSProperties: CSSRSProperties(
                 pageGutter: CSSPxLength(style.sideMargin),
+                paraIndent: CSSPxLength(style.paragraphIndent),
                 baseLineHeight: .length(CSSPxLength(style.lineHeight)),
                 overrides: ["font-size": CSSPxLength(style.fontSize).css()]
             )
