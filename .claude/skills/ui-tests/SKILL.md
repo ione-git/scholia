@@ -27,18 +27,19 @@ description: Write, run and debug Scholia UI tests (XCUITest) — screen objects
 ## Launch configuration
 
 ```swift
-let app = launch(LaunchConfiguration(resetsState: true, fixtures: [.german], mocksTranslation: true, now: nil))
+let app = launch(LaunchConfiguration(resetsState: true, fixtures: [.german], opened: [], mocksTranslation: true, now: nil))
 ```
 
 | Field | Environment key | Meaning for the app |
 |---|---|---|
 | `resetsState` | `SCHOLIA_RESET_STATE=1` | start with empty storage and settings |
 | `fixtures` | `SCHOLIA_FIXTURES=german,drm` | library holds these books, added if missing: title, author, language from the table below, no cover yet, file copied into the app container |
+| `opened` | `SCHOLIA_OPENED=drm,german` | these stored books were opened, most recent first: the first at `now`, each next one a minute earlier |
 | `mocksTranslation` | `SCHOLIA_TRANSLATION=mock` | translation provider is the mock |
 | `now` | `SCHOLIA_NOW=<ISO 8601>` | the app's current date and time |
 
 - The app reads `LaunchConfiguration.current` where it builds a dependency (storage, translation provider, clock). A missing key means off, so a plain launch is a normal launch. Parsing exists only in Debug; Release always gets everything off.
-- `resetsState: true` unless the test checks persistence across a relaunch. `mocksTranslation: true` always. Set `now` whenever the screen shows dates, reading time or the daily goal.
+- `resetsState: true` unless the test checks persistence across a relaunch. Fixtures get `now` as their added date; for different added dates seed some books, `terminate()`, and relaunch with `resetsState: false`, the other fixtures and a later `now` (`LibraryTests/testEachSortOrder`). `mocksTranslation: true` always. Set `now` whenever the screen shows dates, reading time or the daily goal.
 - Time zone: `launch` also sets `TZ` to GMT, so dates and "today" match on every Mac and on CI; another zone with `launch(configuration, timeZone: …)`. The app needs nothing for it: `TimeZone.current` and `Calendar.current` follow `TZ`.
 - New switch: add a field and key to `LaunchConfiguration` (`init(environment:)` and `environment`), then honour it where the dependency is created.
 - `debug.launchConfiguration` (any screen: `screen.launchConfiguration`) has the configuration the app received as its label (fixtures only if their file is in the bundle) and the app's time zone as its value; see `LaunchConfigurationTests`.
@@ -70,7 +71,7 @@ struct LibraryScreen: Screen {
 
 final class LibraryTests: UITestCase {
     func testOpensBook() {
-        let app = launch(LaunchConfiguration(resetsState: true, fixtures: [.german], mocksTranslation: true, now: nil))
+        let app = launch(LaunchConfiguration(resetsState: true, fixtures: [.german], opened: [], mocksTranslation: true, now: nil))
         let reader = LibraryScreen(app: app).waitUntilShown().open("Die Verwandlung")
         reader.title.waitUntil(\.label, equals: "Die Verwandlung")
     }

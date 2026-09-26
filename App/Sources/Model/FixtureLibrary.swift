@@ -3,19 +3,26 @@
     import SwiftData
 
     enum FixtureLibrary {
-        static func seed(_ fixtures: [Fixture], into context: ModelContext, addedAt: Date) throws {
+        static func seed(_ fixtures: [Fixture], opened: [Fixture], into context: ModelContext, now: Date) throws {
             var stored = Set(try context.fetch(FetchDescriptor<Book>()).map(\.fileName))
             for fixture in fixtures {
                 guard let url = fixture.url, stored.insert(url.lastPathComponent).inserted else { continue }
                 let book = Book(
                     fileName: url.lastPathComponent, title: fixture.title, author: fixture.author,
-                    language: fixture.language, cover: nil, addedAt: addedAt)
+                    language: fixture.language, cover: nil, addedAt: now)
                 try FileManager.default.createDirectory(at: Storage.booksDirectory, withIntermediateDirectories: true)
                 try FileManager.default.copyItem(at: url, to: book.fileURL)
                 context.insert(book)
             }
+            let books = try context.fetch(FetchDescriptor<Book>())
+            for (position, fixture) in opened.enumerated() {
+                let book = books.first { $0.fileName == fixture.url?.lastPathComponent }
+                book?.openedAt = now.addingTimeInterval(-Double(position) * openedInterval)
+            }
             try context.save()
         }
+
+        private static let openedInterval: TimeInterval = 60
     }
 
     extension Fixture {

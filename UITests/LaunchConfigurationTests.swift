@@ -5,6 +5,7 @@ final class LaunchConfigurationTests: UITestCase {
         let configuration = LaunchConfiguration(
             resetsState: true,
             fixtures: [.german, .frenchNoCover],
+            opened: [.german],
             mocksTranslation: true,
             now: try Date("2026-03-14T09:30:00Z", strategy: .iso8601)
         )

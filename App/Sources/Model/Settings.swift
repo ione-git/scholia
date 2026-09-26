@@ -13,7 +13,7 @@ nonisolated enum AppTheme: String, Codable {
     case dark
 }
 
-nonisolated enum LibrarySort: String, Codable {
+nonisolated enum LibrarySort: String, Codable, CaseIterable {
     case recentlyOpened
     case recentlyAdded
     case title

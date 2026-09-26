@@ -22,6 +22,7 @@ public struct SearchField: View {
             TextField(text: text, prompt: prompt.foregroundStyle(Color.inkMuted)) { label }
                 .textStyle(.body)
                 .foregroundStyle(.ink)
+                .tint(.selectionHandle)
                 .autocorrectionDisabled()
                 .textInputAutocapitalization(.never)
                 .submitLabel(.search)

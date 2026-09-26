@@ -101,11 +101,8 @@ private struct HeroBook: View {
 
     var body: some View {
         VStack(spacing: .space4) {
-            BookCover(
-                title: book.title, author: book.author, color: BookCover.generatedColor(for: book.title),
-                image: book.coverImage, size: .heroLarge, isFinished: book.isFinished, finishedValue: Text("Finished")
-            )
-            .accessibilityIdentifier("home.heroCover")
+            BookCover(book: book, size: .heroLarge)
+                .accessibilityIdentifier("home.heroCover")
             VStack(spacing: .space1) {
                 Text(book.title)
                     .textStyle(.titleBook)
@@ -157,12 +154,8 @@ private struct LibraryShelf: View {
                 ScrollView(.horizontal) {
                     LazyHStack(spacing: .space3) {
                         ForEach(books) { book in
-                            BookCover(
-                                title: book.title, author: book.author,
-                                color: BookCover.generatedColor(for: book.title), image: book.coverImage, size: .row,
-                                isFinished: book.isFinished, finishedValue: Text("Finished")
-                            )
-                            .accessibilityIdentifier("home.book.\(book.title)")
+                            BookCover(book: book, size: .row)
+                                .accessibilityIdentifier("home.book.\(book.title)")
                         }
                     }
                 }
@@ -172,12 +165,6 @@ private struct LibraryShelf: View {
                 .fixedSize(horizontal: false, vertical: true)
             }
         }
-    }
-}
-
-extension Book {
-    fileprivate var coverImage: Image? {
-        cover.flatMap(UIImage.init(data:)).map(Image.init(uiImage:))
     }
 }
 

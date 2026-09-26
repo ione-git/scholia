@@ -5,7 +5,8 @@ private let darkBackground = RGBColor(red: 21, green: 20, blue: 18)
 
 final class SettingsTests: UITestCase {
     func testShowsDefaultsAndTogglesReminder() throws {
-        let app = launch(LaunchConfiguration(resetsState: true, fixtures: [], mocksTranslation: true, now: nil))
+        let app = launch(
+            LaunchConfiguration(resetsState: true, fixtures: [], opened: [], mocksTranslation: true, now: nil))
         let settings = HomeScreen(app: app).waitUntilShown().openSettings()
 
         XCTAssertEqual(settings.translateTo.waitUntilExists().label, "Translate to, English")
@@ -43,7 +44,8 @@ final class SettingsTests: UITestCase {
     }
 
     func testEveryValuePersistsAcrossRelaunch() {
-        let app = launch(LaunchConfiguration(resetsState: true, fixtures: [], mocksTranslation: true, now: nil))
+        let app = launch(
+            LaunchConfiguration(resetsState: true, fixtures: [], opened: [], mocksTranslation: true, now: nil))
         var settings = HomeScreen(app: app).waitUntilShown().openSettings()
 
         settings.chooseTranslationLanguage("de")
@@ -61,7 +63,7 @@ final class SettingsTests: UITestCase {
         app.terminate()
 
         let relaunched = launch(
-            LaunchConfiguration(resetsState: false, fixtures: [], mocksTranslation: true, now: nil))
+            LaunchConfiguration(resetsState: false, fixtures: [], opened: [], mocksTranslation: true, now: nil))
         settings = HomeScreen(app: relaunched).waitUntilShown().openSettings()
 
         XCTAssertEqual(settings.translateTo.waitUntilExists().label, "Translate to, German")
@@ -80,7 +82,8 @@ final class SettingsTests: UITestCase {
             XCUIDevice.shared.appearance = original
         }
         XCUIDevice.shared.appearance = .light
-        let app = launch(LaunchConfiguration(resetsState: true, fixtures: [], mocksTranslation: true, now: nil))
+        let app = launch(
+            LaunchConfiguration(resetsState: true, fixtures: [], opened: [], mocksTranslation: true, now: nil))
         let home = HomeScreen(app: app).waitUntilShown()
         waitUntilBackground(home.background, is: lightBackground)
         var settings = home.openSettings()
@@ -109,7 +112,8 @@ final class SettingsTests: UITestCase {
     private func openSettings(deviceLanguage: String) -> SettingsScreen {
         let app = XCUIApplication()
         app.launchEnvironment =
-            LaunchConfiguration(resetsState: true, fixtures: [], mocksTranslation: true, now: nil).environment
+            LaunchConfiguration(resetsState: true, fixtures: [], opened: [], mocksTranslation: true, now: nil)
+            .environment
         app.launchArguments = ["-AppleLanguages", "(\(deviceLanguage))"]
         app.launch()
         return HomeScreen(app: app).waitUntilShown().openSettings()
