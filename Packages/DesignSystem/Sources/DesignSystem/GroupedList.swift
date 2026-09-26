@@ -34,13 +34,52 @@ public struct GroupedList<Content: View>: View {
                 ForEach(rows) { row in
                     row
                     if row.id != rows.last?.id {
-                        Rectangle().fill(.hairline).frame(height: .hairlineW)
+                        ListHairline()
                     }
                 }
             }
         }
-        .padding(.horizontal, .space4)
-        .background(.surfaceCard, in: RoundedRectangle(cornerRadius: .radiusLg))
+        .groupedListCard()
+    }
+}
+
+public struct LazyGroupedList<Data: RandomAccessCollection, ID: Hashable, Row: View>: View {
+    let data: Data
+    let id: KeyPath<Data.Element, ID>
+    let row: (Data.Element) -> Row
+
+    public init(_ data: Data, id: KeyPath<Data.Element, ID>, @ViewBuilder row: @escaping (Data.Element) -> Row) {
+        self.data = data
+        self.id = id
+        self.row = row
+    }
+
+    public var body: some View {
+        let lastID = data.last?[keyPath: id]
+        LazyVStack(spacing: 0) {
+            ForEach(data, id: id) { element in
+                VStack(spacing: 0) {
+                    row(element)
+                    if element[keyPath: id] != lastID {
+                        ListHairline()
+                    }
+                }
+            }
+        }
+        .groupedListCard()
+    }
+}
+
+private struct ListHairline: View {
+    var body: some View {
+        Rectangle().fill(.hairline).frame(height: .hairlineW)
+    }
+}
+
+extension View {
+    fileprivate func groupedListCard() -> some View {
+        padding(.horizontal, .space4)
+            .background(.surfaceCard, in: RoundedRectangle(cornerRadius: .radiusLg))
     }
 }
 
@@ -76,6 +115,44 @@ public struct ListRow<Trailing: View>: View {
             trailing
         }
         .frame(minHeight: height.value)
+        .contentShape(.rect)
+    }
+}
+
+public struct ChapterRow: View {
+    private static let barWidth: CGFloat = 3
+    private static let barHeight: CGFloat = 22
+    private static let barRadius: CGFloat = 2
+
+    let title: String
+    let page: Int?
+    let isCurrent: Bool
+
+    public init(title: String, page: Int?, isCurrent: Bool) {
+        self.title = title
+        self.page = page
+        self.isCurrent = isCurrent
+    }
+
+    public var body: some View {
+        HStack(spacing: .space3) {
+            RoundedRectangle(cornerRadius: Self.barRadius)
+                .fill(isCurrent ? Color.accent : .clear)
+                .frame(width: Self.barWidth, height: Self.barHeight)
+            Text(title)
+                .textStyle(isCurrent ? TextStyle.listSerif.weighted(TextStyle.title3.weight) : .listSerif)
+                .foregroundStyle(.ink)
+                .multilineTextAlignment(.leading)
+            Spacer(minLength: 0)
+            if let page {
+                Text(page, format: .number)
+                    .textStyle(.subhead)
+                    .foregroundStyle(.inkMuted)
+                    .accessibilityHidden(true)
+            }
+        }
+        .padding(.vertical, .space3)
+        .frame(minHeight: ListRow<EmptyView>.Height.control.value)
         .contentShape(.rect)
     }
 }

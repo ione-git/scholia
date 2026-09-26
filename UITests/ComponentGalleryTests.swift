@@ -43,6 +43,7 @@ final class ComponentGalleryTests: UITestCase {
             rows.translateTo.waitUntilExists()
             rows.onWordTap.waitUntilExists()
             rows.dailyGoal.waitUntilExists()
+            rows.chapter(0).waitUntilExists()
             attachScreenshot("ListRows\(suffix)")
             gallery = rows.goBack()
 
@@ -155,16 +156,22 @@ final class ComponentGalleryTests: UITestCase {
         XCTAssertEqual(rows.checkbox.waitUntilExists().frame.height, 50, accuracy: 0.5)
         XCTAssertEqual(rows.action.waitUntilExists().frame.height, 50, accuracy: 0.5)
         XCTAssertEqual(rows.action.label, "New Collection…")
+        XCTAssertEqual(rows.chapter(0).waitUntilExists().frame.height, 56, accuracy: 0.5)
+        XCTAssertGreaterThan(rows.chapter(4).waitUntilExists().frame.height, 56)
         rows.segment("bubble").waitUntil(\.isSelected, equals: true)
         rows.checkbox.waitUntil(\.isSelected, equals: true)
+        rows.chapter(1).waitUntil(\.isSelected, equals: true)
 
         rows.segment("card").waitUntilExists().tap()
         rows.dailyGoal.tap()
         rows.checkbox.tap()
+        rows.chapter(2).tap()
 
         rows.segment("card").waitUntil(\.isSelected, equals: true)
         rows.segment("bubble").waitUntil(\.isSelected, equals: false)
         rows.checkbox.waitUntil(\.isSelected, equals: false)
+        rows.chapter(2).waitUntil(\.isSelected, equals: true)
+        rows.chapter(1).waitUntil(\.isSelected, equals: false)
         XCTAssertTrue(rows.dailyGoal.label.contains("25 min"), rows.dailyGoal.label)
     }
 

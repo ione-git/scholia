@@ -92,6 +92,7 @@ struct ListRowGalleryScreen: ComponentGalleryPage {
     var action: XCUIElement { app.buttons["listRowGallery.action"] }
 
     func segment(_ element: String) -> XCUIElement { app.buttons["listRowGallery.\(element)"] }
+    func chapter(_ index: Int) -> XCUIElement { app.buttons["listRowGallery.chapter.\(index)"] }
 }
 
 struct SegmentedControlGalleryScreen: ComponentGalleryPage {

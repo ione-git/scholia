@@ -51,8 +51,13 @@ struct ReadingView: View {
         .statusBarHidden()
         .toolbar(.hidden, for: .navigationBar)
         .fullScreenCover(item: $indexTab) { tab in
-            ReaderIndexView(book: book, tab: tab)
+            if let controller {
+                ReaderIndexView(book: book, controller: controller, tab: tab) { chapter in
+                    indexTab = nil
+                    controller.go(to: chapter)
+                }
                 .preferredColorScheme(shownColorScheme)
+            }
         }
         .sheet(isPresented: $isSettingsShown) {
             ReaderSettingsSheet()

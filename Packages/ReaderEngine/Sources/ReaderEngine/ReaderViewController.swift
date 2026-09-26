@@ -7,7 +7,6 @@ final class ReaderViewController: UIViewController {
     weak var controller: ReaderController?
     private let book: ReaderBook
     private let style: ReaderStyle
-    private let initialLocation: ReaderLocation?
     private let highlightTitle: String
     private let navigator: EPUBNavigatorViewController
     private let backdrop = UIView()
@@ -23,11 +22,16 @@ final class ReaderViewController: UIViewController {
     private weak var pager: UIScrollView?
     private var observations: [ScrollObservation] = []
     private var shownPage: ChapterPage?
-    private var pageCounts: [Int]?
+    private var target: JumpTarget?
+    private var landing: Landing?
+    private var pageCounts: [ChapterPages]? {
+        didSet { publishStartPages() }
+    }
     private var countedLayout: PageLayout?
     private var pageCounter: PageCounter?
     private var countTask: Task<Void, Never>?
     private var locateTask: Task<Void, Never>?
+    private var jumpTask: Task<Void, Never>?
     private var voiceOverTask: Task<Void, Never>?
 
     private static let highlightGroup = "highlights"
@@ -43,7 +47,7 @@ final class ReaderViewController: UIViewController {
         self.colors = colors
         self.pageTurn = pageTurn
         self.highlightTitle = highlightTitle
-        initialLocation = location
+        target = location.map(JumpTarget.location)
         navigator = try! EPUBNavigatorViewController(
             publication: book.publication,
             initialLocation: Self.locator(for: location, in: book.publication),
@@ -56,6 +60,7 @@ final class ReaderViewController: UIViewController {
     isolated deinit {
         countTask?.cancel()
         locateTask?.cancel()
+        jumpTask?.cancel()
         voiceOverTask?.cancel()
     }
 
@@ -126,6 +131,11 @@ final class ReaderViewController: UIViewController {
         navigator.apply(decorations: decorations, in: Self.highlightGroup)
     }
 
+    func go(to target: JumpTarget) {
+        self.target = target
+        jump()
+    }
+
     func apply(_ pageTurn: ReaderPageTurn) {
         self.pageTurn = pageTurn
         for swipe in swipes {
@@ -157,20 +167,90 @@ final class ReaderViewController: UIViewController {
         if let pager {
             observations.append(ScrollObservation(pager, keyPath: \.contentOffset) { [weak self] in self?.trackPage() })
         }
-        if let initialLocation, let webView = webView(inChapter: initialLocation.chapter) {
-            let function = navigator.presentation.scroll ? "scrollToOffset" : "showOffset"
-            _ = try? await webView.callAsyncJavaScript(
-                "return await scholia.\(function)(offset)", arguments: ["offset": initialLocation.offset],
-                contentWorld: .page)
-        }
+        await reachTarget()
         isShown = true
         trackPage()
         countPages()
+        jump()
         UIView.animate(withDuration: Self.revealDuration) {
             self.curtain.alpha = 0
         } completion: { _ in
             self.curtain.removeFromSuperview()
         }
+    }
+
+    private func jump() {
+        jumpTask?.cancel()
+        guard isShown, let target else {
+            return
+        }
+        jumpTask = Task {
+            guard await !reachTarget(), !Task.isCancelled, target == self.target else {
+                return
+            }
+            let chapter = chapter(of: target)
+            guard
+                shownChapter() != chapter,
+                let locator = Self.locator(for: ReaderLocation(chapter: chapter, offset: 0), in: book.publication)
+            else {
+                return
+            }
+            _ = await navigator.go(to: locator, options: NavigatorGoOptions(animated: false))
+        }
+    }
+
+    @discardableResult
+    private func reachTarget() async -> Bool {
+        guard let target else {
+            return true
+        }
+        let chapter = chapter(of: target)
+        guard shownChapter() == chapter, let webView = webView(inChapter: chapter) else {
+            return false
+        }
+        guard let offset = await offset(of: target, in: webView), !Task.isCancelled, target == self.target else {
+            return false
+        }
+        let function = navigator.presentation.scroll ? "scrollToOffset" : "showOffset"
+        do {
+            _ = try await webView.callAsyncJavaScript(
+                "return await scholia.\(function)(offset)", arguments: ["offset": offset], contentWorld: .page)
+        } catch {
+            return false
+        }
+        guard !Task.isCancelled, target == self.target else {
+            return false
+        }
+        self.target = nil
+        landing = Landing(location: ReaderLocation(chapter: chapter, offset: offset), isReached: false)
+        shownPage = nil
+        trackPage()
+        return true
+    }
+
+    private func chapter(of target: JumpTarget) -> Int {
+        switch target {
+        case .location(let location): location.chapter
+        case .chapter(let index): book.tableOfContents[index].location.chapter
+        }
+    }
+
+    private func offset(of target: JumpTarget, in webView: WKWebView) async -> Int? {
+        switch target {
+        case .location(let location):
+            return location.offset
+        case .chapter(let index):
+            await resolveFragments(inChapter: book.tableOfContents[index].location.chapter, in: webView)
+            let chapter = book.tableOfContents[index]
+            return chapter.isResolved ? chapter.location.offset : nil
+        }
+    }
+
+    private func shownChapter() -> Int? {
+        guard let pager, pager.bounds.width > 0 else {
+            return nil
+        }
+        return Int((distanceFromStart(of: pager.bounds, in: pager) / pager.bounds.width).rounded())
     }
 
     private func trackPage() {
@@ -191,11 +271,7 @@ final class ReaderViewController: UIViewController {
     }
 
     private func currentPage() -> ChapterPage? {
-        guard let pager, pager.bounds.width > 0 else {
-            return nil
-        }
-        let chapter = Int((distanceFromStart(of: pager.bounds, in: pager) / pager.bounds.width).rounded())
-        guard let scrollView = webView(inChapter: chapter)?.scrollView else {
+        guard let chapter = shownChapter(), let scrollView = webView(inChapter: chapter)?.scrollView else {
             return nil
         }
         observe(scrollView)
@@ -238,12 +314,30 @@ final class ReaderViewController: UIViewController {
             controller?.page = nil
             return
         }
-        let before = pageCounts[..<shownPage.chapter].reduce(0, +)
+        let before = pageCounts[..<shownPage.chapter].map(\.count).reduce(0, +)
         controller?.page = ReaderPage(
             chapter: shownPage.chapter,
-            number: before + min(shownPage.page, pageCounts[shownPage.chapter] - 1) + 1,
-            count: pageCounts.reduce(0, +)
+            number: before + min(shownPage.page, pageCounts[shownPage.chapter].count - 1) + 1,
+            count: pageCounts.map(\.count).reduce(0, +)
         )
+    }
+
+    private func publishStartPages() {
+        guard let pageCounts else {
+            controller?.startPages = nil
+            return
+        }
+        var firstPages: [Int] = []
+        var firstPage = 1
+        for (chapter, pages) in pageCounts.enumerated() {
+            book.resolveFragments(pages.fragments.mapValues(\.offset), inChapter: chapter)
+            firstPages.append(firstPage)
+            firstPage += pages.count
+        }
+        controller?.startPages = book.tableOfContents.map { chapter in
+            let pages = pageCounts[chapter.location.chapter]
+            return firstPages[chapter.location.chapter] + (chapter.fragment.flatMap { pages.fragments[$0]?.page } ?? 0)
+        }
     }
 
     private func locate(_ page: ChapterPage) {
@@ -262,9 +356,24 @@ final class ReaderViewController: UIViewController {
             guard !Task.isCancelled, let offsets, let start = offsets.first, let end = offsets.last else {
                 return
             }
-            controller?.location = ReaderLocation(chapter: page.chapter, offset: start)
-            controller?.pageSpan = ReaderPageSpan(chapter: page.chapter, start: start, end: end)
+            let span = ReaderPageSpan(chapter: page.chapter, start: start, end: end)
+            controller?.location = landed(in: span) ?? ReaderLocation(chapter: page.chapter, offset: start)
+            controller?.pageSpan = span
         }
+    }
+
+    private func landed(in span: ReaderPageSpan) -> ReaderLocation? {
+        guard let landing else {
+            return nil
+        }
+        guard span.contains(landing.location) else {
+            if landing.isReached {
+                self.landing = nil
+            }
+            return nil
+        }
+        self.landing?.isReached = true
+        return landing.location
     }
 
     private func resolveFragments(inChapter chapter: Int, in webView: WKWebView) async {
@@ -578,6 +687,7 @@ extension ReaderViewController: EPUBNavigatorDelegate {
         }
         if isShown {
             trackPage()
+            jump()
         } else {
             Task { await show() }
         }
@@ -599,7 +709,7 @@ extension ReaderViewController: EPUBNavigatorDelegate {
         !isPainting
     }
 
-    private static let script = try! String(
+    static let script = try! String(
         contentsOf: Bundle.module.url(forResource: "reader", withExtension: "js")!, encoding: .utf8)
 }
 
@@ -624,6 +734,16 @@ extension ReaderViewController: UIGestureRecognizerDelegate {
     ) -> Bool {
         true
     }
+}
+
+enum JumpTarget: Equatable {
+    case location(ReaderLocation)
+    case chapter(Int)
+}
+
+private struct Landing {
+    var location: ReaderLocation
+    var isReached: Bool
 }
 
 private struct ChapterPage: Equatable {

@@ -108,6 +108,23 @@
     return Math.max(0, Math.round(document.scrollingElement.scrollWidth / window.innerWidth) - 1);
   }
 
+  function pageOfOffset(offset) {
+    if (offset <= 0) {
+      return 0;
+    }
+    const last = lastPage();
+    for (const { node, start } of textNodes()) {
+      if (start + node.data.length <= offset) {
+        continue;
+      }
+      const found = pageOfCharacter(node, Math.max(0, offset - start));
+      if (found !== null) {
+        return Math.min(found, last);
+      }
+    }
+    return last;
+  }
+
   function offsetAt(x, y) {
     const caret = document.caretRangeFromPoint(x, y);
     if (!caret) {
@@ -149,22 +166,11 @@
       return last ? last.start + last.node.data.length : 0;
     },
 
+    pageOfOffset,
+
     async showOffset(offset) {
       await document.fonts.ready;
-      let page = 0;
-      if (offset > 0) {
-        page = lastPage();
-        for (const { node, start } of textNodes()) {
-          if (start + node.data.length <= offset) {
-            continue;
-          }
-          const found = pageOfCharacter(node, Math.max(0, offset - start));
-          if (found !== null) {
-            page = Math.min(found, page);
-            break;
-          }
-        }
-      }
+      const page = pageOfOffset(offset);
       const direction = isRightToLeft() ? -1 : 1;
       document.scrollingElement.scrollTo({ left: direction * page * window.innerWidth, behavior: "instant" });
       return page;

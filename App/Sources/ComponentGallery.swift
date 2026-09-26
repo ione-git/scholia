@@ -248,6 +248,11 @@
         @State private var onWordTap = "bubble"
         @State private var goal = 20
         @State private var isFictionChecked = true
+        @State private var currentChapter = 1
+        private let chapters: [(title: String, page: Int?)] = [
+            ("Die Verwandlung", 1), ("I", 2), ("II", 27), ("III", 54),
+            ("Ein sehr langer Kapiteltitel, der auf eine zweite Zeile umbricht", nil),
+        ]
 
         var body: some View {
             GalleryPage(identifier: "listRowGallery", colorScheme: colorScheme) {
@@ -295,6 +300,19 @@
                     .buttonStyle(.plain)
                     .accessibilityIdentifier("listRowGallery.action")
                 }
+                LazyGroupedList(Array(chapters.indices), id: \.self) { index in
+                    Button {
+                        currentChapter = index
+                    } label: {
+                        ChapterRow(
+                            title: chapters[index].title, page: chapters[index].page, isCurrent: currentChapter == index
+                        )
+                    }
+                    .buttonStyle(.plain)
+                    .accessibilityAddTraits(currentChapter == index ? .isSelected : [])
+                    .accessibilityIdentifier("listRowGallery.chapter.\(index)")
+                }
+                .shadow(.card, in: RoundedRectangle(cornerRadius: .radiusLg))
             }
             .navigationTitle("List rows")
         }

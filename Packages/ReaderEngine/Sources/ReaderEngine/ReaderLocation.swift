@@ -28,9 +28,11 @@ public struct ReaderPageSpan: Equatable, Sendable {
 }
 
 public struct ReaderChapter: Equatable, Sendable {
+    public let index: Int
     public var title: String
     public var location: ReaderLocation
-    var unresolvedFragment: String?
+    let fragment: String?
+    var isResolved: Bool
 }
 
 public struct ReaderTextRange: Codable, Hashable, Sendable {

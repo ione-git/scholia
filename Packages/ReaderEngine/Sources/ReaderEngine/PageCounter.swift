@@ -5,12 +5,22 @@ import ReadiumShared
 import UIKit
 import WebKit
 
+struct ChapterPages: Codable, Equatable {
+    var count: Int
+    var fragments: [String: FragmentPage]
+}
+
+struct FragmentPage: Codable, Equatable {
+    var offset: Int
+    var page: Int
+}
+
 final class PageCounter: NSObject {
     let navigator: EPUBNavigatorViewController
     private let book: ReaderBook
     private let contentInset: () -> UIEdgeInsets
-    private var received: [Int] = []
-    private var waiting: CheckedContinuation<Int?, Never>?
+    private var received: [PageCount] = []
+    private var waiting: CheckedContinuation<PageCount?, Never>?
     private var isCancelled = false
 
     init(
@@ -28,10 +38,10 @@ final class PageCounter: NSObject {
         navigator.delegate = self
     }
 
-    func count() async -> [Int]? {
+    func count() async -> [ChapterPages]? {
         await withTaskCancellationHandler {
-            var counts: [Int] = []
-            for link in book.publication.readingOrder {
+            var counts: [ChapterPages] = []
+            for (chapter, link) in book.publication.readingOrder.enumerated() {
                 if !counts.isEmpty {
                     guard await navigator.go(to: link, options: NavigatorGoOptions(animated: false)) else {
                         return nil
@@ -40,7 +50,11 @@ final class PageCounter: NSObject {
                 guard let count = await nextCount() else {
                     return nil
                 }
-                counts.append(count)
+                let fragments = await fragmentPages(book.fragments(inChapter: chapter), in: count.webView)
+                guard !isCancelled else {
+                    return nil
+                }
+                counts.append(ChapterPages(count: count.pages, fragments: fragments))
             }
             return counts
         } onCancel: {
@@ -48,7 +62,27 @@ final class PageCounter: NSObject {
         }
     }
 
-    private func nextCount() async -> Int? {
+    private func fragmentPages(_ fragments: [String], in webView: WKWebView?) async -> [String: FragmentPage] {
+        guard
+            !fragments.isEmpty, let webView,
+            let offsets = try? await webView.callAsyncJavaScript(
+                "return scholia.offsetsOfElements(ids)", arguments: ["ids": fragments], contentWorld: .page)
+                as? [String: Int]
+        else {
+            return [:]
+        }
+        var pages: [String: FragmentPage] = [:]
+        for (fragment, offset) in offsets {
+            if let page = try? await webView.callAsyncJavaScript(
+                "return scholia.pageOfOffset(offset)", arguments: ["offset": offset], contentWorld: .page) as? Int
+            {
+                pages[fragment] = FragmentPage(offset: offset, page: page)
+            }
+        }
+        return pages
+    }
+
+    private func nextCount() async -> PageCount? {
         guard !isCancelled else {
             return nil
         }
@@ -58,7 +92,7 @@ final class PageCounter: NSObject {
         return await withCheckedContinuation { waiting = $0 }
     }
 
-    fileprivate func receive(_ count: Int) {
+    fileprivate func receive(_ count: PageCount) {
         guard let waiting else {
             received.append(count)
             return
@@ -88,6 +122,8 @@ extension PageCounter: EPUBNavigatorDelegate {
         _ navigator: EPUBNavigatorViewController, setupUserScripts userContentController: WKUserContentController
     ) {
         userContentController.addUserScript(
+            WKUserScript(source: ReaderViewController.script, injectionTime: .atDocumentEnd, forMainFrameOnly: true))
+        userContentController.addUserScript(
             WKUserScript(source: Self.script, injectionTime: .atDocumentEnd, forMainFrameOnly: true))
         userContentController.add(PageCountMessages(counter: self), name: "pageCount")
     }
@@ -101,10 +137,15 @@ private final class PageCountMessages: NSObject, WKScriptMessageHandler {
     }
 
     func userContentController(_ userContentController: WKUserContentController, didReceive message: WKScriptMessage) {
-        if let count = message.body as? Int {
-            counter?.receive(count)
+        if let pages = message.body as? Int {
+            counter?.receive(PageCount(pages: pages, webView: message.webView))
         }
     }
+}
+
+private struct PageCount {
+    var pages: Int
+    weak var webView: WKWebView?
 }
 
 public enum PageCountCache {
@@ -126,14 +167,14 @@ public enum PageCountCache {
         .joined(separator: "|")
     }
 
-    static func counts(for key: String) -> [Int]? {
+    static func counts(for key: String) -> [ChapterPages]? {
         guard let data = try? Data(contentsOf: file(for: key)) else {
             return nil
         }
-        return try? JSONDecoder().decode([Int].self, from: data)
+        return try? JSONDecoder().decode([ChapterPages].self, from: data)
     }
 
-    static func store(_ counts: [Int], for key: String) {
+    static func store(_ counts: [ChapterPages], for key: String) {
         guard let data = try? JSONEncoder().encode(counts) else {
             return
         }

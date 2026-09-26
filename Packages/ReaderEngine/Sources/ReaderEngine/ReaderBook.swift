@@ -45,30 +45,39 @@ public final class ReaderBook {
         return tableOfContents.last { $0.location == start }
     }
 
+    func fragments(inChapter chapter: Int) -> [String] {
+        tableOfContents.filter { $0.location.chapter == chapter }.compactMap(\.fragment)
+    }
+
     func unresolvedFragments(inChapter chapter: Int) -> [String] {
-        tableOfContents.filter { $0.location.chapter == chapter }.compactMap(\.unresolvedFragment)
+        tableOfContents.filter { $0.location.chapter == chapter && !$0.isResolved }.compactMap(\.fragment)
     }
 
     func resolveFragments(_ offsets: [String: Int], inChapter chapter: Int) {
-        for index in tableOfContents.indices where tableOfContents[index].location.chapter == chapter {
-            if let fragment = tableOfContents[index].unresolvedFragment {
-                tableOfContents[index].location.offset = offsets[fragment] ?? 0
-                tableOfContents[index].unresolvedFragment = nil
-            }
+        for index in tableOfContents.indices
+        where tableOfContents[index].location.chapter == chapter && !tableOfContents[index].isResolved {
+            tableOfContents[index].location.offset = tableOfContents[index].fragment.flatMap { offsets[$0] } ?? 0
+            tableOfContents[index].isResolved = true
         }
     }
 
     private static func chapters(in links: [Link], readingOrder: [Link]) -> [ReaderChapter] {
+        entries(in: links, readingOrder: readingOrder).enumerated().map { index, entry in
+            ReaderChapter(
+                index: index, title: entry.title, location: ReaderLocation(chapter: entry.chapter, offset: 0),
+                fragment: entry.fragment, isResolved: entry.fragment == nil)
+        }
+    }
+
+    private typealias Entry = (title: String, chapter: Int, fragment: String?)
+
+    private static func entries(in links: [Link], readingOrder: [Link]) -> [Entry] {
         links.flatMap { link in
             let url = link.url()
-            let chapter = readingOrder.firstIndexWithHREF(url.removingFragment()).flatMap { index in
-                link.title.map {
-                    ReaderChapter(
-                        title: $0, location: ReaderLocation(chapter: index, offset: 0), unresolvedFragment: url.fragment
-                    )
-                }
+            let entry = readingOrder.firstIndexWithHREF(url.removingFragment()).flatMap { chapter in
+                link.title.map { (title: $0, chapter: chapter, fragment: url.fragment) }
             }
-            return [chapter].compactMap { $0 } + chapters(in: link.children, readingOrder: readingOrder)
+            return [entry].compactMap { $0 } + entries(in: link.children, readingOrder: readingOrder)
         }
     }
 }
