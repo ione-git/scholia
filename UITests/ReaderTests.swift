@@ -57,7 +57,9 @@ final class ReaderTests: UITestCase {
         app.terminate()
 
         let relaunched = launch(
-            LaunchConfiguration(resetsState: false, fixtures: [], opened: [], mocksTranslation: true, now: nil))
+            LaunchConfiguration(
+                resetsState: false, fixtures: [], opened: [], mocksTranslation: true, now: nil,
+                notificationPermission: nil))
         let relaunchedHome = HomeScreen(app: relaunched).waitUntilShown()
         relaunchedHome.heroProgress.waitUntil(\.stringValue, equals: percent(4, of: bookPages))
         relaunchedHome.openHeroBook().pageCounter.waitUntil(\.label, equals: "4 of \(bookPages)")
@@ -77,7 +79,9 @@ final class ReaderTests: UITestCase {
 
     func testRightToLeftBookCountsPagesAndReopensAtSamePage() {
         let app = launch(
-            LaunchConfiguration(resetsState: true, fixtures: [.arabic], opened: [], mocksTranslation: true, now: nil))
+            LaunchConfiguration(
+                resetsState: true, fixtures: [.arabic], opened: [], mocksTranslation: true, now: nil,
+                notificationPermission: nil))
         let reader = HomeScreen(app: app).waitUntilShown().openHeroBook()
         reader.pageCounter.waitUntil(\.label, equals: "1 of \(arabicBookPages)")
         reader.paragraph(startingWith: "في الصباح تستيقظ المدينة").waitUntilExists()
@@ -97,7 +101,7 @@ final class ReaderTests: UITestCase {
         let app = launch(
             LaunchConfiguration(
                 resetsState: true, fixtures: [.german, .frenchNoCover], opened: [.german], mocksTranslation: true,
-                now: nil))
+                now: nil, notificationPermission: nil))
         let library = HomeScreen(app: app).waitUntilShown().openLibrary()
 
         let reader = library.openBook("Un matin en ville").waitUntilOpened()
@@ -122,7 +126,8 @@ final class ReaderTests: UITestCase {
     func testUnreadableBookShowsFailureWithBackButton() {
         let app = launch(
             LaunchConfiguration(
-                resetsState: true, fixtures: [.german, .corrupted], opened: [], mocksTranslation: true, now: nil))
+                resetsState: true, fixtures: [.german, .corrupted], opened: [], mocksTranslation: true, now: nil,
+                notificationPermission: nil))
         let library = HomeScreen(app: app).waitUntilShown().openLibrary()
 
         let reader = library.openBook("Corrupted")
@@ -134,7 +139,9 @@ final class ReaderTests: UITestCase {
 
     private func launchWithGermanBook() -> XCUIApplication {
         launch(
-            LaunchConfiguration(resetsState: true, fixtures: [.german], opened: [], mocksTranslation: true, now: nil))
+            LaunchConfiguration(
+                resetsState: true, fixtures: [.german], opened: [], mocksTranslation: true, now: nil,
+                notificationPermission: nil))
     }
 
     private func percent(_ page: Int, of pages: Int) -> String {
