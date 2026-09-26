@@ -51,6 +51,9 @@
                     link(Text("Selection and toolbar"), element: "selection") {
                         SelectionGallery(colorScheme: appearance.colorScheme)
                     }
+                    link(Text("Translation bubble"), element: "translationBubble") {
+                        TranslationBubbleGallery(colorScheme: appearance.colorScheme)
+                    }
                 }
             }
             .navigationTitle("Component Gallery")
@@ -451,6 +454,36 @@
             .buttonStyle(.plain)
             .accessibilityAddTraits(isSelected ? .isSelected : [])
             .accessibilityIdentifier("selectionGallery.cover.\(title)")
+        }
+    }
+
+    private struct TranslationBubbleGallery: View {
+        let colorScheme: ColorScheme?
+
+        private let word = "Ungeziefer"
+
+        var body: some View {
+            GalleryPage(identifier: "translationBubbleGallery", colorScheme: colorScheme) {
+                VStack(alignment: .leading, spacing: .space4) {
+                    bubble(
+                        .translated(
+                            translation: Text(verbatim: "vermin"), ipa: Text(verbatim: "[ˈʊnɡəˌtsiːfɐ]"),
+                            grammar: Text("\("das Ungeziefer") · \("noun")")),
+                        element: "translated")
+                    bubble(.loading(label: Text("Translating \(word)")), element: "loading")
+                    bubble(.failed(message: Text("Translation unavailable")), element: "failed")
+                }
+                .padding(.space5)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .background(.surfacePaper, in: RoundedRectangle(cornerRadius: .radiusLg))
+            }
+            .navigationTitle("Translation bubble")
+        }
+
+        private func bubble(_ phase: TranslationBubble.Phase, element: String) -> some View {
+            TranslationBubble(
+                word: Text(verbatim: word), phase: phase, wordLocale: Locale(identifier: "de"),
+                translationLocale: Locale(identifier: "en"), identifier: "translationBubbleGallery.\(element)")
         }
     }
 

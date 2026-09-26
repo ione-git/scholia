@@ -76,7 +76,7 @@ final class ReminderTests: UITestCase {
         let app = launch(
             LaunchConfiguration(
                 resetsState: resetsState, fixtures: [], opened: [], inProgress: [], highlighted: [],
-                mocksTranslation: true, now: nil,
+                translation: .immediate, now: nil,
                 notificationPermission: notificationPermission))
         return HomeScreen(app: app).waitUntilShown().openSettings()
     }

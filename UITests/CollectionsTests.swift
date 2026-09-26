@@ -5,7 +5,7 @@ final class CollectionsTests: UITestCase {
         let app = launch(
             LaunchConfiguration(
                 resetsState: true, fixtures: [.german, .frenchNoCover], opened: [], inProgress: [], highlighted: [],
-                mocksTranslation: true, now: nil,
+                translation: .immediate, now: nil,
                 notificationPermission: nil))
         let library = HomeScreen(app: app).waitUntilShown().openLibrary()
         library.book("Die Verwandlung").waitUntilExists()
@@ -31,7 +31,7 @@ final class CollectionsTests: UITestCase {
         let app = launch(
             LaunchConfiguration(
                 resetsState: true, fixtures: [.german], opened: [], inProgress: [], highlighted: [],
-                mocksTranslation: true, now: nil,
+                translation: .immediate, now: nil,
                 notificationPermission: nil))
         let library = HomeScreen(app: app).waitUntilShown().openLibrary()
         library.openMenu().openNewCollection().type("Science Fiction").create(returningTo: library)
@@ -60,7 +60,7 @@ final class CollectionsTests: UITestCase {
         let app = launch(
             LaunchConfiguration(
                 resetsState: true, fixtures: [.minimalMetadata], opened: [], inProgress: [], highlighted: [],
-                mocksTranslation: true,
+                translation: .immediate,
                 now: nil,
                 notificationPermission: nil))
         let addBook = try HomeScreen(app: app).waitUntilShown().openFromOtherApp(.german)
@@ -99,7 +99,7 @@ final class CollectionsTests: UITestCase {
     func testAddToCollectionSheetShowsAuthorWhenTitleIsEmpty() throws {
         let app = launch(
             LaunchConfiguration(
-                resetsState: true, fixtures: [], opened: [], inProgress: [], highlighted: [], mocksTranslation: true,
+                resetsState: true, fixtures: [], opened: [], inProgress: [], highlighted: [], translation: .immediate,
                 now: nil,
                 notificationPermission: nil))
         let addBook = try HomeScreen(app: app).waitUntilShown().openFromOtherApp(.german)
@@ -116,7 +116,7 @@ final class CollectionsTests: UITestCase {
         let first = launch(
             LaunchConfiguration(
                 resetsState: true, fixtures: [.minimalMetadata], opened: [], inProgress: [], highlighted: [],
-                mocksTranslation: true,
+                translation: .immediate,
                 now: nil,
                 notificationPermission: nil))
         let german = try HomeScreen(app: first).waitUntilShown().openFromOtherApp(.german).chooseCollections()
@@ -125,7 +125,7 @@ final class CollectionsTests: UITestCase {
         german.done().add()
         let app = launch(
             LaunchConfiguration(
-                resetsState: false, fixtures: [], opened: [], inProgress: [], highlighted: [], mocksTranslation: true,
+                resetsState: false, fixtures: [], opened: [], inProgress: [], highlighted: [], translation: .immediate,
                 now: nil,
                 notificationPermission: nil))
         let french = try HomeScreen(app: app).waitUntilShown().openFromOtherApp(.frenchNoCover).chooseCollections()

@@ -11,6 +11,16 @@
         }
       }
     },
+    "%@ · %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@ · %2$@"
+          }
+        }
+      }
+    },
     "%lld Selected" : {
 
     },
@@ -245,6 +255,9 @@
 
     },
     "No books yet" : {
+
+    },
+    "No translation needed" : {
 
     },
     "None" : {
@@ -572,10 +585,52 @@
     "Translate to" : {
 
     },
+    "Translating %@" : {
+
+    },
     "Translation" : {
 
     },
+    "Translation bubble" : {
+
+    },
+    "Translation unavailable" : {
+
+    },
     "Unread" : {
+
+    },
+    "adjective" : {
+
+    },
+    "adverb" : {
+
+    },
+    "conjunction" : {
+
+    },
+    "determiner" : {
+
+    },
+    "interjection" : {
+
+    },
+    "noun" : {
+
+    },
+    "number" : {
+
+    },
+    "particle" : {
+
+    },
+    "preposition" : {
+
+    },
+    "pronoun" : {
+
+    },
+    "verb" : {
 
     },
     "· detected" : {

@@ -14,6 +14,7 @@ public final class ReaderController {
         didSet { viewController.apply(highlights) }
     }
     public internal(set) var paintedHighlights: Int
+    public internal(set) var paintedWordTints: Int
     public var highlightColor: UIColor
     public var pageTurn: ReaderPageTurn {
         didSet { viewController.apply(pageTurn) }
@@ -22,8 +23,8 @@ public final class ReaderController {
     @ObservationIgnored let viewController: ReaderViewController
 
     public init(
-        book: ReaderBook, location: ReaderLocation?, style: ReaderStyle, colors: ReaderColors, highlightColor: UIColor,
-        pageTurn: ReaderPageTurn, highlightTitle: String
+        book: ReaderBook, language: String?, location: ReaderLocation?, style: ReaderStyle, colors: ReaderColors,
+        highlightColor: UIColor, pageTurn: ReaderPageTurn, highlightTitle: String
     ) {
         self.book = book
         self.location = location
@@ -32,10 +33,15 @@ public final class ReaderController {
         self.pageTurn = pageTurn
         highlights = []
         paintedHighlights = 0
+        paintedWordTints = 0
         viewController = ReaderViewController(
-            book: book, location: location, style: style, colors: colors, pageTurn: pageTurn,
+            book: book, language: language, location: location, style: style, colors: colors, pageTurn: pageTurn,
             highlightTitle: highlightTitle)
         viewController.controller = self
+    }
+
+    public func clearWord() {
+        viewController.clearWord()
     }
 }
 

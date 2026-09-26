@@ -48,7 +48,7 @@ A flow never checks layout and a snapshot test never checks behaviour.
 ## Launch configuration
 
 ```swift
-let app = launch(LaunchConfiguration(resetsState: true, fixtures: [.german], opened: [], inProgress: [], highlighted: [], mocksTranslation: true, now: nil, notificationPermission: nil))
+let app = launch(LaunchConfiguration(resetsState: true, fixtures: [.german], opened: [], inProgress: [], highlighted: [], translation: .immediate, now: nil, notificationPermission: nil))
 let dark = launch(configuration, appearance: .dark)
 ```
 
@@ -59,12 +59,12 @@ let dark = launch(configuration, appearance: .dark)
 | `opened` | `SCHOLIA_OPENED=drm,german` | these stored books were opened, most recent first: the first at `now`, each next one a minute earlier |
 | `inProgress` | `SCHOLIA_IN_PROGRESS=german` | these stored books have a saved reading position (chapter 1, offset 0), so Book Info shows "In progress" |
 | `highlighted` | `SCHOLIA_HIGHLIGHTED=german` | these stored books have 7 highlights, added if the book has none |
-| `mocksTranslation` | `SCHOLIA_TRANSLATION=mock` | translation provider is the mock |
+| `translation` | `SCHOLIA_TRANSLATION=mock` or `held` | translation provider is the mock: `.immediate` answers at once; `.held` records the request, then waits until it is cancelled, so the loading state stays on screen |
 | `now` | `SCHOLIA_NOW=<ISO 8601>` | the app's current date and time |
 | `notificationPermission` | `SCHOLIA_NOTIFICATIONS=declined` or `denied` | turning the reminder on gets this answer without asking the system: `declined` as if "Don't Allow" was tapped on the prompt, `denied` as if notifications were already off |
 
 - The app reads `LaunchConfiguration.current` where it builds a dependency (storage, translation provider, clock). A missing key means off, so a plain launch is a normal launch. Parsing exists only in Debug; Release always gets everything off.
-- `resetsState: true` unless the test checks persistence across a relaunch. Fixtures get `now` as their added date; for different added dates seed some books, `terminate()`, and relaunch with `resetsState: false`, the other fixtures and a later `now` (`LibraryTests/testEachSortOrder`). `mocksTranslation: true` always. Set `now` whenever the screen shows dates, reading time or the daily goal.
+- `resetsState: true` unless the test checks persistence across a relaunch. Fixtures get `now` as their added date; for different added dates seed some books, `terminate()`, and relaunch with `resetsState: false`, the other fixtures and a later `now` (`LibraryTests/testEachSortOrder`). `translation: .immediate` unless the test needs the loading state (`.held`). Set `now` whenever the screen shows dates, reading time or the daily goal.
 - Rendering is the same on every Mac and on CI:
   - `scripts/sim create` pins the simulator: iPhone 17 Pro (iPad Pro 11-inch (M5) with `--ipad`), iOS 26.4 runtime, language English, region `en_US`, text size Large, light appearance. It applies them on every call, so run it before a session; a simulator not prepared by it gets other formats and fails snapshots. Runner and app share the region, so expected strings the test formats itself (`formatted(…)`) match the app.
   - `launch` sets `TZ` to GMT (another zone: `launch(configuration, timeZone: …)`); the app needs nothing, `TimeZone.current` and `Calendar.current` follow `TZ`.
@@ -77,7 +77,8 @@ let dark = launch(configuration, appearance: .dark)
 - `debug.readingReminder` (any screen: `screen.readingReminder`) has the pending local notifications as its label, one per line as `identifier · title · body · HH:mm · repeats` (`none` when there are none), and the notification permission as its value (`notDetermined`, `authorized`, `denied`), read at launch and after each change of the reminder toggle or time, once the schedule is updated; see `ReminderTests`.
 - `debug.colorScheme` (any screen: `screen.colorScheme`) has the colour scheme the app renders in as its label, `light` or `dark`, after the Theme setting and the system appearance; see `SettingsTests/testThemeOverridesSystemAppearance`.
 - Notification permission is not reset by `resetsState` and cannot be changed in the simulator's Settings app: a simulator asks once, then keeps the answer until the app is uninstalled (`xcrun simctl uninstall <udid> com.ione.scholia`). Turn the reminder on with `SettingsScreen.turnOnReminder()`, which checks the system prompt's title and allows it when it comes; never deny it in a test, use `notificationPermission` instead.
-- Translation mock (`App/Sources/Translation/MockTranslationProvider.swift`): every word gets the same `MockTranslationProvider.translation` (translation "vermin"), target languages are `TargetLanguage.identifiers`, no language packs. The reader prototype's `debug.translationRequests` lists the requests that reached the mock, one per line as `word · offset in sentence (UTF-16) · source → target`; cached repeats do not appear; see `TranslationTests`.
+- Translation mock (`App/Sources/Translation/MockTranslationProvider.swift`): every word gets the same `MockTranslationProvider.translation` (translation "vermin"), target languages are `TargetLanguage.identifiers`, no language packs. `debug.translationRequests` (any screen: `reader.translationRequests`) lists the requests that reached the mock, one per line as `word · offset in sentence (UTF-16) · source → target`; cached repeats do not appear; a `.held` request appears as soon as it is made; see `TranslationTests`, `WordBubbleTests`.
+- Word tap bubble (`WordBubbleTests`): `reader.bubble` (container) with `reader.bubble.word`, `.ipa`, `.translation`, `.grammar`, `.loading` (label `Translating <word>`) and `.failure`. Tap a word with `reader.tapWord(onLine:x:)` (German fixture, first paragraph). The word tint is painted in the web view after the bubble appears: wait for `debug.paintedWordTints` (`reader.paintedWordTints`, the number of painted tint boxes) before sampling pixels.
 
 | Fixture | Content |
 |---|---|

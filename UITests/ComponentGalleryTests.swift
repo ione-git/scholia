@@ -62,6 +62,14 @@ final class ComponentGalleryTests: UITestCase {
             attachScreenshot("Selection\(suffix)")
             gallery = selection.goBack()
 
+            let bubbles = gallery.openTranslationBubbles()
+            XCTAssertEqual(bubbles.root.value as? String, appearance.rawValue)
+            for element in ["translated", "loading", "failed"] {
+                bubbles.bubble(element).waitUntilExists()
+            }
+            attachScreenshot("TranslationBubble\(suffix)")
+            gallery = bubbles.goBack()
+
             let presentations = gallery.openPresentations()
             XCTAssertEqual(presentations.root.value as? String, appearance.rawValue)
             let modal = presentations.openModalSheet()
@@ -76,6 +84,22 @@ final class ComponentGalleryTests: UITestCase {
             XCTAssertEqual(popover.root.value as? String, appearance.rawValue)
             attachScreenshot("Popover\(suffix)")
         }
+    }
+
+    func testTranslationBubbleShowsEachStateAtSpecWidth() {
+        let bubbles = openGallery().openTranslationBubbles()
+        for element in ["translated", "loading", "failed"] {
+            XCTAssertEqual(bubbles.bubble(element).waitUntilExists().frame.width, 236)
+            XCTAssertEqual(bubbles.part("word", of: element).label, "Ungeziefer")
+        }
+        XCTAssertEqual(bubbles.part("ipa", of: "translated").label, "[ˈʊnɡəˌtsiːfɐ]")
+        XCTAssertEqual(bubbles.part("translation", of: "translated").label, "vermin")
+        XCTAssertEqual(bubbles.part("grammar", of: "translated").label, "das Ungeziefer · noun")
+        XCTAssertEqual(bubbles.part("loading", of: "loading").label, "Translating Ungeziefer")
+        XCTAssertFalse(bubbles.part("translation", of: "loading").exists)
+        XCTAssertFalse(bubbles.part("ipa", of: "loading").exists)
+        XCTAssertEqual(bubbles.part("failure", of: "failed").label, "Translation unavailable")
+        XCTAssertFalse(bubbles.part("loading", of: "failed").exists)
     }
 
     func testGlassButtonsHaveSpecSizesAndToggleOpenState() {
@@ -218,7 +242,7 @@ final class ComponentGalleryTests: UITestCase {
     private func openGallery() -> ComponentGalleryScreen {
         let app = launch(
             LaunchConfiguration(
-                resetsState: true, fixtures: [], opened: [], inProgress: [], highlighted: [], mocksTranslation: true,
+                resetsState: true, fixtures: [], opened: [], inProgress: [], highlighted: [], translation: .immediate,
                 now: nil,
                 notificationPermission: nil))
         return HomeScreen(app: app).waitUntilShown().openComponentGallery()

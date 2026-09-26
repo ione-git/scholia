@@ -10,7 +10,7 @@ final class TranslationTests: UITestCase {
     func testTappedWordShowsMockTranslation() throws {
         let reader = openReader()
 
-        try tapWord(onLine: 0, x: 3, in: reader)
+        try reader.tapWord(onLine: 0, x: 3)
 
         reader.word.waitUntil(\.label, equals: "Als")
         reader.translation.waitUntil(\.label, equals: mockTranslation)
@@ -19,19 +19,19 @@ final class TranslationTests: UITestCase {
 
     func testRetappedWordIsTranslatedOnce() throws {
         let reader = openReader()
-        try tapWord(onLine: 0, x: 3, in: reader)
+        try reader.tapWord(onLine: 0, x: 3)
         reader.word.waitUntil(\.label, equals: "Als")
-        try tapWord(onLine: 4, x: 3, in: reader)
+        try reader.tapWord(onLine: 4, x: 3)
         reader.word.waitUntil(\.label, equals: "panzerartig")
 
-        try tapWord(onLine: 0, x: 3, in: reader)
+        try reader.tapWord(onLine: 0, x: 3)
         reader.word.waitUntil(\.label, equals: "Als")
-        try tapWord(onLine: 2, x: 20, in: reader)
+        try reader.tapWord(onLine: 2, x: 20)
         reader.word.waitUntil(\.label, equals: "seinem")
         reader.translationRequests.waitUntil(
             \.label, equals: "Als · 0 · de → en\npanzerartig · 18 · de → en\nseinem · 79 · de → en")
 
-        try tapWord(onLine: 3, x: 255, in: reader)
+        try reader.tapWord(onLine: 3, x: 255)
 
         reader.word.waitUntil(\.label, equals: "seinem")
         reader.translation.waitUntil(\.label, equals: mockTranslation)
@@ -42,11 +42,11 @@ final class TranslationTests: UITestCase {
 
     func testRepeatedWordIsRequestedAtItsPlaceInSentence() throws {
         let reader = openReader()
-        try tapWord(onLine: 3, x: 216, in: reader)
+        try reader.tapWord(onLine: 3, x: 216)
         reader.word.waitUntil(\.label, equals: "auf")
         reader.translationRequests.waitUntil(\.label, equals: "auf · 7 · de → en")
 
-        try tapWord(onLine: 7, x: 170, in: reader)
+        try reader.tapWord(onLine: 7, x: 170)
 
         reader.word.waitUntil(\.label, equals: "auf")
         reader.translation.waitUntil(\.label, equals: mockTranslation)
@@ -56,7 +56,7 @@ final class TranslationTests: UITestCase {
     func testTranslateToListsProviderLanguages() {
         let app = launch(
             LaunchConfiguration(
-                resetsState: true, fixtures: [], opened: [], inProgress: [], highlighted: [], mocksTranslation: true,
+                resetsState: true, fixtures: [], opened: [], inProgress: [], highlighted: [], translation: .immediate,
                 now: nil,
                 notificationPermission: nil))
         let settings = HomeScreen(app: app).waitUntilShown().openSettings()
@@ -71,7 +71,7 @@ final class TranslationTests: UITestCase {
     func testTranslateToPersistsAndTargetsTranslations() throws {
         let app = launch(
             LaunchConfiguration(
-                resetsState: true, fixtures: [], opened: [], inProgress: [], highlighted: [], mocksTranslation: true,
+                resetsState: true, fixtures: [], opened: [], inProgress: [], highlighted: [], translation: .immediate,
                 now: nil,
                 notificationPermission: nil))
         var settings = HomeScreen(app: app).waitUntilShown().openSettings()
@@ -81,14 +81,14 @@ final class TranslationTests: UITestCase {
 
         let relaunched = launch(
             LaunchConfiguration(
-                resetsState: false, fixtures: [], opened: [], inProgress: [], highlighted: [], mocksTranslation: true,
+                resetsState: false, fixtures: [], opened: [], inProgress: [], highlighted: [], translation: .immediate,
                 now: nil,
                 notificationPermission: nil))
         settings = HomeScreen(app: relaunched).waitUntilShown().openSettings()
         XCTAssertEqual(settings.translateTo.waitUntilExists().label, "Translate to, French")
         let reader = settings.goBack().openReaderPrototype()
 
-        try tapWord(onLine: 0, x: 3, in: reader)
+        try reader.tapWord(onLine: 0, x: 3)
 
         reader.translation.waitUntil(\.label, equals: mockTranslation)
         reader.translationRequests.waitUntil(\.label, equals: "Als · 0 · de → fr")
@@ -97,17 +97,9 @@ final class TranslationTests: UITestCase {
     private func openReader() -> ReaderScreen {
         let app = launch(
             LaunchConfiguration(
-                resetsState: true, fixtures: [], opened: [], inProgress: [], highlighted: [], mocksTranslation: true,
+                resetsState: true, fixtures: [], opened: [], inProgress: [], highlighted: [], translation: .immediate,
                 now: nil,
                 notificationPermission: nil))
         return HomeScreen(app: app).waitUntilShown().openReaderPrototype()
-    }
-
-    private func tapWord(onLine index: Int, x: CGFloat, in reader: ReaderScreen) throws {
-        let line = try TokenValues.load().lineHeight("reading-body")
-        reader.paragraph(startingWith: "Als Gregor Samsa").waitUntilExists()
-            .coordinate(withNormalizedOffset: .zero)
-            .withOffset(CGVector(dx: x, dy: line * CGFloat(index) + line / 2))
-            .tap()
     }
 }

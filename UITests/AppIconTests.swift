@@ -41,7 +41,7 @@ final class AppIconTests: UITestCase {
     private func showHomeScreen() -> SpringboardScreen {
         let app = launch(
             LaunchConfiguration(
-                resetsState: true, fixtures: [], opened: [], inProgress: [], highlighted: [], mocksTranslation: true,
+                resetsState: true, fixtures: [], opened: [], inProgress: [], highlighted: [], translation: .immediate,
                 now: nil,
                 notificationPermission: nil))
         HomeScreen(app: app).waitUntilShown()

@@ -20,9 +20,13 @@ struct ScholiaApp: App {
         } catch {
             fatalError("Storage: \(error)")
         }
-        translationService = TranslationService(
-            provider: LaunchConfiguration.current.mocksTranslation
-                ? MockTranslationProvider() : AppleTranslationProvider())
+        let provider: any TranslationProvider =
+            if let mock = LaunchConfiguration.current.translation {
+                MockTranslationProvider(isHeld: mock == .held)
+            } else {
+                AppleTranslationProvider()
+            }
+        translationService = TranslationService(provider: provider)
         ReadingReminder.schedule(for: settings)
     }
 
@@ -42,6 +46,7 @@ struct ScholiaApp: App {
                     .background { LibraryDiagnostics() }
                     .background { ReminderDiagnostics(settings: settings) }
                     .background { AppearanceDiagnostics() }
+                    .background { TranslationDiagnostics(provider: translationService.provider) }
                 #endif
         }
         .modelContainer(container)

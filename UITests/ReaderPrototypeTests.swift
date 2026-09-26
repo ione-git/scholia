@@ -87,6 +87,8 @@ final class ReaderPrototypeTests: UITestCase {
         reader.tapMargin()
 
         reader.word.waitUntilGone()
+        XCTAssertFalse(reader.theme("paper").exists)
+        reader.tapMargin()
         reader.theme("paper").waitUntil(\.isHittable, equals: true)
         reader.tapMargin()
         reader.theme("paper").waitUntilGone()
@@ -181,7 +183,7 @@ final class ReaderPrototypeTests: UITestCase {
     func testOpenEPUBPresentsFilesPicker() {
         let app = launch(
             LaunchConfiguration(
-                resetsState: true, fixtures: [], opened: [], inProgress: [], highlighted: [], mocksTranslation: true,
+                resetsState: true, fixtures: [], opened: [], inProgress: [], highlighted: [], translation: .immediate,
                 now: nil,
                 notificationPermission: nil))
 
@@ -194,7 +196,7 @@ final class ReaderPrototypeTests: UITestCase {
     private func openReader() -> ReaderScreen {
         let app = launch(
             LaunchConfiguration(
-                resetsState: true, fixtures: [], opened: [], inProgress: [], highlighted: [], mocksTranslation: true,
+                resetsState: true, fixtures: [], opened: [], inProgress: [], highlighted: [], translation: .immediate,
                 now: nil,
                 notificationPermission: nil))
         return HomeScreen(app: app).waitUntilShown().openReaderPrototype()
