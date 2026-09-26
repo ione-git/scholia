@@ -38,15 +38,25 @@ struct AddToCollectionScreen: Screen {
 
     @discardableResult
     func done() -> AddBookScreen {
-        doneButton.waitUntil(\.isHittable, equals: true).tap()
-        root.waitUntilGone()
-        return AddBookScreen(app: app).waitUntilShown()
+        done(returningTo: AddBookScreen(app: app))
     }
 
     @discardableResult
     func cancel() -> AddBookScreen {
+        cancel(returningTo: AddBookScreen(app: app))
+    }
+
+    @discardableResult
+    func done<Next: Screen>(returningTo next: Next) -> Next {
+        doneButton.waitUntil(\.isHittable, equals: true).tap()
+        root.waitUntilGone()
+        return next.waitUntilShown()
+    }
+
+    @discardableResult
+    func cancel<Next: Screen>(returningTo next: Next) -> Next {
         cancelButton.waitUntil(\.isHittable, equals: true).tap()
         root.waitUntilGone()
-        return AddBookScreen(app: app).waitUntilShown()
+        return next.waitUntilShown()
     }
 }

@@ -72,6 +72,7 @@ struct AddToCollectionSheet: View {
                 Text(title)
                     .textStyle(TextStyle.listSerif.weighted(TextStyle.titleCard.weight))
                     .foregroundStyle(.ink)
+                    .lineLimit(2)
                     .accessibilityIdentifier("addToCollection.bookTitle")
                 if let author {
                     Text(author)

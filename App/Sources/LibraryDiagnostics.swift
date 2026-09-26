@@ -10,6 +10,13 @@
                 .accessibilityElement()
                 .accessibilityIdentifier("debug.storedLibrary")
                 .accessibilityLabel(Text(verbatim: summary))
+                .accessibilityValue(Text(verbatim: files))
+        }
+
+        private var files: String {
+            let directory = Storage.booksDirectory.path(percentEncoded: false)
+            let names = (try? FileManager.default.contentsOfDirectory(atPath: directory)) ?? []
+            return names.sorted().joined(separator: "\n")
         }
 
         private var summary: String {

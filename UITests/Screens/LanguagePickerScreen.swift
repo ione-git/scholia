@@ -26,8 +26,13 @@ struct LanguagePickerScreen: Screen {
 
     @discardableResult
     func choose(_ code: String) -> AddBookScreen {
+        choose(code, returningTo: AddBookScreen(app: app))
+    }
+
+    @discardableResult
+    func choose<Next: Screen>(_ code: String, returningTo next: Next) -> Next {
         language(code).waitUntil(\.isHittable, equals: true).tap()
         root.waitUntilGone()
-        return AddBookScreen(app: app).waitUntilShown()
+        return next.waitUntilShown()
     }
 }
