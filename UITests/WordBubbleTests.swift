@@ -76,10 +76,12 @@ final class WordBubbleTests: UITestCase {
         reader.bubbleWord.waitUntil(\.label, equals: "auf")
         reader.translationRequests.waitUntil(\.label, equals: "panzerartig · 18 · de → en\nauf · 161 · de → en")
         XCTAssertFalse(reader.backButton.exists)
+        reader.paintedWordTints.waitUntil(\.label, equals: "1")
 
         reader.tapMargin()
 
         reader.bubble.waitUntilGone()
+        reader.paintedWordTints.waitUntil(\.label, equals: "0")
         XCTAssertFalse(reader.backButton.exists)
         XCTAssertEqual(reader.pageCounter.label, firstPage)
         reader.showChrome()
