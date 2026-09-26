@@ -47,6 +47,22 @@ final class SettingsTests: UITestCase {
         XCTAssertEqual(settings.sortBooks.label, "Sort books by, Title")
     }
 
+    func testSortChosenInSettingsOrdersLibrary() {
+        let app = launch(
+            LaunchConfiguration(
+                resetsState: true, fixtures: [.german, .frenchNoCover, .minimalMetadata], opened: [.frenchNoCover],
+                inProgress: [], highlighted: [],
+                mocksTranslation: true, now: nil, notificationPermission: nil))
+        let settings = openSettings(app)
+
+        settings.chooseSortOrder("title")
+        let library = settings.goBack().openLibrary()
+        XCTAssertEqual(library.shownTitles, ["Die Verwandlung", "Minimal", "Un matin en ville"])
+
+        library.sort(by: "author")
+        library.goBack().openSettings().sortBooks.waitUntil(\.label, equals: "Sort books by, Author")
+    }
+
     func testThemeOverridesSystemAppearance() {
         let settings = openSettings(launch(.withoutBooks, appearance: .light))
         settings.colorScheme.waitUntil(\.label, equals: "light")
