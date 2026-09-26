@@ -75,7 +75,8 @@ final class ReminderTests: UITestCase {
     private func openSettings(resetsState: Bool, notificationPermission: NotificationPermission?) -> SettingsScreen {
         let app = launch(
             LaunchConfiguration(
-                resetsState: resetsState, fixtures: [], opened: [], mocksTranslation: true, now: nil,
+                resetsState: resetsState, fixtures: [], opened: [], inProgress: [], highlighted: [],
+                mocksTranslation: true, now: nil,
                 notificationPermission: notificationPermission))
         return HomeScreen(app: app).waitUntilShown().openSettings()
     }
