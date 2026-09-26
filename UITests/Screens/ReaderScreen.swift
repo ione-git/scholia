@@ -33,7 +33,6 @@ struct ReaderScreen: Screen {
     var bubbleFailure: XCUIElement { app.staticTexts["reader.bubble.failure"] }
     var germanParagraph: XCUIElement { paragraph(startingWith: germanFirstParagraph) }
     var germanHeading: XCUIElement { paragraph(startingWith: germanFirstHeading) }
-    var highlightMenuItem: XCUIElement { app.menuItems["Highlight"] }
 
     func theme(_ name: String) -> XCUIElement { app.buttons["reader.theme.\(name)"] }
     func pageTurn(_ name: String) -> XCUIElement { app.buttons["reader.pageTurn.\(name)"] }
@@ -51,6 +50,11 @@ struct ReaderScreen: Screen {
 
     func tapWord(onLine index: Int, x: CGFloat) throws {
         try wordPoint(onLine: index, x: x).tap()
+    }
+
+    func selectWord(onLine index: Int, x: CGFloat) throws -> SelectionMenuScreen {
+        try wordPoint(onLine: index, x: x).press(forDuration: 1)
+        return SelectionMenuScreen(app: app).waitUntilShown()
     }
 
     @discardableResult
