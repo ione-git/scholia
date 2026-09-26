@@ -22,7 +22,7 @@ git checkout --no-track -b feature/<n>-<slug> origin/main
 scripts/sim create Scholia-<n>
 ```
 
-`scripts/sim` holds the project's device and runtime. `create` reuses the simulator if it exists, boots it and prints its udid; run it again whenever you come back to the work. For iPad work add `scripts/sim create Scholia-<n>-iPad --ipad`. `scripts/sim delete <name>` removes one. Pass your own simulator to every build and test run: `DESTINATION='platform=iOS Simulator,id=<udid>'`. DerivedData (`build/`) is already per worktree.
+`scripts/sim` hands out simulators from a shared pool (3 iPhone, 1 iPad) and queues you when all are busy. Take one right before you build-for-test, run tests or take screenshots, and give it back with `scripts/sim delete <name>` as soon as you are done — write code without holding one. `create` with the same name returns the simulator you already hold. For iPad work add `scripts/sim create Scholia-<n>-iPad --ipad`. `scripts/sim delete <name>` removes one. Pass your own simulator to every build and test run: `DESTINATION='platform=iOS Simulator,id=<udid>'`. DerivedData (`build/`) is already per worktree.
 
 ## 3. Implement
 
