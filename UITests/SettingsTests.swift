@@ -26,7 +26,7 @@ final class SettingsTests: UITestCase {
     func testEveryValuePersistsAcrossRelaunch() {
         let app = launch(
             LaunchConfiguration(
-                resetsState: true, fixtures: [], opened: [], inProgress: [], highlighted: [], mocksTranslation: true,
+                resetsState: true, fixtures: [], opened: [], inProgress: [], highlighted: [], translation: .immediate,
                 now: nil,
                 notificationPermission: nil))
         var settings = HomeScreen(app: app).waitUntilShown().openSettings()
@@ -47,7 +47,7 @@ final class SettingsTests: UITestCase {
 
         let relaunched = launch(
             LaunchConfiguration(
-                resetsState: false, fixtures: [], opened: [], inProgress: [], highlighted: [], mocksTranslation: true,
+                resetsState: false, fixtures: [], opened: [], inProgress: [], highlighted: [], translation: .immediate,
                 now: nil,
                 notificationPermission: nil))
         settings = HomeScreen(app: relaunched).waitUntilShown().openSettings()
@@ -88,7 +88,7 @@ final class SettingsTests: UITestCase {
 
     private var withoutBooks: LaunchConfiguration {
         LaunchConfiguration(
-            resetsState: true, fixtures: [], opened: [], inProgress: [], highlighted: [], mocksTranslation: true,
+            resetsState: true, fixtures: [], opened: [], inProgress: [], highlighted: [], translation: .immediate,
             now: nil,
             notificationPermission: nil)
     }
@@ -103,7 +103,7 @@ final class SettingsTests: UITestCase {
         let app = XCUIApplication()
         app.launchEnvironment =
             LaunchConfiguration(
-                resetsState: true, fixtures: [], opened: [], inProgress: [], highlighted: [], mocksTranslation: true,
+                resetsState: true, fixtures: [], opened: [], inProgress: [], highlighted: [], translation: .immediate,
                 now: nil,
                 notificationPermission: nil
             )

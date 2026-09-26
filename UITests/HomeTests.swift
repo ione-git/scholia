@@ -6,7 +6,7 @@ final class HomeTests: UITestCase {
             LaunchConfiguration(
                 resetsState: true, fixtures: [.german, .frenchNoCover, .minimalMetadata], opened: [], inProgress: [],
                 highlighted: [],
-                mocksTranslation: true,
+                translation: .immediate,
                 now: nil, notificationPermission: nil))
         let home = HomeScreen(app: app).waitUntilShown()
 
@@ -30,7 +30,7 @@ final class HomeTests: UITestCase {
         let app = launch(
             LaunchConfiguration(
                 resetsState: true, fixtures: [.minimalMetadata], opened: [], inProgress: [], highlighted: [],
-                mocksTranslation: true,
+                translation: .immediate,
                 now: nil,
                 notificationPermission: nil))
         let home = HomeScreen(app: app).waitUntilShown()
@@ -45,7 +45,7 @@ final class HomeTests: UITestCase {
         let app = launch(
             LaunchConfiguration(
                 resetsState: true, fixtures: [.german], opened: [], inProgress: [], highlighted: [],
-                mocksTranslation: true, now: nil,
+                translation: .immediate, now: nil,
                 notificationPermission: nil))
         let home = HomeScreen(app: app).waitUntilShown()
 
@@ -58,7 +58,7 @@ final class HomeTests: UITestCase {
         let app = launch(
             LaunchConfiguration(
                 resetsState: true, fixtures: [.german], opened: [], inProgress: [], highlighted: [],
-                mocksTranslation: true, now: nil,
+                translation: .immediate, now: nil,
                 notificationPermission: nil))
         let home = HomeScreen(app: app).waitUntilShown()
 

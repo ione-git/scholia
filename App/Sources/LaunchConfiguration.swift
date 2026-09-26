@@ -13,6 +13,11 @@ enum Fixture: String {
     }
 }
 
+enum TranslationMock: String {
+    case immediate = "mock"
+    case held
+}
+
 enum NotificationPermission: String {
     case declined
     case denied
@@ -24,7 +29,7 @@ struct LaunchConfiguration {
     var opened: [Fixture]
     var inProgress: [Fixture]
     var highlighted: [Fixture]
-    var mocksTranslation: Bool
+    var translation: TranslationMock?
     var now: Date?
     var notificationPermission: NotificationPermission?
 
@@ -51,13 +56,13 @@ extension LaunchConfiguration {
                 opened: Self.fixtures(environment[Key.opened]),
                 inProgress: Self.fixtures(environment[Key.inProgress]),
                 highlighted: Self.fixtures(environment[Key.highlighted]),
-                mocksTranslation: environment[Key.translation] == "mock",
+                translation: environment[Key.translation].flatMap(TranslationMock.init),
                 now: environment[Key.now].flatMap { try? Date($0, strategy: .iso8601) },
                 notificationPermission: environment[Key.notificationPermission].flatMap(NotificationPermission.init)
             )
         #else
             self.init(
-                resetsState: false, fixtures: [], opened: [], inProgress: [], highlighted: [], mocksTranslation: false,
+                resetsState: false, fixtures: [], opened: [], inProgress: [], highlighted: [], translation: nil,
                 now: nil,
                 notificationPermission: nil)
         #endif
@@ -84,8 +89,8 @@ extension LaunchConfiguration {
         if !highlighted.isEmpty {
             environment[Key.highlighted] = highlighted.map(\.rawValue).joined(separator: ",")
         }
-        if mocksTranslation {
-            environment[Key.translation] = "mock"
+        if let translation {
+            environment[Key.translation] = translation.rawValue
         }
         if let now {
             environment[Key.now] = now.formatted(.iso8601)

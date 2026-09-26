@@ -28,7 +28,8 @@ extension ReaderTheme {
         ReaderColors(
             page: UIColor(page),
             text: UIColor(text),
-            selection: UIColor(isDark ? ColorToken.selectionHandle.dark : ColorToken.selectionHandle.light)
+            selection: UIColor(isDark ? ColorToken.selectionHandle.dark : ColorToken.selectionHandle.light),
+            wordTap: UIColor(isDark ? ColorToken.wordTap.dark : ColorToken.wordTap.light)
         )
     }
 

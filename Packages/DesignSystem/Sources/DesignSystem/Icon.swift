@@ -6,6 +6,7 @@ public enum Icon: Sendable {
     case bookmark
     case more
     case chevron
+    case chevronDown
     case check
     case settings
     case search
@@ -38,6 +39,8 @@ public enum Icon: Sendable {
             }
         case .chevron:
             path.addLines([CGPoint(x: 9, y: 6), CGPoint(x: 15, y: 12), CGPoint(x: 9, y: 18)])
+        case .chevronDown:
+            path.addLines([CGPoint(x: 6, y: 9), CGPoint(x: 12, y: 15), CGPoint(x: 18, y: 9)])
         case .check:
             path.addLines([CGPoint(x: 5, y: 12), CGPoint(x: 10, y: 17), CGPoint(x: 19, y: 7)])
         case .settings:

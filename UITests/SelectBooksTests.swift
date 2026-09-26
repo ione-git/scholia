@@ -7,7 +7,7 @@ final class SelectBooksTests: UITestCase {
         let app = launch(
             LaunchConfiguration(
                 resetsState: true, fixtures: fixtures, opened: [], inProgress: [], highlighted: [],
-                mocksTranslation: true, now: nil, notificationPermission: nil))
+                translation: .immediate, now: nil, notificationPermission: nil))
         let library = HomeScreen(app: app).waitUntilShown().openLibrary()
 
         let selection = library.selectBooks()
@@ -45,7 +45,7 @@ final class SelectBooksTests: UITestCase {
         let app = launch(
             LaunchConfiguration(
                 resetsState: true, fixtures: fixtures, opened: [], inProgress: [], highlighted: [],
-                mocksTranslation: true, now: nil, notificationPermission: nil))
+                translation: .immediate, now: nil, notificationPermission: nil))
         let library = HomeScreen(app: app).waitUntilShown().openLibrary()
 
         library.selectBooks().toggle("Die Verwandlung").toggle("Minimal").toggleFinished()
@@ -68,7 +68,7 @@ final class SelectBooksTests: UITestCase {
         let app = launch(
             LaunchConfiguration(
                 resetsState: true, fixtures: fixtures, opened: [], inProgress: [], highlighted: [],
-                mocksTranslation: true, now: nil, notificationPermission: nil))
+                translation: .immediate, now: nil, notificationPermission: nil))
         let library = HomeScreen(app: app).waitUntilShown().openLibrary()
         library.openMenu().openNewCollection().type("Classics").create(returningTo: library)
 
@@ -103,7 +103,7 @@ final class SelectBooksTests: UITestCase {
         let app = launch(
             LaunchConfiguration(
                 resetsState: true, fixtures: fixtures, opened: [], inProgress: [], highlighted: [],
-                mocksTranslation: true, now: nil, notificationPermission: nil))
+                translation: .immediate, now: nil, notificationPermission: nil))
         let library = HomeScreen(app: app).waitUntilShown().openLibrary()
 
         let selection = library.selectBooks().toggle("Die Verwandlung").toggle("Un matin en ville")
@@ -124,7 +124,7 @@ final class SelectBooksTests: UITestCase {
         let app = launch(
             LaunchConfiguration(
                 resetsState: true, fixtures: fixtures, opened: [], inProgress: [], highlighted: fixtures,
-                mocksTranslation: true, now: nil, notificationPermission: nil))
+                translation: .immediate, now: nil, notificationPermission: nil))
         let library = HomeScreen(app: app).waitUntilShown().openLibrary()
         library.storedHighlights.waitUntil(\.label, equals: "21")
 
