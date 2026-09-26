@@ -4,7 +4,8 @@ final class HomeEmptyTests: UITestCase {
     func testFirstLaunchShowsEmptyState() {
         let app = launch(
             LaunchConfiguration(
-                resetsState: true, fixtures: [], opened: [], mocksTranslation: true, now: nil,
+                resetsState: true, fixtures: [], opened: [], inProgress: [], highlighted: [], mocksTranslation: true,
+                now: nil,
                 notificationPermission: nil))
         let home = HomeScreen(app: app).waitUntilShown()
 
@@ -28,7 +29,8 @@ final class HomeEmptyTests: UITestCase {
         addTeardownBlock { XCUIDevice.shared.orientation = .portrait }
         let app = launch(
             LaunchConfiguration(
-                resetsState: true, fixtures: [], opened: [], mocksTranslation: true, now: nil,
+                resetsState: true, fixtures: [], opened: [], inProgress: [], highlighted: [], mocksTranslation: true,
+                now: nil,
                 notificationPermission: nil))
         let home = HomeScreen(app: app).waitUntilShown()
 
@@ -44,7 +46,8 @@ final class HomeEmptyTests: UITestCase {
     func testAddingFirstBookShowsNormalHome() throws {
         let app = launch(
             LaunchConfiguration(
-                resetsState: true, fixtures: [], opened: [], mocksTranslation: true, now: nil,
+                resetsState: true, fixtures: [], opened: [], inProgress: [], highlighted: [], mocksTranslation: true,
+                now: nil,
                 notificationPermission: nil))
         let home = HomeScreen(app: app).waitUntilShown()
         home.emptyCover.waitUntilExists()
@@ -61,7 +64,8 @@ final class HomeEmptyTests: UITestCase {
     func testEmptyCoverOpensFilesPicker() {
         let app = launch(
             LaunchConfiguration(
-                resetsState: true, fixtures: [], opened: [], mocksTranslation: true, now: nil,
+                resetsState: true, fixtures: [], opened: [], inProgress: [], highlighted: [], mocksTranslation: true,
+                now: nil,
                 notificationPermission: nil))
         let home = HomeScreen(app: app).waitUntilShown()
 
@@ -74,7 +78,8 @@ final class HomeEmptyTests: UITestCase {
     func testAddBookPillOpensFilesPicker() {
         let app = launch(
             LaunchConfiguration(
-                resetsState: true, fixtures: [], opened: [], mocksTranslation: true, now: nil,
+                resetsState: true, fixtures: [], opened: [], inProgress: [], highlighted: [], mocksTranslation: true,
+                now: nil,
                 notificationPermission: nil))
         let home = HomeScreen(app: app).waitUntilShown()
 

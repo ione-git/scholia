@@ -61,6 +61,18 @@ struct LibraryScreen: Screen {
         return LibraryMenuScreen(app: app).waitUntilShown()
     }
 
+    func openBookMenu(_ title: String) -> BookMenuScreen {
+        book(title).waitUntil(\.isHittable, equals: true).press(forDuration: 1)
+        return BookMenuScreen(app: app).waitUntilShown()
+    }
+
+    func selectBooks() -> LibrarySelectionScreen {
+        let menu = openMenu()
+        menu.selectBooks.waitUntil(\.isHittable, equals: true).tap()
+        menu.root.waitUntilGone()
+        return LibrarySelectionScreen(app: app).waitUntilShown()
+    }
+
     @discardableResult
     func sort(by option: String) -> LibraryScreen {
         let sortMenu = openMenu().openSort()

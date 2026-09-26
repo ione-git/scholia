@@ -27,7 +27,7 @@ description: Write, run and debug Scholia UI tests (XCUITest) — screen objects
 ## Launch configuration
 
 ```swift
-let app = launch(LaunchConfiguration(resetsState: true, fixtures: [.german], opened: [], mocksTranslation: true, now: nil, notificationPermission: nil))
+let app = launch(LaunchConfiguration(resetsState: true, fixtures: [.german], opened: [], inProgress: [], highlighted: [], mocksTranslation: true, now: nil, notificationPermission: nil))
 ```
 
 | Field | Environment key | Meaning for the app |
@@ -35,6 +35,8 @@ let app = launch(LaunchConfiguration(resetsState: true, fixtures: [.german], ope
 | `resetsState` | `SCHOLIA_RESET_STATE=1` | start with empty storage and settings |
 | `fixtures` | `SCHOLIA_FIXTURES=german,drm` | library holds these books, added if missing: title, author, language from the table below, no cover yet, file copied into the app container |
 | `opened` | `SCHOLIA_OPENED=drm,german` | these stored books were opened, most recent first: the first at `now`, each next one a minute earlier |
+| `inProgress` | `SCHOLIA_IN_PROGRESS=german` | these stored books have a saved reading position (chapter 1, offset 0), so Book Info shows "In progress" |
+| `highlighted` | `SCHOLIA_HIGHLIGHTED=german` | these stored books have 7 highlights, added if the book has none |
 | `mocksTranslation` | `SCHOLIA_TRANSLATION=mock` | translation provider is the mock |
 | `now` | `SCHOLIA_NOW=<ISO 8601>` | the app's current date and time |
 | `notificationPermission` | `SCHOLIA_NOTIFICATIONS=declined` or `denied` | turning the reminder on gets this answer without asking the system: `declined` as if "Don't Allow" was tapped on the prompt, `denied` as if notifications were already off |
@@ -44,7 +46,8 @@ let app = launch(LaunchConfiguration(resetsState: true, fixtures: [.german], ope
 - Time zone: `launch` also sets `TZ` to GMT, so dates and "today" match on every Mac and on CI; another zone with `launch(configuration, timeZone: …)`. The app needs nothing for it: `TimeZone.current` and `Calendar.current` follow `TZ`.
 - New switch: add a field and key to `LaunchConfiguration` (`init(environment:)` and `environment`), then honour it where the dependency is created.
 - `debug.launchConfiguration` (any screen: `screen.launchConfiguration`) has the configuration the app received as its label (fixtures only if their file is in the bundle) and the app's time zone as its value; see `LaunchConfigurationTests`.
-- `debug.storedLibrary` (any screen: `screen.storedLibrary`) lists the stored books by title, one per line as `title · author · language · file name` (`no author`, `no file` when missing); see `DataModelTests`.
+- `debug.storedLibrary` (any screen: `screen.storedLibrary`) lists the stored books by title, one per line as `title · author · language · file name` (`no author`, `no file` when missing); see `DataModelTests`. Its value lists the files in the app's books folder, sorted, one per line (`BookActionsTests/testRemoveAsksThenDeletesBookAndFile`).
+- `debug.storedHighlights` (any screen: `screen.storedHighlights`) has the number of stored highlights as its label, including any left without a book (`SelectBooksTests/testSelectedBooksAreRemovedWithTheirHighlights`).
 - `debug.readingReminder` (any screen: `screen.readingReminder`) has the pending local notifications as its label, one per line as `identifier · title · body · HH:mm · repeats` (`none` when there are none), and the notification permission as its value (`notDetermined`, `authorized`, `denied`), read at launch and after each change of the reminder toggle or time, once the schedule is updated; see `ReminderTests`.
 - Notification permission is not reset by `resetsState` and cannot be changed in the simulator's Settings app: a simulator asks once, then keeps the answer until the app is uninstalled (`xcrun simctl uninstall <udid> com.ione.scholia`). Turn the reminder on with `SettingsScreen.turnOnReminder()`, which checks the system prompt's title and allows it when it comes; never deny it in a test, use `notificationPermission` instead.
 - Translation mock (`App/Sources/Translation/MockTranslationProvider.swift`): every word gets the same `MockTranslationProvider.translation` (translation "vermin"), target languages are `TargetLanguage.identifiers`, no language packs. The reader prototype's `debug.translationRequests` lists the requests that reached the mock, one per line as `word · offset in sentence (UTF-16) · source → target`; cached repeats do not appear; see `TranslationTests`.
@@ -76,7 +79,7 @@ struct LibraryScreen: Screen {
 
 final class LibraryTests: UITestCase {
     func testOpensBook() {
-        let app = launch(LaunchConfiguration(resetsState: true, fixtures: [.german], opened: [], mocksTranslation: true, now: nil, notificationPermission: nil))
+        let app = launch(LaunchConfiguration(resetsState: true, fixtures: [.german], opened: [], inProgress: [], highlighted: [], mocksTranslation: true, now: nil, notificationPermission: nil))
         let reader = LibraryScreen(app: app).waitUntilShown().open("Die Verwandlung")
         reader.title.waitUntil(\.label, equals: "Die Verwandlung")
     }

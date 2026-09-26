@@ -12,6 +12,9 @@ public enum Icon: Sendable {
     case select
     case newCollection
     case sort
+    case collection
+    case info
+    case trash
 
     static let grid: CGFloat = 24
 
@@ -90,6 +93,10 @@ public enum Icon: Sendable {
             path.addEllipse(in: CGRect(x: 3, y: 3, width: 18, height: 18))
             path.addLines([CGPoint(x: 8, y: 12), CGPoint(x: 11, y: 15), CGPoint(x: 16, y: 9)])
         case .newCollection:
+            path.addPath(Icon.collection.path(in: CGRect(x: 0, y: 0, width: Self.grid, height: Self.grid)))
+            path.addLines([CGPoint(x: 12, y: 10), CGPoint(x: 12, y: 16)])
+            path.addLines([CGPoint(x: 9, y: 13), CGPoint(x: 15, y: 13)])
+        case .collection:
             path.move(to: CGPoint(x: 3, y: 7))
             path.addArc(to: CGPoint(x: 5, y: 5), radius: 2, isLarge: false, isSweep: true)
             path.addLine(to: CGPoint(x: 9, y: 5))
@@ -101,8 +108,16 @@ public enum Icon: Sendable {
             path.addLine(to: CGPoint(x: 5, y: 20))
             path.addArc(to: CGPoint(x: 3, y: 18), radius: 2, isLarge: false, isSweep: true)
             path.closeSubpath()
-            path.addLines([CGPoint(x: 12, y: 10), CGPoint(x: 12, y: 16)])
-            path.addLines([CGPoint(x: 9, y: 13), CGPoint(x: 15, y: 13)])
+        case .info:
+            path.addEllipse(in: CGRect(x: 3, y: 3, width: 18, height: 18))
+            path.addLines([CGPoint(x: 12, y: 11), CGPoint(x: 12, y: 16)])
+            path.addLines([CGPoint(x: 12, y: 8), CGPoint(x: 12.01, y: 8)])
+        case .trash:
+            path.addLines([CGPoint(x: 4, y: 7), CGPoint(x: 20, y: 7)])
+            path.addLines([CGPoint(x: 10, y: 11), CGPoint(x: 10, y: 17)])
+            path.addLines([CGPoint(x: 14, y: 11), CGPoint(x: 14, y: 17)])
+            path.addLines([CGPoint(x: 6, y: 7), CGPoint(x: 7, y: 20), CGPoint(x: 17, y: 20), CGPoint(x: 18, y: 7)])
+            path.addLines([CGPoint(x: 9, y: 7), CGPoint(x: 9, y: 4), CGPoint(x: 15, y: 4), CGPoint(x: 15, y: 7)])
         case .sort:
             path.addLines([CGPoint(x: 7, y: 4), CGPoint(x: 7, y: 20)])
             path.addLines([CGPoint(x: 4, y: 17), CGPoint(x: 7, y: 20), CGPoint(x: 10, y: 17)])
@@ -115,6 +130,28 @@ public enum Icon: Sendable {
     }
 
     var isFilled: Bool { self == .more }
+}
+
+extension Icon {
+    private static let menuImageSize: CGFloat = 20
+    private static let menuImageStroke: CGFloat = 2
+
+    public var menuImage: Image {
+        let rect = CGRect(x: 0, y: 0, width: Self.menuImageSize, height: Self.menuImageSize)
+        let image = UIGraphicsImageRenderer(bounds: rect).image { renderer in
+            let context = renderer.cgContext
+            context.addPath(path(in: rect).cgPath)
+            if isFilled {
+                context.fillPath()
+            } else {
+                context.setLineWidth(Self.menuImageStroke * Self.menuImageSize / Self.grid)
+                context.setLineCap(.round)
+                context.setLineJoin(.round)
+                context.strokePath()
+            }
+        }
+        return Image(uiImage: image.withRenderingMode(.alwaysTemplate))
+    }
 }
 
 struct IconView: View {

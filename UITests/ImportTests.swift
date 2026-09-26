@@ -6,7 +6,8 @@ final class ImportTests: UITestCase {
     func testAddButtonOpensFilesPicker() {
         let app = launch(
             LaunchConfiguration(
-                resetsState: true, fixtures: [.german], opened: [], mocksTranslation: true, now: nil,
+                resetsState: true, fixtures: [.german], opened: [], inProgress: [], highlighted: [],
+                mocksTranslation: true, now: nil,
                 notificationPermission: nil))
         let picker = HomeScreen(app: app).waitUntilShown().pickFile()
         attachScreenshot("FilePicker")
@@ -20,7 +21,8 @@ final class ImportTests: UITestCase {
     func testImportEditTitleChangeLanguageAddsBookToLibrary() throws {
         let app = launch(
             LaunchConfiguration(
-                resetsState: true, fixtures: [], opened: [], mocksTranslation: true, now: nil,
+                resetsState: true, fixtures: [], opened: [], inProgress: [], highlighted: [], mocksTranslation: true,
+                now: nil,
                 notificationPermission: nil))
         let addBook = try HomeScreen(app: app).waitUntilShown().openFromOtherApp(.german)
 
@@ -65,7 +67,8 @@ final class ImportTests: UITestCase {
     func testSearchFindsLanguageOutsideSuggestions() throws {
         let app = launch(
             LaunchConfiguration(
-                resetsState: true, fixtures: [], opened: [], mocksTranslation: true, now: nil,
+                resetsState: true, fixtures: [], opened: [], inProgress: [], highlighted: [], mocksTranslation: true,
+                now: nil,
                 notificationPermission: nil))
         let addBook = try HomeScreen(app: app).waitUntilShown().openFromOtherApp(.german)
         let picker = addBook.chooseLanguage()
@@ -85,7 +88,8 @@ final class ImportTests: UITestCase {
     func testSecondFileReplacesBookInSheet() throws {
         let app = launch(
             LaunchConfiguration(
-                resetsState: true, fixtures: [], opened: [], mocksTranslation: true, now: nil,
+                resetsState: true, fixtures: [], opened: [], inProgress: [], highlighted: [], mocksTranslation: true,
+                now: nil,
                 notificationPermission: nil))
         let addBook = try HomeScreen(app: app).waitUntilShown().openFromOtherApp(.german)
         addBook.titleField.waitUntil(\.stringValue, equals: "Die Verwandlung")
@@ -106,7 +110,8 @@ final class ImportTests: UITestCase {
     func testBrokenSecondFileKeepsBookInSheet() throws {
         let app = launch(
             LaunchConfiguration(
-                resetsState: true, fixtures: [], opened: [], mocksTranslation: true, now: nil,
+                resetsState: true, fixtures: [], opened: [], inProgress: [], highlighted: [], mocksTranslation: true,
+                now: nil,
                 notificationPermission: nil))
         let addBook = try HomeScreen(app: app).waitUntilShown().openFromOtherApp(.german)
         addBook.titleField.waitUntil(\.stringValue, equals: "Die Verwandlung")
@@ -129,7 +134,8 @@ final class ImportTests: UITestCase {
     func testBlankAuthorIsStoredWithoutAuthor() throws {
         let app = launch(
             LaunchConfiguration(
-                resetsState: true, fixtures: [], opened: [], mocksTranslation: true, now: nil,
+                resetsState: true, fixtures: [], opened: [], inProgress: [], highlighted: [], mocksTranslation: true,
+                now: nil,
                 notificationPermission: nil))
         let addBook = try HomeScreen(app: app).waitUntilShown().openFromOtherApp(.frenchNoCover)
         addBook.authorField.waitUntil(\.stringValue, equals: "Scholia")
@@ -146,7 +152,8 @@ final class ImportTests: UITestCase {
     func testBookWithoutAuthorIsStoredWithoutAuthor() throws {
         let app = launch(
             LaunchConfiguration(
-                resetsState: true, fixtures: [.german], opened: [], mocksTranslation: true, now: nil,
+                resetsState: true, fixtures: [.german], opened: [], inProgress: [], highlighted: [],
+                mocksTranslation: true, now: nil,
                 notificationPermission: nil))
         let addBook = try HomeScreen(app: app).waitUntilShown().openFromOtherApp(.minimalMetadata)
 
@@ -166,7 +173,8 @@ final class ImportTests: UITestCase {
     func testEmptyTitleDisablesAdd() throws {
         let app = launch(
             LaunchConfiguration(
-                resetsState: true, fixtures: [], opened: [], mocksTranslation: true, now: nil,
+                resetsState: true, fixtures: [], opened: [], inProgress: [], highlighted: [], mocksTranslation: true,
+                now: nil,
                 notificationPermission: nil))
         let addBook = try HomeScreen(app: app).waitUntilShown().openFromOtherApp(.frenchNoCover)
         addBook.addButton.waitUntil(\.isEnabled, equals: true)
@@ -181,7 +189,8 @@ final class ImportTests: UITestCase {
     func testCancelDiscardsBook() throws {
         let app = launch(
             LaunchConfiguration(
-                resetsState: true, fixtures: [.german], opened: [], mocksTranslation: true, now: nil,
+                resetsState: true, fixtures: [.german], opened: [], inProgress: [], highlighted: [],
+                mocksTranslation: true, now: nil,
                 notificationPermission: nil))
         let addBook = try HomeScreen(app: app).waitUntilShown().openFromOtherApp(.frenchNoCover)
         addBook.titleField.waitUntil(\.stringValue, equals: "Un matin en ville")
@@ -195,7 +204,8 @@ final class ImportTests: UITestCase {
     func testBrokenFileShowsAlert() throws {
         let app = launch(
             LaunchConfiguration(
-                resetsState: true, fixtures: [], opened: [], mocksTranslation: true, now: nil,
+                resetsState: true, fixtures: [], opened: [], inProgress: [], highlighted: [], mocksTranslation: true,
+                now: nil,
                 notificationPermission: nil))
         let alert = try HomeScreen(app: app).waitUntilShown().openUnreadableFromOtherApp(.corrupted)
 
@@ -211,7 +221,8 @@ final class ImportTests: UITestCase {
     func testProtectedFileShowsAlert() throws {
         let app = launch(
             LaunchConfiguration(
-                resetsState: true, fixtures: [], opened: [], mocksTranslation: true, now: nil,
+                resetsState: true, fixtures: [], opened: [], inProgress: [], highlighted: [], mocksTranslation: true,
+                now: nil,
                 notificationPermission: nil))
         let alert = try HomeScreen(app: app).waitUntilShown().openUnreadableFromOtherApp(.drm)
 

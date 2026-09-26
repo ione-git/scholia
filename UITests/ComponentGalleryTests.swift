@@ -52,6 +52,16 @@ final class ComponentGalleryTests: UITestCase {
             attachScreenshot("SegmentedControl\(suffix)")
             gallery = segmented.goBack()
 
+            let selection = gallery.openSelection()
+            XCTAssertEqual(selection.root.value as? String, appearance.rawValue)
+            selection.cover("Solaris").waitUntil(\.isSelected, equals: true)
+            selection.cover("Educated").waitUntil(\.isSelected, equals: false)
+            for element in ["collection", "finished", "remove"] {
+                selection.item(element).waitUntilExists()
+            }
+            attachScreenshot("Selection\(suffix)")
+            gallery = selection.goBack()
+
             let presentations = gallery.openPresentations()
             XCTAssertEqual(presentations.root.value as? String, appearance.rawValue)
             let modal = presentations.openModalSheet()
@@ -162,6 +172,30 @@ final class ComponentGalleryTests: UITestCase {
         XCTAssertTrue(segmented.segment("highlights").label.contains("3"), segmented.segment("highlights").label)
     }
 
+    func testSelectableCoversToggleAndToolbarFollowsSelection() {
+        let selection = openGallery().openSelection()
+        let checked = selection.cover("Solaris").waitUntil(\.isSelected, equals: true)
+        XCTAssertEqual(checked.frame.size, CGSize(width: 107, height: 152))
+        XCTAssertFalse(selection.cover("Educated").waitUntilExists().isSelected)
+        XCTAssertEqual(selection.item("collection").label, "Collection")
+        XCTAssertEqual(selection.item("finished").label, "Finished")
+        XCTAssertEqual(selection.item("remove").label, "Remove")
+        for element in ["collection", "finished", "remove"] {
+            XCTAssertEqual(selection.item(element).frame.height, 44, accuracy: 0.5)
+            XCTAssertTrue(selection.item(element).isEnabled)
+        }
+
+        checked.tap()
+
+        checked.waitUntil(\.isSelected, equals: false)
+        for element in ["collection", "finished", "remove"] {
+            selection.item(element).waitUntil(\.isEnabled, equals: false)
+        }
+        selection.cover("Educated").tap()
+        selection.cover("Educated").waitUntil(\.isSelected, equals: true)
+        selection.item("remove").waitUntil(\.isEnabled, equals: true)
+    }
+
     func testSheetsAndPopoverOpenAndClose() {
         let presentations = openGallery().openPresentations()
 
@@ -184,7 +218,8 @@ final class ComponentGalleryTests: UITestCase {
     private func openGallery() -> ComponentGalleryScreen {
         let app = launch(
             LaunchConfiguration(
-                resetsState: true, fixtures: [], opened: [], mocksTranslation: true, now: nil,
+                resetsState: true, fixtures: [], opened: [], inProgress: [], highlighted: [], mocksTranslation: true,
+                now: nil,
                 notificationPermission: nil))
         return HomeScreen(app: app).waitUntilShown().openComponentGallery()
     }

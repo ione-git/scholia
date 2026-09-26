@@ -48,6 +48,9 @@
                     link(Text("Sheets and popover"), element: "presentations") {
                         PresentationGallery(colorScheme: appearance.colorScheme)
                     }
+                    link(Text("Selection and toolbar"), element: "selection") {
+                        SelectionGallery(colorScheme: appearance.colorScheme)
+                    }
                 }
             }
             .navigationTitle("Component Gallery")
@@ -406,6 +409,48 @@
             }
             .buttonStyle(.plain)
             .accessibilityIdentifier("presentationGallery.\(element)")
+        }
+    }
+
+    private struct SelectionGallery: View {
+        let colorScheme: ColorScheme?
+        @State private var selected: Set<String> = ["Solaris"]
+
+        var body: some View {
+            GalleryPage(identifier: "selectionGallery", colorScheme: colorScheme) {
+                HStack(alignment: .top, spacing: .space4) {
+                    cover("Solaris", color: 0x35545E)
+                    cover("Educated", color: 0x8A6D2F)
+                }
+                GlassToolbar {
+                    GlassToolbarItem(Text("Collection"), icon: .collection, role: nil) {}
+                        .accessibilityIdentifier("selectionGallery.collection")
+                    GlassToolbarItem(Text("Finished"), icon: .select, role: nil) {}
+                        .accessibilityIdentifier("selectionGallery.finished")
+                    GlassToolbarItem(Text("Remove"), icon: .trash, role: .destructive) {}
+                        .accessibilityIdentifier("selectionGallery.remove")
+                }
+                .disabled(selected.isEmpty)
+            }
+            .navigationTitle("Selection and toolbar")
+        }
+
+        private func cover(_ title: String, color: UInt32) -> some View {
+            let isSelected = selected.contains(title)
+            return Button {
+                if selected.remove(title) == nil {
+                    selected.insert(title)
+                }
+            } label: {
+                BookCover(
+                    title: title, author: nil, color: Color(hex: color), image: nil, size: .library, isFinished: false,
+                    finishedValue: Text("Finished")
+                )
+                .selectable(isSelected: isSelected)
+            }
+            .buttonStyle(.plain)
+            .accessibilityAddTraits(isSelected ? .isSelected : [])
+            .accessibilityIdentifier("selectionGallery.cover.\(title)")
         }
     }
 
