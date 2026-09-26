@@ -180,7 +180,9 @@ final class ReaderPrototypeTests: UITestCase {
 
     func testOpenEPUBPresentsFilesPicker() {
         let app = launch(
-            LaunchConfiguration(resetsState: true, fixtures: [], opened: [], mocksTranslation: true, now: nil))
+            LaunchConfiguration(
+                resetsState: true, fixtures: [], opened: [], mocksTranslation: true, now: nil,
+                notificationPermission: nil))
 
         let picker = HomeScreen(app: app).waitUntilShown().openEPUB()
 
@@ -190,7 +192,9 @@ final class ReaderPrototypeTests: UITestCase {
 
     private func openReader() -> ReaderScreen {
         let app = launch(
-            LaunchConfiguration(resetsState: true, fixtures: [], opened: [], mocksTranslation: true, now: nil))
+            LaunchConfiguration(
+                resetsState: true, fixtures: [], opened: [], mocksTranslation: true, now: nil,
+                notificationPermission: nil))
         return HomeScreen(app: app).waitUntilShown().openReaderPrototype()
     }
 

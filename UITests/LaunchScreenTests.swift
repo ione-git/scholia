@@ -31,7 +31,9 @@ final class LaunchScreenTests: UITestCase {
         }
         XCUIDevice.shared.appearance = appearance
         let app = launch(
-            LaunchConfiguration(resetsState: true, fixtures: [], opened: [], mocksTranslation: true, now: nil))
+            LaunchConfiguration(
+                resetsState: true, fixtures: [], opened: [], mocksTranslation: true, now: nil,
+                notificationPermission: nil))
         return HomeScreen(app: app).waitUntilShown().openLaunchScreen()
     }
 }

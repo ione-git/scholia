@@ -183,7 +183,9 @@ final class ComponentGalleryTests: UITestCase {
 
     private func openGallery() -> ComponentGalleryScreen {
         let app = launch(
-            LaunchConfiguration(resetsState: true, fixtures: [], opened: [], mocksTranslation: true, now: nil))
+            LaunchConfiguration(
+                resetsState: true, fixtures: [], opened: [], mocksTranslation: true, now: nil,
+                notificationPermission: nil))
         return HomeScreen(app: app).waitUntilShown().openComponentGallery()
     }
 

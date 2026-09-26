@@ -6,7 +6,9 @@ private let darkBackground = RGBColor(red: 21, green: 20, blue: 18)
 final class SettingsTests: UITestCase {
     func testShowsDefaultsAndTogglesReminder() throws {
         let app = launch(
-            LaunchConfiguration(resetsState: true, fixtures: [], opened: [], mocksTranslation: true, now: nil))
+            LaunchConfiguration(
+                resetsState: true, fixtures: [], opened: [], mocksTranslation: true, now: nil,
+                notificationPermission: nil))
         let settings = HomeScreen(app: app).waitUntilShown().openSettings()
 
         XCTAssertEqual(settings.translateTo.waitUntilExists().label, "Translate to, English")
@@ -14,7 +16,7 @@ final class SettingsTests: UITestCase {
         XCTAssertFalse(settings.onWordTap("minimal").isSelected)
         XCTAssertFalse(settings.onWordTap("card").isSelected)
         XCTAssertEqual(settings.dailyGoal.label, "Daily goal, 20 min")
-        XCTAssertEqual(settings.reminderTitle.label, "Reminder at \(try time(hour: 21))")
+        XCTAssertEqual(settings.reminderTime.label, "Reminder at \(try time(hour: 21))")
         XCTAssertEqual(settings.reminder.label, "Reminder")
         XCTAssertEqual(settings.reminder.value as? String, "0")
         settings.theme("system").waitUntil(\.isSelected, equals: true)
@@ -24,7 +26,7 @@ final class SettingsTests: UITestCase {
         XCTAssertEqual(settings.version.label, "Scholia \(try marketingVersion())")
         XCTAssertEqual(settings.backButton.label, "Back to Home")
 
-        settings.reminder.tap()
+        settings.turnOnReminder()
 
         XCTAssertEqual(settings.reminder.value as? String, "1")
         attachScreenshot("Settings")
@@ -45,7 +47,9 @@ final class SettingsTests: UITestCase {
 
     func testEveryValuePersistsAcrossRelaunch() {
         let app = launch(
-            LaunchConfiguration(resetsState: true, fixtures: [], opened: [], mocksTranslation: true, now: nil))
+            LaunchConfiguration(
+                resetsState: true, fixtures: [], opened: [], mocksTranslation: true, now: nil,
+                notificationPermission: nil))
         var settings = HomeScreen(app: app).waitUntilShown().openSettings()
 
         settings.chooseTranslationLanguage("de")
@@ -54,7 +58,7 @@ final class SettingsTests: UITestCase {
         settings.onWordTap("card").waitUntil(\.isSelected, equals: true)
         settings.chooseDailyGoal(30)
         settings.dailyGoal.waitUntil(\.label, equals: "Daily goal, 30 min")
-        settings.reminder.tap()
+        settings.turnOnReminder()
         settings.theme("dark").tap()
         settings.theme("dark").waitUntil(\.isSelected, equals: true)
         settings.chooseSortOrder("title")
@@ -63,7 +67,9 @@ final class SettingsTests: UITestCase {
         app.terminate()
 
         let relaunched = launch(
-            LaunchConfiguration(resetsState: false, fixtures: [], opened: [], mocksTranslation: true, now: nil))
+            LaunchConfiguration(
+                resetsState: false, fixtures: [], opened: [], mocksTranslation: true, now: nil,
+                notificationPermission: nil))
         settings = HomeScreen(app: relaunched).waitUntilShown().openSettings()
 
         XCTAssertEqual(settings.translateTo.waitUntilExists().label, "Translate to, German")
@@ -83,7 +89,9 @@ final class SettingsTests: UITestCase {
         }
         XCUIDevice.shared.appearance = .light
         let app = launch(
-            LaunchConfiguration(resetsState: true, fixtures: [], opened: [], mocksTranslation: true, now: nil))
+            LaunchConfiguration(
+                resetsState: true, fixtures: [], opened: [], mocksTranslation: true, now: nil,
+                notificationPermission: nil))
         let home = HomeScreen(app: app).waitUntilShown()
         waitUntilBackground(home.background, is: lightBackground)
         var settings = home.openSettings()
@@ -112,7 +120,10 @@ final class SettingsTests: UITestCase {
     private func openSettings(deviceLanguage: String) -> SettingsScreen {
         let app = XCUIApplication()
         app.launchEnvironment =
-            LaunchConfiguration(resetsState: true, fixtures: [], opened: [], mocksTranslation: true, now: nil)
+            LaunchConfiguration(
+                resetsState: true, fixtures: [], opened: [], mocksTranslation: true, now: nil,
+                notificationPermission: nil
+            )
             .environment
         app.launchArguments = ["-AppleLanguages", "(\(deviceLanguage))"]
         app.launch()

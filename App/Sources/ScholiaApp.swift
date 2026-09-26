@@ -16,6 +16,7 @@ struct ScholiaApp: App {
         } catch {
             fatalError("Storage: \(error)")
         }
+        ReadingReminder.schedule(for: settings)
     }
 
     var body: some Scene {
@@ -25,6 +26,7 @@ struct ScholiaApp: App {
                 #if DEBUG
                     .background { LaunchDiagnostics(configuration: .current) }
                     .background { LibraryDiagnostics() }
+                    .background { ReminderDiagnostics(settings: settings) }
                 #endif
         }
         .modelContainer(container)
