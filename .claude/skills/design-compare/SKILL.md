@@ -26,7 +26,7 @@ scripts/render-screen Design/canvas/project/Main.dc.html build/design/Main.png
 
 ## 3. Screenshot the app
 
-Use your own simulator, never a shared one. `scripts/sim create <name>` (`--ipad` for iPad) creates it if needed, boots it and prints the udid; run it before any `simctl ui`, `install`, `launch` or `io`, which fail on a shut-down simulator. Set the appearance before each run:
+Take a simulator from the pool with `scripts/sim create <name>` (`--ipad` for iPad; queues if all are busy, give it back with `scripts/sim delete <name>` right after); it boots it and prints the udid; run it before any `simctl ui`, `install`, `launch` or `io`, which fail on a shut-down simulator. Set the appearance before each run:
 
 ```
 xcrun simctl ui <udid> appearance light

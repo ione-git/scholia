@@ -4,6 +4,10 @@ set -euo pipefail
 runtime=com.apple.CoreSimulator.SimRuntime.iOS-26-4
 iphone="iPhone 17 Pro"
 ipad="iPad Pro 11-inch (M5)"
+iphone_slots=3
+ipad_slots=1
+stale_minutes=60
+pool="$(cd "$(git rev-parse --git-common-dir)" && pwd)/sim-pool"
 
 usage() {
     echo "usage: scripts/sim create <name> [--ipad] | scripts/sim delete <name>" >&2
@@ -18,28 +22,78 @@ udids() {
         inside && index($0, prefix) == 1 { match($0, /[0-9A-F-]{36}/); print substr($0, RSTART, RLENGTH) }'
 }
 
+boot() {
+    local udid
+    udid=$(udids "$1" | head -1)
+    if [ -z "$udid" ]; then
+        udid=$(xcrun simctl create "$1" "$2" "$runtime")
+        xcrun simctl bootstatus "$udid" -b >/dev/null
+        xcrun simctl ui "$udid" appearance dark
+    fi
+    xcrun simctl bootstatus "$udid" -b >/dev/null
+    xcrun simctl ui "$udid" appearance light
+    echo "$udid"
+}
+
 [ $# -ge 2 ] || usage
 name=$2
+kind=iphone
+device=$iphone
+slots=$iphone_slots
+if [ "${3:-}" = "--ipad" ]; then
+    kind=ipad
+    device=$ipad
+    slots=$ipad_slots
+fi
 
 case $1 in
 create)
-    device=$iphone
-    if [ "${3:-}" = "--ipad" ]; then
-        device=$ipad
+    if [[ $name == CI-* ]]; then
+        boot "$name" "$device"
+        exit 0
     fi
-    udid=$(udids "$name" | head -1)
-    if [ -z "$udid" ]; then
-        udid=$(xcrun simctl create "$name" "$device" "$runtime")
-    fi
-    xcrun simctl bootstatus "$udid" -b >/dev/null
-    xcrun simctl ui "$udid" appearance dark
-    xcrun simctl ui "$udid" appearance light
-    echo "$udid"
+    mkdir -p "$pool"
+    for lock in "$pool/$kind"-*; do
+        if [ -d "$lock" ] && [ "$(cat "$lock/name" 2>/dev/null)" = "$name" ]; then
+            touch "$lock"
+            boot "Pool-$(basename "$lock")" "$device"
+            exit 0
+        fi
+    done
+    waited=0
+    while true; do
+        for slot in $(seq 1 "$slots"); do
+            lock="$pool/$kind-$slot"
+            if [ -d "$lock" ] && [ -n "$(find "$lock" -maxdepth 0 -mmin +"$stale_minutes")" ]; then
+                rm -rf "$lock"
+            fi
+            if mkdir "$lock" 2>/dev/null; then
+                echo "$name" >"$lock/name"
+                udid=$(boot "Pool-$kind-$slot" "$device")
+                xcrun simctl terminate "$udid" com.ione.scholia 2>/dev/null || true
+                echo "$udid"
+                exit 0
+            fi
+        done
+        if [ "$waited" -eq 0 ]; then
+            echo "waiting for a free $kind simulator (pool of $slots)..." >&2
+        fi
+        waited=1
+        sleep 15
+    done
     ;;
 delete)
-    for udid in $(udids "$name"); do
-        xcrun simctl shutdown "$udid" 2>/dev/null || true
-        xcrun simctl delete "$udid"
+    if [[ $name == CI-* ]]; then
+        for udid in $(udids "$name"); do
+            xcrun simctl shutdown "$udid" 2>/dev/null || true
+            xcrun simctl delete "$udid"
+        done
+        exit 0
+    fi
+    for lock in "$pool"/*; do
+        if [ -d "$lock" ] && [ "$(cat "$lock/name" 2>/dev/null)" = "$name" ]; then
+            rm -rf "$lock"
+        fi
     done
     ;;
 *)
