@@ -39,7 +39,9 @@ final class ReaderChromeTests: UITestCase {
 
     func testSubtitleFollowsChapterAndChromeStaysAcrossPageTurns() {
         let app = launch(
-            LaunchConfiguration(resetsState: true, fixtures: [.arabic], opened: [], mocksTranslation: true, now: nil))
+            LaunchConfiguration(
+                resetsState: true, fixtures: [.arabic], opened: [], inProgress: [], highlighted: [],
+                mocksTranslation: true, now: nil, notificationPermission: nil))
         let reader = HomeScreen(app: app).waitUntilShown().openHeroBook()
         reader.showChrome()
         reader.subtitle.waitUntil(\.label, equals: "Scholia · \(isolated("الفصل الأول"))")
@@ -56,7 +58,8 @@ final class ReaderChromeTests: UITestCase {
     func testBookWithoutAuthorShowsChapterOnly() {
         let app = launch(
             LaunchConfiguration(
-                resetsState: true, fixtures: [.minimalMetadata], opened: [], mocksTranslation: true, now: nil))
+                resetsState: true, fixtures: [.minimalMetadata], opened: [], inProgress: [], highlighted: [],
+                mocksTranslation: true, now: nil, notificationPermission: nil))
         let reader = HomeScreen(app: app).waitUntilShown().openHeroBook()
 
         reader.showChrome()
@@ -68,7 +71,8 @@ final class ReaderChromeTests: UITestCase {
     func testSubtitleFollowsChaptersThatShareOneFile() {
         let app = launch(
             LaunchConfiguration(
-                resetsState: true, fixtures: [.frenchNoCover], opened: [], mocksTranslation: true, now: nil))
+                resetsState: true, fixtures: [.frenchNoCover], opened: [], inProgress: [], highlighted: [],
+                mocksTranslation: true, now: nil, notificationPermission: nil))
         let reader = HomeScreen(app: app).waitUntilShown().openHeroBook()
         reader.showChrome()
         reader.subtitle.waitUntil(\.label, equals: "Scholia · Premier chapitre")
@@ -219,7 +223,9 @@ final class ReaderChromeTests: UITestCase {
 
     private func launchWithGermanBook() -> XCUIApplication {
         launch(
-            LaunchConfiguration(resetsState: true, fixtures: [.german], opened: [], mocksTranslation: true, now: nil))
+            LaunchConfiguration(
+                resetsState: true, fixtures: [.german], opened: [], inProgress: [], highlighted: [],
+                mocksTranslation: true, now: nil, notificationPermission: nil))
     }
 
     private func isolated(_ rightToLeft: String) -> String {
@@ -227,6 +233,9 @@ final class ReaderChromeTests: UITestCase {
     }
 
     private func relaunch() -> XCUIApplication {
-        launch(LaunchConfiguration(resetsState: false, fixtures: [], opened: [], mocksTranslation: true, now: nil))
+        launch(
+            LaunchConfiguration(
+                resetsState: false, fixtures: [], opened: [], inProgress: [], highlighted: [], mocksTranslation: true,
+                now: nil, notificationPermission: nil))
     }
 }
