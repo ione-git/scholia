@@ -71,8 +71,15 @@ struct WordBubble: View {
             return
         }
         do {
-            outcome = .translated(try await translationService.translate(request))
+            let translation = try await translationService.translate(request)
+            guard !Task.isCancelled else {
+                return
+            }
+            outcome = .translated(translation)
         } catch {
+            guard !Task.isCancelled else {
+                return
+            }
             outcome = .failed
         }
     }
