@@ -108,6 +108,23 @@
     return Math.max(0, Math.round(document.scrollingElement.scrollWidth / window.innerWidth) - 1);
   }
 
+  function hex(color) {
+    const channels = (color.match(/[\d.]+/g) ?? []).slice(0, 3).map(Number);
+    return "#" + channels.map((channel) => Math.round(channel).toString(16).padStart(2, "0")).join("");
+  }
+
+  function sameColor(a, b) {
+    return [1, 3, 5].every((index) => Math.abs(parseInt(a.substr(index, 2), 16) - parseInt(b.substr(index, 2), 16)) <= 1);
+  }
+
+  function firstFamily(family) {
+    return family.split(",")[0].trim().replace(/^["']|["']$/g, "");
+  }
+
+  function nextFrame() {
+    return new Promise((resolve) => requestAnimationFrame(() => resolve()));
+  }
+
   function offsetAt(x, y) {
     const caret = document.caretRangeFromPoint(x, y);
     if (!caret) {
@@ -190,6 +207,33 @@
       const start = offsetAt(lineStart, 0);
       const end = offsetAt(lineEnd, window.innerHeight - 1);
       return start === null || end === null ? null : [start, end];
+    },
+
+    style() {
+      const page = getComputedStyle(document.documentElement);
+      const text = getComputedStyle(document.querySelector("p") ?? document.body);
+      return {
+        background: hex(page.backgroundColor),
+        text: hex(text.color),
+        fontFamily: firstFamily(text.fontFamily),
+        fontSize: parseFloat(text.fontSize),
+        lineHeight: parseFloat(text.lineHeight),
+      };
+    },
+
+    async rendered(expected, timeout) {
+      const deadline = performance.now() + timeout;
+      const matches = (style) =>
+        sameColor(style.background, expected.background) &&
+        sameColor(style.text, expected.text) &&
+        style.fontFamily === expected.fontFamily;
+      while (!matches(scholia.style()) && performance.now() < deadline) {
+        await nextFrame();
+      }
+      document.body.getBoundingClientRect();
+      await document.fonts.ready;
+      await nextFrame();
+      await nextFrame();
     },
 
     offsetsOfElements(ids) {

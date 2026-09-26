@@ -82,6 +82,9 @@
     "Black" : {
 
     },
+    "Black theme" : {
+
+    },
     "Book cover" : {
       "shouldTranslate" : false
     },
@@ -190,6 +193,9 @@
     "Language" : {
 
     },
+    "Larger text" : {
+
+    },
     "Launch Screen" : {
       "shouldTranslate" : false
     },
@@ -201,6 +207,12 @@
     },
     "List rows" : {
       "shouldTranslate" : false
+    },
+    "Lock rotation" : {
+
+    },
+    "Loose line spacing" : {
+
     },
     "Menu" : {
 
@@ -226,10 +238,16 @@
     "Night" : {
 
     },
+    "Night theme" : {
+
+    },
     "No books yet" : {
 
     },
     "None" : {
+
+    },
+    "Normal line spacing" : {
 
     },
     "OK" : {
@@ -241,7 +259,13 @@
     "Open EPUB…" : {
       "shouldTranslate" : false
     },
+    "Page turn" : {
+
+    },
     "Paper" : {
+
+    },
+    "Paper theme" : {
 
     },
     "Popover" : {
@@ -310,6 +334,9 @@
     "Sepia" : {
 
     },
+    "Sepia theme" : {
+
+    },
     "Settings" : {
 
     },
@@ -321,6 +348,9 @@
     },
     "Slide" : {
       "shouldTranslate" : false
+    },
+    "Smaller text" : {
+
     },
     "Sort books by" : {
 
@@ -335,6 +365,9 @@
       "shouldTranslate" : false
     },
     "System" : {
+
+    },
+    "Text size" : {
 
     },
     "Text styles" : {
@@ -358,6 +391,9 @@
     "This book can’t be opened." : {
 
     },
+    "Tight line spacing" : {
+
+    },
     "Title" : {
 
     },
@@ -369,6 +405,18 @@
     },
     "Translation" : {
 
+    },
+    "readerSettings.font.system" : {
+      "comment" : "Font chip in the reader settings sheet: the system sans-serif typeface",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "System"
+          }
+        }
+      }
     },
     "· detected" : {
 

@@ -8,9 +8,11 @@
 
         @Environment(\.dismiss) private var dismiss
         @Environment(\.colorScheme) private var colorScheme
+        @Environment(Settings.self) private var settings
         @State private var controller: ReaderController?
         @State private var cannotOpen = false
         @State private var chosenTheme: ReaderTheme?
+        @State private var pageTurn = ReaderPageTurn.slide
         @State private var isChromeShown = false
 
         var body: some View {
@@ -29,11 +31,21 @@
             .environment(\.colorScheme, theme.isDark ? .dark : .light)
             .statusBarHidden()
             .task { await open() }
-            .onChange(of: theme) { recolor() }
+            .task(id: appearance) {
+                recolor()
+                await controller?.apply(appearance)
+            }
         }
 
         private var theme: ReaderTheme {
             chosenTheme ?? (colorScheme == .dark ? .night : .paper)
+        }
+
+        private var appearance: ReaderAppearance {
+            ReaderAppearance(
+                style: ReaderStyle(
+                    font: settings.readerFont, sizeStep: settings.textSizeStep, spacing: settings.lineSpacing),
+                colors: theme.colors, pageTurn: pageTurn)
         }
 
         private func page(_ controller: ReaderController) -> some View {
@@ -111,12 +123,12 @@
                     }
                 }
                 HStack(spacing: .space2) {
-                    ForEach(ReaderPageTurn.allCases, id: \.self) { option in
+                    ForEach([ReaderPageTurn.slide, .curl], id: \.self) { option in
                         choice(
-                            option.title, isSelected: option == controller.pageTurn,
+                            option.title, isSelected: option == controller.appearance.pageTurn,
                             identifier: "reader.pageTurn.\(option.rawValue)"
                         ) {
-                            controller.pageTurn = option
+                            pageTurn = option
                         }
                     }
                     Button("Close", systemImage: "xmark") { dismiss() }
@@ -168,10 +180,9 @@
                 let controller = ReaderController(
                     book: book,
                     location: nil,
-                    style: .book,
-                    colors: theme.colors,
+                    appearance: appearance,
+                    typefaces: ReaderFont.allCases.map(\.typeface),
                     highlightColor: theme.highlightColor,
-                    pageTurn: .slide,
                     highlightTitle: String(localized: "Highlight")
                 )
                 let isChromeShown = $isChromeShown
@@ -186,7 +197,6 @@
             guard let controller else {
                 return
             }
-            controller.colors = theme.colors
             controller.highlightColor = theme.highlightColor
             controller.highlights = controller.highlights.map { highlight in
                 var highlight = highlight
@@ -213,22 +223,13 @@
         }
     }
 
-    extension ReaderTheme {
-        fileprivate var title: LocalizedStringResource {
-            switch self {
-            case .paper: "Paper"
-            case .sepia: "Sepia"
-            case .night: "Night"
-            case .black: "Black"
-            }
-        }
-    }
-
     extension ReaderPageTurn {
         fileprivate var title: LocalizedStringResource {
             switch self {
             case .slide: "Slide"
             case .curl: "Curl"
+            case .fade: "Fade"
+            case .scroll: "Scroll"
             }
         }
     }

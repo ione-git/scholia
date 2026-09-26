@@ -15,6 +15,10 @@ public enum Icon: Sendable {
     case sort
     case contents
     case highlighter
+    case lineSpacingTight
+    case lineSpacingNormal
+    case lineSpacingLoose
+    case rotationLock
 
     static let grid: CGFloat = 24
 
@@ -123,6 +127,18 @@ public enum Icon: Sendable {
             ])
             path.closeSubpath()
             path.addLines([CGPoint(x: 12, y: 7), CGPoint(x: 17, y: 12)])
+        case .lineSpacingTight:
+            path.addRows(at: [8, 12, 16])
+        case .lineSpacingNormal:
+            path.addRows(at: [6, 12, 18])
+        case .lineSpacingLoose:
+            path.addRows(at: [4, 12, 20])
+        case .rotationLock:
+            path.addRoundedRect(in: CGRect(x: 7, y: 3, width: 10, height: 18), cornerSize: CGSize(width: 2, height: 2))
+            path.addLines([CGPoint(x: 11, y: 18), CGPoint(x: 13, y: 18)])
+            path.move(to: CGPoint(x: 17, y: 8))
+            path.addArc(to: CGPoint(x: 21, y: 13), radius: 5, isLarge: false, isSweep: true)
+            path.addLines([CGPoint(x: 19.5, y: 11.5), CGPoint(x: 21, y: 13), CGPoint(x: 22.5, y: 11.5)])
         }
         let scale = min(rect.width, rect.height) / Self.grid
         return path.applying(
@@ -164,6 +180,12 @@ private struct IconShape: Shape {
 }
 
 extension Path {
+    fileprivate mutating func addRows(at rows: [CGFloat]) {
+        for y in rows {
+            addLines([CGPoint(x: 4, y: y), CGPoint(x: 20, y: y)])
+        }
+    }
+
     fileprivate mutating func addArc(to end: CGPoint, radius: CGFloat, isLarge: Bool, isSweep: Bool) {
         guard let start = currentPoint else { return }
         let half = CGPoint(x: (start.x - end.x) / 2, y: (start.y - end.y) / 2)

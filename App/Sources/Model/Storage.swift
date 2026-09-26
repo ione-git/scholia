@@ -1,4 +1,5 @@
 import Foundation
+import OSLog
 import ReaderEngine
 import SwiftData
 
@@ -34,5 +35,32 @@ enum Storage {
         context.insert(settings)
         try context.save()
         return settings
+    }
+}
+
+extension Logger {
+    static let storage = Logger(subsystem: "com.ione.scholia", category: "storage")
+}
+
+extension ModelContext {
+    func saveLogged() {
+        do {
+            try save()
+        } catch {
+            Logger.storage.error("Saving failed: \(String(describing: error), privacy: .public)")
+        }
+    }
+}
+
+@MainActor
+extension Settings {
+    func update<Value: Equatable>(
+        _ keyPath: ReferenceWritableKeyPath<Settings, Value>, to value: Value, in context: ModelContext
+    ) {
+        guard self[keyPath: keyPath] != value else {
+            return
+        }
+        self[keyPath: keyPath] = value
+        context.saveLogged()
     }
 }

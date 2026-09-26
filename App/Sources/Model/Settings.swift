@@ -20,7 +20,7 @@ nonisolated enum LibrarySort: String, Codable, CaseIterable {
     case author
 }
 
-nonisolated enum ReaderFont: String, Codable {
+nonisolated enum ReaderFont: String, Codable, CaseIterable {
     case literata
     case charter
     case georgia

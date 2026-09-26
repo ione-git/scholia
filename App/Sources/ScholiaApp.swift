@@ -4,6 +4,7 @@ import SwiftUI
 
 @main
 struct ScholiaApp: App {
+    @UIApplicationDelegateAdaptor private var appDelegate: AppDelegate
     private let container: ModelContainer
     private let settings: Settings
 
@@ -22,6 +23,7 @@ struct ScholiaApp: App {
         WindowGroup {
             RootView()
                 .environment(settings)
+                .environment(appDelegate.orientationLock)
                 #if DEBUG
                     .background { LaunchDiagnostics(configuration: .current) }
                     .background { LibraryDiagnostics() }

@@ -27,4 +27,24 @@ extension XCUIElement {
             file: file, line: line)
         return self
     }
+
+    @discardableResult
+    func waitUntil<Value>(
+        _ keyPath: KeyPath<XCUIElement, Value>, satisfies condition: @escaping (Value) -> Bool,
+        file: StaticString = #filePath, line: UInt = #line
+    ) -> XCUIElement {
+        let predicate = NSPredicate { object, _ in
+            guard let element = object as? XCUIElement, element.exists else {
+                return false
+            }
+            return condition(element[keyPath: keyPath])
+        }
+        let result = XCTWaiter().wait(
+            for: [XCTNSPredicateExpectation(predicate: predicate, object: self)], timeout: timeout)
+        XCTAssertEqual(
+            result, .completed,
+            "\(description) never satisfied the condition, has \(exists ? "\(self[keyPath: keyPath])" : "missing")",
+            file: file, line: line)
+        return self
+    }
 }

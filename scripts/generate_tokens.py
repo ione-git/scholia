@@ -102,6 +102,21 @@ def text_styles(groups):
     return lines + list_of("TextStyle", "all", names) + ["}"]
 
 
+def reading_scale(scale):
+    lines = ["extension ReadingSize {", "    public static let steps: [ReadingSize] = ["]
+    for step in scale["steps"]:
+        heights = step["lineHeight"]
+        lines += [
+            "        ReadingSize(",
+            f"            fontSize: {number(step['fontSize'])},",
+            f"            tightLineHeight: {number(heights['tight'])},",
+            f"            normalLineHeight: {number(heights['normal'])},",
+            f"            looseLineHeight: {number(heights['loose'])}",
+            "        ),",
+        ]
+    return lines + ["    ]", "}"]
+
+
 def numbers(categories):
     lines = ["extension CGFloat {"]
     for tokens in categories.values():
@@ -138,6 +153,7 @@ def main():
     sections = [
         colors(tokens["color"]["tokens"]),
         text_styles(tokens["type"]["groups"]),
+        reading_scale(tokens["type"]["readingScale"]),
         numbers(
             {
                 "spacing": tokens["spacing"]["tokens"],

@@ -8,15 +8,20 @@ struct ReadingView: View {
 
     @Environment(\.dismiss) private var dismiss
     @Environment(\.colorScheme) private var colorScheme
+    @Environment(\.scenePhase) private var scenePhase
     @Environment(\.accessibilityVoiceOverEnabled) private var isVoiceOverEnabled
     @Environment(\.modelContext) private var modelContext
     @Environment(Settings.self) private var settings
+    @Environment(OrientationLock.self) private var orientationLock
     @State private var controller: ReaderController?
     @State private var cannotOpen = false
     @State private var isChromeShown = false
     @State private var isMenuShown = false
     @State private var indexTab: ReaderIndexTab?
     @State private var isSettingsShown = false
+    @State private var pickedTheme: ReaderTheme?
+    @State private var window = WindowReference()
+    @State private var transition = ThemeTransition()
 
     var body: some View {
         ZStack {
@@ -24,6 +29,9 @@ struct ReadingView: View {
             if let controller {
                 ReaderView(controller: controller)
                     .ignoresSafeArea()
+                    #if DEBUG
+                        .background { ReaderAppearanceDiagnostics(controller: controller) }
+                    #endif
             } else if cannotOpen {
                 Text("This book can’t be opened.")
                     .textStyle(.body)
@@ -45,6 +53,7 @@ struct ReadingView: View {
             }
             .ignoresSafeArea()
         }
+        .background { WindowAnchor(reference: window) }
         .accessibilityElement(children: .contain)
         .accessibilityIdentifier("reader.page")
         .environment(\.colorScheme, shownColorScheme)
@@ -55,21 +64,50 @@ struct ReadingView: View {
                 .preferredColorScheme(shownColorScheme)
         }
         .sheet(isPresented: $isSettingsShown) {
-            ReaderSettingsSheet()
+            ReaderSettingsSheet(theme: theme, pick: pick)
                 .preferredColorScheme(shownColorScheme)
         }
         .task { await open() }
-        .onChange(of: theme) { recolor() }
+        .task(id: appearance) {
+            controller?.highlightColor = theme.highlightColor
+            await controller?.apply(appearance)
+            if !Task.isCancelled {
+                transition.reveal()
+            }
+        }
+        .onChange(of: theme) {
+            if scenePhase != .background {
+                transition.begin(in: window.window)
+            }
+        }
+        .onChange(of: colorScheme) {
+            if scenePhase != .background {
+                pickedTheme = nil
+            }
+        }
+        .onChange(of: isSettingsShown) { controller?.looksUpWords = !isSettingsShown }
+        .onChange(of: settings.locksRotation) { lockRotation() }
         .onChange(of: controller?.location) { _, location in save(location) }
         .onChange(of: controller?.page) { _, page in save(page) }
+        .onDisappear {
+            guard indexTab == nil else {
+                return
+            }
+            transition.end()
+            orientationLock.unlock(in: window.window)
+        }
     }
 
     private var theme: ReaderTheme {
-        settings.readerTheme.shown(in: colorScheme)
+        pickedTheme ?? settings.readerTheme.shown(in: colorScheme)
     }
 
     private var shownColorScheme: ColorScheme {
         theme.isDark ? .dark : .light
+    }
+
+    private var appearance: ReaderAppearance {
+        ReaderAppearance(settings: settings, theme: theme)
     }
 
     private func open() async {
@@ -81,15 +119,22 @@ struct ReadingView: View {
             let controller = ReaderController(
                 book: readerBook,
                 location: book.position.map { ReaderLocation(chapter: $0.chapter, offset: $0.offset) },
-                style: .book,
-                colors: theme.colors,
+                appearance: appearance,
+                typefaces: ReaderFont.allCases.map(\.typeface),
                 highlightColor: theme.highlightColor,
-                pageTurn: .slide,
                 highlightTitle: String(localized: "Highlight")
             )
             let isChromeShown = $isChromeShown
-            controller.onPageTap = { withAnimation { isChromeShown.wrappedValue.toggle() } }
+            let isSettingsShown = $isSettingsShown
+            controller.onPageTap = {
+                if isSettingsShown.wrappedValue {
+                    isSettingsShown.wrappedValue = false
+                } else {
+                    withAnimation { isChromeShown.wrappedValue.toggle() }
+                }
+            }
             self.controller = controller
+            lockRotation()
             book.openedAt = LaunchConfiguration.current.now ?? .now
             try? modelContext.save()
         } catch {
@@ -97,12 +142,20 @@ struct ReadingView: View {
         }
     }
 
-    private func recolor() {
-        guard let controller else {
-            return
+    private func pick(_ picked: ReaderTheme) {
+        if picked != theme {
+            transition.begin(in: window.window)
         }
-        controller.colors = theme.colors
-        controller.highlightColor = theme.highlightColor
+        pickedTheme = picked.shown(in: colorScheme) == picked ? nil : picked
+        settings.update(\.readerTheme, to: picked, in: modelContext)
+    }
+
+    private func lockRotation() {
+        if settings.locksRotation {
+            orientationLock.lock(in: window.window)
+        } else {
+            orientationLock.unlock(in: window.window)
+        }
     }
 
     private func save(_ location: ReaderLocation?) {
@@ -121,3 +174,35 @@ struct ReadingView: View {
         try? modelContext.save()
     }
 }
+
+#if DEBUG
+    private struct ReaderAppearanceDiagnostics: View {
+        let controller: ReaderController
+
+        var body: some View {
+            Color.clear
+                .accessibilityElement()
+                .accessibilityIdentifier("debug.readerAppearance")
+                .accessibilityLabel(Text(verbatim: style))
+                .accessibilityValue(Text(verbatim: span))
+        }
+
+        private var style: String {
+            guard let style = controller.renderedStyle else {
+                return ""
+            }
+            return [
+                style.background, style.text, style.fontFamily,
+                "\(style.fontSize.formatted())/\(style.lineHeight.formatted())",
+            ]
+            .joined(separator: " · ")
+        }
+
+        private var span: String {
+            guard let span = controller.pageSpan else {
+                return ""
+            }
+            return "\(span.chapter):\(span.start)-\(span.end)"
+        }
+    }
+#endif

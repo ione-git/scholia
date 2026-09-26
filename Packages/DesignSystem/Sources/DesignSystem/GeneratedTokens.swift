@@ -453,6 +453,53 @@ extension TextStyle {
     ]
 }
 
+extension ReadingSize {
+    public static let steps: [ReadingSize] = [
+        ReadingSize(
+            fontSize: 14,
+            tightLineHeight: 20,
+            normalLineHeight: 22,
+            looseLineHeight: 25
+        ),
+        ReadingSize(
+            fontSize: 15,
+            tightLineHeight: 21,
+            normalLineHeight: 24,
+            looseLineHeight: 27
+        ),
+        ReadingSize(
+            fontSize: 17,
+            tightLineHeight: 24,
+            normalLineHeight: 27,
+            looseLineHeight: 31
+        ),
+        ReadingSize(
+            fontSize: 19,
+            tightLineHeight: 27,
+            normalLineHeight: 30,
+            looseLineHeight: 34
+        ),
+        ReadingSize(
+            fontSize: 21,
+            tightLineHeight: 29,
+            normalLineHeight: 33,
+            looseLineHeight: 38
+        ),
+        ReadingSize(
+            fontSize: 23,
+            tightLineHeight: 32,
+            normalLineHeight: 37,
+            looseLineHeight: 41
+        ),
+        ReadingSize(
+            fontSize: 26,
+            tightLineHeight: 36,
+            normalLineHeight: 41,
+            looseLineHeight: 47
+        ),
+    ]
+}
+
 extension CGFloat {
     public static let space1: CGFloat = 4
     public static let space2: CGFloat = 8
