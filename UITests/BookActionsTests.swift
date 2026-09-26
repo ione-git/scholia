@@ -4,7 +4,7 @@ final class BookActionsTests: UITestCase {
     func testLongPressShowsBookActions() {
         let app = launch(
             LaunchConfiguration(
-                resetsState: true, fixtures: [.german, .frenchNoCover], opened: [], inProgress: [],
+                resetsState: true, fixtures: [.german, .frenchNoCover], opened: [], inProgress: [], highlighted: [],
                 mocksTranslation: true, now: nil))
         let library = HomeScreen(app: app).waitUntilShown().openLibrary()
 
@@ -22,7 +22,7 @@ final class BookActionsTests: UITestCase {
     func testMarkAsFinishedTogglesBadgeAndMenuItem() {
         let first = launch(
             LaunchConfiguration(
-                resetsState: true, fixtures: [.german, .frenchNoCover], opened: [], inProgress: [],
+                resetsState: true, fixtures: [.german, .frenchNoCover], opened: [], inProgress: [], highlighted: [],
                 mocksTranslation: true, now: nil))
         let library = HomeScreen(app: first).waitUntilShown().openLibrary()
         XCTAssertEqual(library.book("Die Verwandlung").stringValue, "")
@@ -35,7 +35,8 @@ final class BookActionsTests: UITestCase {
 
         let app = launch(
             LaunchConfiguration(
-                resetsState: false, fixtures: [], opened: [], inProgress: [], mocksTranslation: true, now: nil))
+                resetsState: false, fixtures: [], opened: [], inProgress: [], highlighted: [], mocksTranslation: true,
+                now: nil))
         let reopened = HomeScreen(app: app).waitUntilShown().openLibrary()
         reopened.book("Die Verwandlung").waitUntil(\.stringValue, equals: "Finished")
         let menu = reopened.openBookMenu("Die Verwandlung")
@@ -48,7 +49,7 @@ final class BookActionsTests: UITestCase {
     func testAddToCollectionFromMenu() {
         let app = launch(
             LaunchConfiguration(
-                resetsState: true, fixtures: [.german, .frenchNoCover], opened: [], inProgress: [],
+                resetsState: true, fixtures: [.german, .frenchNoCover], opened: [], inProgress: [], highlighted: [],
                 mocksTranslation: true, now: nil))
         let library = HomeScreen(app: app).waitUntilShown().openLibrary()
         library.openMenu().openNewCollection().type("Classics").create(returningTo: library)
@@ -83,7 +84,8 @@ final class BookActionsTests: UITestCase {
         let added = try Date("2026-09-12T12:00:00Z", strategy: .iso8601)
         let app = launch(
             LaunchConfiguration(
-                resetsState: true, fixtures: [.german], opened: [], inProgress: [], mocksTranslation: true, now: added))
+                resetsState: true, fixtures: [.german], opened: [], inProgress: [], highlighted: [.german],
+                mocksTranslation: true, now: added))
         let library = HomeScreen(app: app).waitUntilShown().openLibrary()
 
         let info = library.openBookMenu("Die Verwandlung").openInfo()
@@ -97,7 +99,7 @@ final class BookActionsTests: UITestCase {
         XCTAssertEqual(info.languageButton.label, "Language, German")
         XCTAssertEqual(info.collectionsButton.label, "Collections, None")
         XCTAssertEqual(info.progress.label, "Progress, Not started")
-        XCTAssertEqual(info.highlights.label, "Highlights, 0")
+        XCTAssertEqual(info.highlights.label, "Highlights, 7")
         XCTAssertEqual(info.resetProgressButton.label, "Reset reading progress")
         XCTAssertFalse(info.resetProgressButton.isEnabled)
         XCTAssertLessThan(info.cover.frame.maxY, info.titleField.frame.minY)
@@ -110,7 +112,8 @@ final class BookActionsTests: UITestCase {
     func testBookInfoResetsReadingProgress() {
         let app = launch(
             LaunchConfiguration(
-                resetsState: true, fixtures: [.german], opened: [], inProgress: [.german], mocksTranslation: true,
+                resetsState: true, fixtures: [.german], opened: [], inProgress: [.german], highlighted: [],
+                mocksTranslation: true,
                 now: nil))
         let library = HomeScreen(app: app).waitUntilShown().openLibrary()
 
@@ -135,7 +138,7 @@ final class BookActionsTests: UITestCase {
     func testBookInfoSavesEdits() throws {
         let app = launch(
             LaunchConfiguration(
-                resetsState: true, fixtures: [.german, .frenchNoCover], opened: [], inProgress: [],
+                resetsState: true, fixtures: [.german, .frenchNoCover], opened: [], inProgress: [], highlighted: [],
                 mocksTranslation: true, now: nil))
         let library = HomeScreen(app: app).waitUntilShown().openLibrary()
         library.openMenu().openNewCollection().type("Classics").create(returningTo: library)
@@ -169,7 +172,8 @@ final class BookActionsTests: UITestCase {
     func testBookInfoCancelDiscardsEdits() throws {
         let app = launch(
             LaunchConfiguration(
-                resetsState: true, fixtures: [.german], opened: [], inProgress: [], mocksTranslation: true, now: nil))
+                resetsState: true, fixtures: [.german], opened: [], inProgress: [], highlighted: [],
+                mocksTranslation: true, now: nil))
         let library = HomeScreen(app: app).waitUntilShown().openLibrary()
 
         let info = library.openBookMenu("Die Verwandlung").openInfo()
@@ -192,24 +196,36 @@ final class BookActionsTests: UITestCase {
         let app = launch(
             LaunchConfiguration(
                 resetsState: true, fixtures: [.german, .frenchNoCover], opened: [], inProgress: [],
-                mocksTranslation: true, now: nil))
+                highlighted: [.german], mocksTranslation: true, now: nil))
         let library = HomeScreen(app: app).waitUntilShown().openLibrary()
         library.storedLibrary.waitUntil(\.stringValue, equals: "french-no-cover.epub\ngerman.epub")
+        XCTAssertEqual(library.storedHighlights.label, "7")
+
+        let withoutHighlights = library.openBookMenu("Un matin en ville").remove()
+        XCTAssertEqual(
+            withoutHighlights.texts,
+            ["Remove “Un matin en ville” from your library?", "The book file will be deleted from this iPhone."])
+        withoutHighlights.cancel(returningTo: library)
 
         let dialog = library.openBookMenu("Die Verwandlung").remove()
         XCTAssertEqual(
             dialog.texts,
-            ["Remove “Die Verwandlung” from your library?", "The book file will be deleted from this iPhone."])
+            [
+                "Remove “Die Verwandlung” from your library?",
+                "The book file and its 7 highlights will be deleted from this iPhone.",
+            ])
         attachScreenshot("Library-Remove")
         dialog.cancel(returningTo: library)
         XCTAssertEqual(library.shownTitles, ["Die Verwandlung", "Un matin en ville"])
         XCTAssertEqual(library.storedLibrary.stringValue, "french-no-cover.epub\ngerman.epub")
+        XCTAssertEqual(library.storedHighlights.label, "7")
 
         library.openBookMenu("Die Verwandlung").remove().remove()
         library.book("Die Verwandlung").waitUntilGone()
         XCTAssertEqual(library.shownTitles, ["Un matin en ville"])
         library.storedLibrary.waitUntil(\.label, equals: "Un matin en ville · Scholia · fr · french-no-cover.epub")
         XCTAssertEqual(library.storedLibrary.stringValue, "french-no-cover.epub")
+        library.storedHighlights.waitUntil(\.label, equals: "0")
         library.goBack().libraryButton.waitUntil(\.label, equals: "Library, All 1")
     }
 }

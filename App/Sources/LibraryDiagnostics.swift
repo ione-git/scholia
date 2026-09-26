@@ -4,13 +4,20 @@
 
     struct LibraryDiagnostics: View {
         @Query(sort: \Book.title) private var books: [Book]
+        @Query private var highlights: [Highlight]
 
         var body: some View {
-            Color.clear
-                .accessibilityElement()
-                .accessibilityIdentifier("debug.storedLibrary")
-                .accessibilityLabel(Text(verbatim: summary))
-                .accessibilityValue(Text(verbatim: files))
+            ZStack {
+                Color.clear
+                    .accessibilityElement()
+                    .accessibilityIdentifier("debug.storedLibrary")
+                    .accessibilityLabel(Text(verbatim: summary))
+                    .accessibilityValue(Text(verbatim: files))
+                Color.clear
+                    .accessibilityElement()
+                    .accessibilityIdentifier("debug.storedHighlights")
+                    .accessibilityLabel(Text(verbatim: "\(highlights.count)"))
+            }
         }
 
         private var files: String {

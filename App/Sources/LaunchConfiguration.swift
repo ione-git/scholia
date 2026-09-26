@@ -23,6 +23,7 @@ struct LaunchConfiguration {
     var fixtures: [Fixture]
     var opened: [Fixture]
     var inProgress: [Fixture]
+    var highlighted: [Fixture]
     var mocksTranslation: Bool
     var now: Date?
     var notificationPermission: NotificationPermission?
@@ -36,6 +37,7 @@ extension LaunchConfiguration {
         static let fixtures = "SCHOLIA_FIXTURES"
         static let opened = "SCHOLIA_OPENED"
         static let inProgress = "SCHOLIA_IN_PROGRESS"
+        static let highlighted = "SCHOLIA_HIGHLIGHTED"
         static let translation = "SCHOLIA_TRANSLATION"
         static let now = "SCHOLIA_NOW"
         static let notificationPermission = "SCHOLIA_NOTIFICATIONS"
@@ -48,13 +50,15 @@ extension LaunchConfiguration {
                 fixtures: Self.fixtures(environment[Key.fixtures]),
                 opened: Self.fixtures(environment[Key.opened]),
                 inProgress: Self.fixtures(environment[Key.inProgress]),
+                highlighted: Self.fixtures(environment[Key.highlighted]),
                 mocksTranslation: environment[Key.translation] == "mock",
                 now: environment[Key.now].flatMap { try? Date($0, strategy: .iso8601) },
                 notificationPermission: environment[Key.notificationPermission].flatMap(NotificationPermission.init)
             )
         #else
             self.init(
-                resetsState: false, fixtures: [], opened: [], inProgress: [], mocksTranslation: false, now: nil,
+                resetsState: false, fixtures: [], opened: [], inProgress: [], highlighted: [], mocksTranslation: false,
+                now: nil,
                 notificationPermission: nil)
         #endif
     }
@@ -76,6 +80,9 @@ extension LaunchConfiguration {
         }
         if !inProgress.isEmpty {
             environment[Key.inProgress] = inProgress.map(\.rawValue).joined(separator: ",")
+        }
+        if !highlighted.isEmpty {
+            environment[Key.highlighted] = highlighted.map(\.rawValue).joined(separator: ",")
         }
         if mocksTranslation {
             environment[Key.translation] = "mock"

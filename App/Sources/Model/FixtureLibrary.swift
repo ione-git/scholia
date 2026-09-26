@@ -4,7 +4,8 @@
 
     enum FixtureLibrary {
         static func seed(
-            _ fixtures: [Fixture], opened: [Fixture], inProgress: [Fixture], into context: ModelContext, now: Date
+            _ fixtures: [Fixture], opened: [Fixture], inProgress: [Fixture], highlighted: [Fixture],
+            into context: ModelContext, now: Date
         ) throws {
             var stored = Set(try context.fetch(FetchDescriptor<Book>()).map(\.fileName))
             for fixture in fixtures {
@@ -25,10 +26,22 @@
                 let book = books.first { $0.fileName == fixture.url?.lastPathComponent }
                 book?.position = ReadingPosition(chapter: 1, offset: 0)
             }
+            for fixture in highlighted {
+                guard let book = books.first(where: { $0.fileName == fixture.url?.lastPathComponent }),
+                    book.highlights.isEmpty
+                else { continue }
+                for offset in 0..<highlightCount {
+                    let position = ReadingPosition(chapter: 1, offset: offset)
+                    let highlight = Highlight(start: position, end: position, color: .yellow, text: book.title)
+                    context.insert(highlight)
+                    highlight.book = book
+                }
+            }
             try context.save()
         }
 
         private static let openedInterval: TimeInterval = 60
+        private static let highlightCount = 7
     }
 
     extension Fixture {

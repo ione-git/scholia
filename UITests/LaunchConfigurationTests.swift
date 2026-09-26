@@ -7,6 +7,7 @@ final class LaunchConfigurationTests: UITestCase {
             fixtures: [.german, .frenchNoCover],
             opened: [.german],
             inProgress: [.german],
+            highlighted: [.frenchNoCover],
             mocksTranslation: true,
             now: try Date("2026-03-14T09:30:00Z", strategy: .iso8601),
             notificationPermission: nil

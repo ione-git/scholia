@@ -6,7 +6,8 @@ final class SelectBooksTests: UITestCase {
     func testSelectModeCountsSelectedBooks() {
         let app = launch(
             LaunchConfiguration(
-                resetsState: true, fixtures: fixtures, opened: [], inProgress: [], mocksTranslation: true, now: nil))
+                resetsState: true, fixtures: fixtures, opened: [], inProgress: [], highlighted: [],
+                mocksTranslation: true, now: nil))
         let library = HomeScreen(app: app).waitUntilShown().openLibrary()
 
         let selection = library.selectBooks()
@@ -43,7 +44,8 @@ final class SelectBooksTests: UITestCase {
     func testSelectedBooksAreMarkedFinishedAndUnread() {
         let app = launch(
             LaunchConfiguration(
-                resetsState: true, fixtures: fixtures, opened: [], inProgress: [], mocksTranslation: true, now: nil))
+                resetsState: true, fixtures: fixtures, opened: [], inProgress: [], highlighted: [],
+                mocksTranslation: true, now: nil))
         let library = HomeScreen(app: app).waitUntilShown().openLibrary()
 
         library.selectBooks().toggle("Die Verwandlung").toggle("Minimal").toggleFinished()
@@ -65,7 +67,8 @@ final class SelectBooksTests: UITestCase {
     func testSelectedBooksAreAddedToCollection() {
         let app = launch(
             LaunchConfiguration(
-                resetsState: true, fixtures: fixtures, opened: [], inProgress: [], mocksTranslation: true, now: nil))
+                resetsState: true, fixtures: fixtures, opened: [], inProgress: [], highlighted: [],
+                mocksTranslation: true, now: nil))
         let library = HomeScreen(app: app).waitUntilShown().openLibrary()
         library.openMenu().openNewCollection().type("Classics").create(returningTo: library)
 
@@ -99,7 +102,8 @@ final class SelectBooksTests: UITestCase {
     func testSelectedBooksAreRemoved() {
         let app = launch(
             LaunchConfiguration(
-                resetsState: true, fixtures: fixtures, opened: [], inProgress: [], mocksTranslation: true, now: nil))
+                resetsState: true, fixtures: fixtures, opened: [], inProgress: [], highlighted: [],
+                mocksTranslation: true, now: nil))
         let library = HomeScreen(app: app).waitUntilShown().openLibrary()
 
         let selection = library.selectBooks().toggle("Die Verwandlung").toggle("Un matin en ville")
@@ -114,5 +118,31 @@ final class SelectBooksTests: UITestCase {
         XCTAssertEqual(library.shownTitles, ["Minimal"])
         library.storedLibrary.waitUntil(\.label, equals: "Minimal · no author · en · minimal-metadata.epub")
         XCTAssertEqual(library.storedLibrary.stringValue, "minimal-metadata.epub")
+    }
+
+    func testSelectedBooksAreRemovedWithTheirHighlights() {
+        let app = launch(
+            LaunchConfiguration(
+                resetsState: true, fixtures: fixtures, opened: [], inProgress: [], highlighted: fixtures,
+                mocksTranslation: true, now: nil))
+        let library = HomeScreen(app: app).waitUntilShown().openLibrary()
+        library.storedHighlights.waitUntil(\.label, equals: "21")
+
+        let selection = library.selectBooks().toggle("Die Verwandlung").toggle("Minimal")
+        let dialog = selection.remove()
+        XCTAssertEqual(
+            dialog.texts,
+            [
+                "Remove 2 books from your library?",
+                "The book files and their 14 highlights will be deleted from this iPhone.",
+            ])
+        dialog.cancel(returningTo: selection)
+        XCTAssertEqual(library.storedHighlights.label, "21")
+
+        selection.remove().remove()
+        library.book("Die Verwandlung").waitUntilGone()
+        XCTAssertEqual(library.shownTitles, ["Un matin en ville"])
+        library.storedLibrary.waitUntil(\.label, equals: "Un matin en ville · Scholia · fr · french-no-cover.epub")
+        library.storedHighlights.waitUntil(\.label, equals: "7")
     }
 }

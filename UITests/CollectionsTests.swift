@@ -4,7 +4,7 @@ final class CollectionsTests: UITestCase {
     func testChipRowIsHiddenUntilACollectionIsCreated() {
         let app = launch(
             LaunchConfiguration(
-                resetsState: true, fixtures: [.german, .frenchNoCover], opened: [], inProgress: [],
+                resetsState: true, fixtures: [.german, .frenchNoCover], opened: [], inProgress: [], highlighted: [],
                 mocksTranslation: true, now: nil,
                 notificationPermission: nil))
         let library = HomeScreen(app: app).waitUntilShown().openLibrary()
@@ -30,7 +30,8 @@ final class CollectionsTests: UITestCase {
     func testNewCollectionChipCreatesCollectionsInCreationOrder() {
         let app = launch(
             LaunchConfiguration(
-                resetsState: true, fixtures: [.german], opened: [], inProgress: [], mocksTranslation: true, now: nil,
+                resetsState: true, fixtures: [.german], opened: [], inProgress: [], highlighted: [],
+                mocksTranslation: true, now: nil,
                 notificationPermission: nil))
         let library = HomeScreen(app: app).waitUntilShown().openLibrary()
         library.openMenu().openNewCollection().type("Science Fiction").create(returningTo: library)
@@ -58,7 +59,8 @@ final class CollectionsTests: UITestCase {
     func testAddBookCollectionRowAddsBookToChosenCollections() throws {
         let app = launch(
             LaunchConfiguration(
-                resetsState: true, fixtures: [.minimalMetadata], opened: [], inProgress: [], mocksTranslation: true,
+                resetsState: true, fixtures: [.minimalMetadata], opened: [], inProgress: [], highlighted: [],
+                mocksTranslation: true,
                 now: nil,
                 notificationPermission: nil))
         let addBook = try HomeScreen(app: app).waitUntilShown().openFromOtherApp(.german)
@@ -97,7 +99,8 @@ final class CollectionsTests: UITestCase {
     func testAddToCollectionSheetShowsAuthorWhenTitleIsEmpty() throws {
         let app = launch(
             LaunchConfiguration(
-                resetsState: true, fixtures: [], opened: [], inProgress: [], mocksTranslation: true, now: nil,
+                resetsState: true, fixtures: [], opened: [], inProgress: [], highlighted: [], mocksTranslation: true,
+                now: nil,
                 notificationPermission: nil))
         let addBook = try HomeScreen(app: app).waitUntilShown().openFromOtherApp(.german)
         addBook.authorField.waitUntil(\.stringValue, equals: "Franz Kafka")
@@ -112,7 +115,8 @@ final class CollectionsTests: UITestCase {
     func testChipFiltersGridByCollection() throws {
         let first = launch(
             LaunchConfiguration(
-                resetsState: true, fixtures: [.minimalMetadata], opened: [], inProgress: [], mocksTranslation: true,
+                resetsState: true, fixtures: [.minimalMetadata], opened: [], inProgress: [], highlighted: [],
+                mocksTranslation: true,
                 now: nil,
                 notificationPermission: nil))
         let german = try HomeScreen(app: first).waitUntilShown().openFromOtherApp(.german).chooseCollections()
@@ -121,7 +125,8 @@ final class CollectionsTests: UITestCase {
         german.done().add()
         let app = launch(
             LaunchConfiguration(
-                resetsState: false, fixtures: [], opened: [], inProgress: [], mocksTranslation: true, now: nil,
+                resetsState: false, fixtures: [], opened: [], inProgress: [], highlighted: [], mocksTranslation: true,
+                now: nil,
                 notificationPermission: nil))
         let french = try HomeScreen(app: app).waitUntilShown().openFromOtherApp(.frenchNoCover).chooseCollections()
         french.collection("Classics").waitUntil(\.isSelected, equals: false)

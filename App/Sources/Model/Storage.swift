@@ -21,7 +21,7 @@ enum Storage {
         #if DEBUG
             try FixtureLibrary.seed(
                 configuration.fixtures, opened: configuration.opened, inProgress: configuration.inProgress,
-                into: container.mainContext, now: configuration.now ?? .now)
+                highlighted: configuration.highlighted, into: container.mainContext, now: configuration.now ?? .now)
         #endif
         return container
     }
