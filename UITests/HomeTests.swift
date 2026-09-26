@@ -62,7 +62,9 @@ final class HomeTests: UITestCase {
                 notificationPermission: nil))
         let home = HomeScreen(app: app).waitUntilShown()
 
-        XCTAssertEqual(home.goalRing.waitUntilExists().frame.size, CGSize(width: 28, height: 28))
+        let goalRing = home.goalRing.waitUntilExists().frame
+        XCTAssertEqual(goalRing.width, 44, accuracy: 0.01)
+        XCTAssertEqual(goalRing.height, 44, accuracy: 0.01)
         XCTAssertEqual(home.addBookButton.waitUntilExists().label, "Add a book")
         XCTAssertEqual(home.addBookButton.frame.size, CGSize(width: 44, height: 44))
         XCTAssertEqual(home.settingsButton.label, "Settings")

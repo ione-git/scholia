@@ -33,6 +33,7 @@ struct LaunchConfiguration {
     var translation: TranslationMock?
     var now: Date?
     var notificationPermission: NotificationPermission?
+    var minutesRead = 0
 
     static let current = LaunchConfiguration(environment: ProcessInfo.processInfo.environment)
 }
@@ -47,6 +48,7 @@ extension LaunchConfiguration {
         static let translation = "SCHOLIA_TRANSLATION"
         static let now = "SCHOLIA_NOW"
         static let notificationPermission = "SCHOLIA_NOTIFICATIONS"
+        static let minutesRead = "SCHOLIA_MINUTES_READ"
     }
 
     init(environment: [String: String]) {
@@ -59,7 +61,8 @@ extension LaunchConfiguration {
                 highlighted: Self.fixtures(environment[Key.highlighted]),
                 translation: environment[Key.translation].flatMap(TranslationMock.init),
                 now: environment[Key.now].flatMap { try? Date($0, strategy: .iso8601) },
-                notificationPermission: environment[Key.notificationPermission].flatMap(NotificationPermission.init)
+                notificationPermission: environment[Key.notificationPermission].flatMap(NotificationPermission.init),
+                minutesRead: environment[Key.minutesRead].flatMap { Int($0) } ?? 0
             )
         #else
             self.init(
@@ -98,6 +101,9 @@ extension LaunchConfiguration {
         }
         if let notificationPermission {
             environment[Key.notificationPermission] = notificationPermission.rawValue
+        }
+        if minutesRead > 0 {
+            environment[Key.minutesRead] = String(minutesRead)
         }
         return environment
     }

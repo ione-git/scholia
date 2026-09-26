@@ -5,7 +5,7 @@
     enum FixtureLibrary {
         static func seed(
             _ fixtures: [Fixture], opened: [Fixture], inProgress: [Fixture], highlighted: [Fixture],
-            into context: ModelContext, now: Date
+            minutesRead: Int, into context: ModelContext, now: Date
         ) throws {
             var stored = Set(try context.fetch(FetchDescriptor<Book>()).map(\.fileName))
             for fixture in fixtures {
@@ -36,6 +36,10 @@
                     context.insert(highlight)
                     highlight.book = book
                 }
+            }
+            if minutesRead > 0 {
+                context.insert(
+                    ReadingSession(start: now.addingTimeInterval(-Double(minutesRead) * 60), end: now, pages: 0))
             }
             try context.save()
         }
