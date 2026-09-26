@@ -55,7 +55,9 @@ final class TranslationTests: UITestCase {
 
     func testTranslateToListsProviderLanguages() {
         let app = launch(
-            LaunchConfiguration(resetsState: true, fixtures: [], opened: [], mocksTranslation: true, now: nil))
+            LaunchConfiguration(
+                resetsState: true, fixtures: [], opened: [], mocksTranslation: true, now: nil,
+                notificationPermission: nil))
         let settings = HomeScreen(app: app).waitUntilShown().openSettings()
 
         settings.openTranslationLanguages()
@@ -67,14 +69,18 @@ final class TranslationTests: UITestCase {
 
     func testTranslateToPersistsAndTargetsTranslations() throws {
         let app = launch(
-            LaunchConfiguration(resetsState: true, fixtures: [], opened: [], mocksTranslation: true, now: nil))
+            LaunchConfiguration(
+                resetsState: true, fixtures: [], opened: [], mocksTranslation: true, now: nil,
+                notificationPermission: nil))
         var settings = HomeScreen(app: app).waitUntilShown().openSettings()
         settings.chooseTranslationLanguage("fr")
         settings.translateTo.waitUntil(\.label, equals: "Translate to, French")
         app.terminate()
 
         let relaunched = launch(
-            LaunchConfiguration(resetsState: false, fixtures: [], opened: [], mocksTranslation: true, now: nil))
+            LaunchConfiguration(
+                resetsState: false, fixtures: [], opened: [], mocksTranslation: true, now: nil,
+                notificationPermission: nil))
         settings = HomeScreen(app: relaunched).waitUntilShown().openSettings()
         XCTAssertEqual(settings.translateTo.waitUntilExists().label, "Translate to, French")
         let reader = settings.goBack().openReaderPrototype()
@@ -87,7 +93,9 @@ final class TranslationTests: UITestCase {
 
     private func openReader() -> ReaderScreen {
         let app = launch(
-            LaunchConfiguration(resetsState: true, fixtures: [], opened: [], mocksTranslation: true, now: nil))
+            LaunchConfiguration(
+                resetsState: true, fixtures: [], opened: [], mocksTranslation: true, now: nil,
+                notificationPermission: nil))
         return HomeScreen(app: app).waitUntilShown().openReaderPrototype()
     }
 
