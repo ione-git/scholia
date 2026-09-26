@@ -3,6 +3,7 @@
     import UserNotifications
 
     struct ReminderDiagnostics: View {
+        let settings: Settings
         @State private var permission: String?
         @State private var reminders = ""
 
@@ -17,11 +18,9 @@
                             .accessibilityValue(Text(verbatim: permission))
                     }
                 }
-                .task {
-                    while !Task.isCancelled {
-                        await refresh()
-                        try? await Task.sleep(for: .milliseconds(200))
-                    }
+                .task(id: settings.remindsDaily ? settings.reminderTime : nil) {
+                    await ReadingReminder.waitUntilScheduled()
+                    await refresh()
                 }
         }
 

@@ -34,6 +34,10 @@ enum ReadingReminder {
         }
     }
 
+    static func waitUntilScheduled() async {
+        await scheduling?.value
+    }
+
     private static func replace(with time: TimeOfDay?) async {
         let center = UNUserNotificationCenter.current()
         guard let time else {
