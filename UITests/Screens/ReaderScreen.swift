@@ -1,10 +1,14 @@
 import XCTest
 
+private let bookOpenTimeout: TimeInterval = 30
+
 struct ReaderScreen: Screen {
     let app: XCUIApplication
 
     var root: XCUIElement { app.staticTexts["reader.runningHead"] }
     var pageCounter: XCUIElement { app.staticTexts["reader.pageCounter"] }
+    var backButton: XCUIElement { app.buttons["reader.back"] }
+    var failure: XCUIElement { app.staticTexts["reader.failure"] }
     var word: XCUIElement { app.staticTexts["reader.word"] }
     var sentence: XCUIElement { app.staticTexts["reader.sentence"] }
     var translation: XCUIElement { app.staticTexts["reader.translation"] }
@@ -19,6 +23,45 @@ struct ReaderScreen: Screen {
 
     func paragraph(startingWith text: String) -> XCUIElement {
         app.webViews.staticTexts.matching(NSPredicate(format: "label BEGINSWITH %@", text)).firstMatch
+    }
+
+    @discardableResult
+    func waitUntilOpened(file: StaticString = #filePath, line: UInt = #line) -> ReaderScreen {
+        waitUntilShown(file: file, line: line)
+        XCTAssertTrue(
+            pageCounter.waitForExistence(timeout: bookOpenTimeout), "\(pageCounter.description) did not appear",
+            file: file, line: line)
+        return self
+    }
+
+    func showChrome() {
+        tapMargin()
+        backButton.waitUntil(\.isHittable, equals: true)
+    }
+
+    func hideChrome() {
+        tapMargin()
+        backButton.waitUntilGone()
+    }
+
+    @discardableResult
+    func backToHome() -> HomeScreen {
+        goBack()
+        return HomeScreen(app: app).waitUntilShown()
+    }
+
+    @discardableResult
+    func backToLibrary() -> LibraryScreen {
+        goBack()
+        return LibraryScreen(app: app).waitUntilShown()
+    }
+
+    private func goBack() {
+        if !backButton.exists {
+            showChrome()
+        }
+        backButton.waitUntil(\.isHittable, equals: true).tap()
+        root.waitUntilGone()
     }
 
     func tapMargin() {

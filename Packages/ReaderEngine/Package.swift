@@ -18,7 +18,7 @@ let package = Package(
                 .product(name: "ReadiumShared", package: "swift-toolkit"),
                 .product(name: "ReadiumStreamer", package: "swift-toolkit"),
             ],
-            resources: [.copy("Resources/reader.js")],
+            resources: [.copy("Resources/reader.js"), .copy("Resources/page-count.js")],
             swiftSettings: [.defaultIsolation(MainActor.self)]
         )
     ]

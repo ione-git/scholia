@@ -1,7 +1,5 @@
 import XCTest
 
-private let bookOpenTimeout: TimeInterval = 30
-
 struct HomeScreen: Screen {
     let app: XCUIApplication
 
@@ -77,13 +75,14 @@ struct HomeScreen: Screen {
         return LaunchScreen(app: app).waitUntilShown()
     }
 
+    func openHeroBook() -> ReaderScreen {
+        heroCover.waitUntil(\.isHittable, equals: true).tap()
+        return ReaderScreen(app: app).waitUntilOpened()
+    }
+
     func openReaderPrototype() -> ReaderScreen {
         openDebugMenu("home.readerPrototype")
-        let reader = ReaderScreen(app: app).waitUntilShown()
-        XCTAssertTrue(
-            reader.pageCounter.waitForExistence(timeout: bookOpenTimeout),
-            "\(reader.pageCounter.description) did not appear")
-        return reader
+        return ReaderScreen(app: app).waitUntilOpened()
     }
 
     func openEPUB() -> FilePickerScreen {

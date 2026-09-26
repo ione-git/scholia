@@ -1,12 +1,12 @@
 import UIKit
 
 public struct ReaderLocation: Codable, Hashable, Sendable {
-    public var chapter: String
-    public var progression: Double
+    public var chapter: Int
+    public var offset: Int
 
-    public init(chapter: String, progression: Double) {
+    public init(chapter: Int, offset: Int) {
         self.chapter = chapter
-        self.progression = progression
+        self.offset = offset
     }
 }
 
@@ -25,7 +25,7 @@ public struct ReaderTextRange: Codable, Hashable, Sendable {
 }
 
 public struct ReaderPage: Equatable, Sendable {
-    public var location: ReaderLocation
+    public var chapter: Int
     public var number: Int
     public var count: Int
 }
