@@ -13,6 +13,7 @@ public final class ReaderController {
         didSet { viewController.apply(highlights) }
     }
     public internal(set) var paintedHighlights: Int
+    public internal(set) var paintedWordTints: Int
     public var highlightColor: UIColor
     #if DEBUG
         public internal(set) var renderedStyle: ReaderRenderedStyle?
@@ -22,8 +23,8 @@ public final class ReaderController {
     @ObservationIgnored let viewController: ReaderViewController
 
     public init(
-        book: ReaderBook, location: ReaderLocation?, appearance: ReaderAppearance, typefaces: [ReaderTypeface],
-        highlightColor: UIColor, highlightTitle: String
+        book: ReaderBook, language: String?, location: ReaderLocation?, appearance: ReaderAppearance,
+        typefaces: [ReaderTypeface], highlightColor: UIColor, highlightTitle: String
     ) {
         self.book = book
         self.location = location
@@ -31,11 +32,16 @@ public final class ReaderController {
         self.highlightColor = highlightColor
         highlights = []
         paintedHighlights = 0
+        paintedWordTints = 0
         looksUpWords = true
         viewController = ReaderViewController(
-            book: book, location: location, appearance: appearance, typefaces: typefaces,
+            book: book, language: language, location: location, appearance: appearance, typefaces: typefaces,
             highlightTitle: highlightTitle)
         viewController.controller = self
+    }
+
+    public func clearWord() {
+        viewController.clearWord()
     }
 
     public func apply(_ appearance: ReaderAppearance) async {

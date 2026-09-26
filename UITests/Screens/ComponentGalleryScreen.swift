@@ -31,6 +31,10 @@ struct ComponentGalleryScreen: Screen {
         open("segmentedControl", as: SegmentedControlGalleryScreen.init)
     }
     func openPresentations() -> PresentationGalleryScreen { open("presentations", as: PresentationGalleryScreen.init) }
+    func openSelection() -> SelectionGalleryScreen { open("selection", as: SelectionGalleryScreen.init) }
+    func openTranslationBubbles() -> TranslationBubbleGalleryScreen {
+        open("translationBubble", as: TranslationBubbleGalleryScreen.init)
+    }
     func openGlassMenu() -> GlassMenuGalleryScreen { open("glassMenu", as: GlassMenuGalleryScreen.init) }
 }
 
@@ -100,6 +104,27 @@ struct SegmentedControlGalleryScreen: ComponentGalleryPage {
     var root: XCUIElement { app.scrollViews["segmentedControlGallery.scrollView"] }
 
     func segment(_ element: String) -> XCUIElement { app.buttons["segmentedControlGallery.\(element)"] }
+}
+
+struct SelectionGalleryScreen: ComponentGalleryPage {
+    let app: XCUIApplication
+
+    var root: XCUIElement { app.scrollViews["selectionGallery.scrollView"] }
+
+    func cover(_ title: String) -> XCUIElement { app.buttons["selectionGallery.cover.\(title)"] }
+    func item(_ element: String) -> XCUIElement { app.buttons["selectionGallery.\(element)"] }
+}
+
+struct TranslationBubbleGalleryScreen: ComponentGalleryPage {
+    let app: XCUIApplication
+
+    var root: XCUIElement { app.scrollViews["translationBubbleGallery.scrollView"] }
+
+    func bubble(_ element: String) -> XCUIElement { app.otherElements["translationBubbleGallery.\(element)"] }
+
+    func part(_ part: String, of element: String) -> XCUIElement {
+        app.descendants(matching: .any)["translationBubbleGallery.\(element).\(part)"]
+    }
 }
 
 struct PresentationGalleryScreen: ComponentGalleryPage {

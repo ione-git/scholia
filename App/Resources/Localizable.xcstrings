@@ -21,6 +21,12 @@
         }
       }
     },
+    "%lld Selected" : {
+
+    },
+    "%lld books" : {
+
+    },
     "%lld min" : {
 
     },
@@ -64,6 +70,9 @@
     "All %lld" : {
 
     },
+    "Allow notifications for Scholia in Settings to get a daily reminder." : {
+
+    },
     "Appearance" : {
 
     },
@@ -83,6 +92,9 @@
 
     },
     "Black theme" : {
+
+    },
+    "Book Info" : {
 
     },
     "Book cover" : {
@@ -130,6 +142,9 @@
     "Collection name" : {
 
     },
+    "Collections" : {
+
+    },
     "Colours" : {
       "shouldTranslate" : false
     },
@@ -160,7 +175,20 @@
     "EPUB · %@" : {
 
     },
+    "EPUB · %@ · added %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "EPUB · %1$@ · added %2$@"
+          }
+        }
+      }
+    },
     "EPUB · %@ · from Files" : {
+
+    },
+    "EPUB · added %@" : {
 
     },
     "Effects" : {
@@ -190,6 +218,9 @@
     "Highlights" : {
 
     },
+    "In progress" : {
+
+    },
     "Language" : {
 
     },
@@ -212,6 +243,12 @@
 
     },
     "Loose line spacing" : {
+
+    },
+    "Mark as Finished" : {
+
+    },
+    "Mark as Unread" : {
 
     },
     "Menu" : {
@@ -244,10 +281,22 @@
     "No books yet" : {
 
     },
+    "No translation needed" : {
+
+    },
     "None" : {
 
     },
     "Normal line spacing" : {
+
+    },
+    "Not Now" : {
+
+    },
+    "Not started" : {
+
+    },
+    "Notifications are off" : {
 
     },
     "OK" : {
@@ -259,6 +308,9 @@
     "Open EPUB…" : {
       "shouldTranslate" : false
     },
+    "Open Settings" : {
+
+    },
     "Page turn" : {
 
     },
@@ -266,6 +318,9 @@
 
     },
     "Paper theme" : {
+
+    },
+    "Pick up where you left off." : {
 
     },
     "Popover" : {
@@ -301,6 +356,24 @@
     "Reminder at %@" : {
 
     },
+    "Reminder time" : {
+
+    },
+    "Remove" : {
+
+    },
+    "Remove %lld books from your library?" : {
+
+    },
+    "Remove from Library" : {
+
+    },
+    "Remove “%@” from your library?" : {
+
+    },
+    "Reset reading progress" : {
+
+    },
     "Russian" : {
       "shouldTranslate" : false
     },
@@ -329,6 +402,9 @@
       "shouldTranslate" : false
     },
     "Select Books" : {
+
+    },
+    "Selection and toolbar" : {
 
     },
     "Sepia" : {
@@ -376,6 +452,154 @@
     "The book could not be saved. Try again." : {
 
     },
+    "The book file and its %lld highlights will be deleted from this iPhone." : {
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "device" : {
+              "ipad" : {
+                "variations" : {
+                  "plural" : {
+                    "one" : {
+                      "stringUnit" : {
+                        "state" : "translated",
+                        "value" : "The book file and its highlight will be deleted from this iPad."
+                      }
+                    },
+                    "other" : {
+                      "stringUnit" : {
+                        "state" : "translated",
+                        "value" : "The book file and its %lld highlights will be deleted from this iPad."
+                      }
+                    }
+                  }
+                }
+              },
+              "iphone" : {
+                "variations" : {
+                  "plural" : {
+                    "one" : {
+                      "stringUnit" : {
+                        "state" : "translated",
+                        "value" : "The book file and its highlight will be deleted from this iPhone."
+                      }
+                    },
+                    "other" : {
+                      "stringUnit" : {
+                        "state" : "translated",
+                        "value" : "The book file and its %lld highlights will be deleted from this iPhone."
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "The book file will be deleted from this iPhone." : {
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "device" : {
+              "ipad" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "The book file will be deleted from this iPad."
+                }
+              },
+              "iphone" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "The book file will be deleted from this iPhone."
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "The book file will be deleted from this iPhone."
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "The book files and their %lld highlights will be deleted from this iPhone." : {
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "device" : {
+              "ipad" : {
+                "variations" : {
+                  "plural" : {
+                    "one" : {
+                      "stringUnit" : {
+                        "state" : "translated",
+                        "value" : "The book files and %lld highlight will be deleted from this iPad."
+                      }
+                    },
+                    "other" : {
+                      "stringUnit" : {
+                        "state" : "translated",
+                        "value" : "The book files and their %lld highlights will be deleted from this iPad."
+                      }
+                    }
+                  }
+                }
+              },
+              "iphone" : {
+                "variations" : {
+                  "plural" : {
+                    "one" : {
+                      "stringUnit" : {
+                        "state" : "translated",
+                        "value" : "The book files and %lld highlight will be deleted from this iPhone."
+                      }
+                    },
+                    "other" : {
+                      "stringUnit" : {
+                        "state" : "translated",
+                        "value" : "The book files and their %lld highlights will be deleted from this iPhone."
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "The book files will be deleted from this iPhone." : {
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "device" : {
+              "ipad" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "The book files will be deleted from this iPad."
+                }
+              },
+              "iphone" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "The book files will be deleted from this iPhone."
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "The book files will be deleted from this iPhone."
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "The book’s language decides how words are read and translated. Detected from the file; change it if it looks wrong." : {
 
     },
@@ -394,6 +618,9 @@
     "Tight line spacing" : {
 
     },
+    "Time to read" : {
+
+    },
     "Title" : {
 
     },
@@ -403,7 +630,49 @@
     "Translate to" : {
 
     },
+    "Translating %@" : {
+
+    },
     "Translation" : {
+
+    },
+    "Translation bubble" : {
+
+    },
+    "Translation unavailable" : {
+
+    },
+    "Unread" : {
+
+    },
+    "adjective" : {
+
+    },
+    "adverb" : {
+
+    },
+    "conjunction" : {
+
+    },
+    "determiner" : {
+
+    },
+    "interjection" : {
+
+    },
+    "noun" : {
+
+    },
+    "number" : {
+
+    },
+    "particle" : {
+
+    },
+    "preposition" : {
+
+    },
+    "pronoun" : {
 
     },
     "readerSettings.font.system" : {
@@ -417,6 +686,9 @@
           }
         }
       }
+    },
+    "verb" : {
+
     },
     "· detected" : {
 

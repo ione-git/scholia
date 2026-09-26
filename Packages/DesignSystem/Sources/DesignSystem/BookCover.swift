@@ -95,7 +95,7 @@ public struct BookCover: View {
         .frame(width: metrics.width, height: metrics.height)
         .clipShape(shape)
         .shadow(shadow, in: shape)
-        .contentShape([.interaction, .accessibility], shape)
+        .contentShape([.interaction, .accessibility, .contextMenuPreview], shape)
         .overlay(alignment: .topTrailing) {
             if isFinished {
                 FinishedBadge()
@@ -146,6 +146,65 @@ extension BookCover {
     public static func generatedColor(for title: String) -> Color {
         let hash = title.unicodeScalars.reduce(0) { ($0 &* 31 &+ Int($1.value)) & Int.max }
         return Color(uiColor: UIColor(rgb: generatedColors[hash % generatedColors.count], opacity: 1))
+    }
+}
+
+extension BookCover {
+    public func selectable(isSelected: Bool) -> some View {
+        modifier(CoverSelection(isSelected: isSelected, radius: size.metrics.radius))
+    }
+}
+
+private struct CoverSelection: ViewModifier {
+    private static let ringWidth: CGFloat = 2
+    private static let ringOffset: CGFloat = 3
+    private static let checkboxInset: CGFloat = 6
+
+    let isSelected: Bool
+    let radius: CGFloat
+
+    func body(content: Content) -> some View {
+        let outset = Self.ringOffset + Self.ringWidth
+        content
+            .overlay {
+                if isSelected {
+                    RoundedRectangle(cornerRadius: radius + outset)
+                        .strokeBorder(.accent, lineWidth: Self.ringWidth)
+                        .padding(-outset)
+                }
+            }
+            .overlay(alignment: .bottomTrailing) {
+                CoverCheckbox(isChecked: isSelected)
+                    .padding(Self.checkboxInset)
+            }
+    }
+}
+
+private struct CoverCheckbox: View {
+    private static let diameter: CGFloat = 24
+    private static let ring: CGFloat = 2
+    private static let border: CGFloat = 1.5
+    private static let iconSize: CGFloat = 14
+    private static let iconStroke: CGFloat = 3
+
+    let isChecked: Bool
+
+    var body: some View {
+        Group {
+            if isChecked {
+                IconView(icon: .check, size: Self.iconSize, stroke: Self.iconStroke)
+                    .foregroundStyle(.onAccent)
+                    .frame(width: Self.diameter, height: Self.diameter)
+                    .background(.accent, in: .circle)
+                    .background(.onAccent, in: Circle().inset(by: -Self.ring))
+            } else {
+                Circle()
+                    .fill(ColorToken.scrim.light)
+                    .strokeBorder(ColorToken.glassBorder.light, lineWidth: Self.border)
+                    .frame(width: Self.diameter, height: Self.diameter)
+            }
+        }
+        .accessibilityHidden(true)
     }
 }
 

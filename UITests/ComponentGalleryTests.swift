@@ -54,6 +54,24 @@ final class ComponentGalleryTests: UITestCase {
             attachScreenshot("SegmentedControl\(suffix)")
             gallery = segmented.goBack()
 
+            let selection = gallery.openSelection()
+            XCTAssertEqual(selection.root.value as? String, appearance.rawValue)
+            selection.cover("Solaris").waitUntil(\.isSelected, equals: true)
+            selection.cover("Educated").waitUntil(\.isSelected, equals: false)
+            for element in ["collection", "finished", "remove"] {
+                selection.item(element).waitUntilExists()
+            }
+            attachScreenshot("Selection\(suffix)")
+            gallery = selection.goBack()
+
+            let bubbles = gallery.openTranslationBubbles()
+            XCTAssertEqual(bubbles.root.value as? String, appearance.rawValue)
+            for element in ["translated", "loading", "failed"] {
+                bubbles.bubble(element).waitUntilExists()
+            }
+            attachScreenshot("TranslationBubble\(suffix)")
+            gallery = bubbles.goBack()
+
             let presentations = gallery.openPresentations()
             XCTAssertEqual(presentations.root.value as? String, appearance.rawValue)
             let modal = presentations.openModalSheet()
@@ -76,6 +94,22 @@ final class ComponentGalleryTests: UITestCase {
             }
             attachScreenshot("GlassMenu\(suffix)")
         }
+    }
+
+    func testTranslationBubbleShowsEachStateAtSpecWidth() {
+        let bubbles = openGallery().openTranslationBubbles()
+        for element in ["translated", "loading", "failed"] {
+            XCTAssertEqual(bubbles.bubble(element).waitUntilExists().frame.width, 236)
+            XCTAssertEqual(bubbles.part("word", of: element).label, "Ungeziefer")
+        }
+        XCTAssertEqual(bubbles.part("ipa", of: "translated").label, "[ˈʊnɡəˌtsiːfɐ]")
+        XCTAssertEqual(bubbles.part("translation", of: "translated").label, "vermin")
+        XCTAssertEqual(bubbles.part("grammar", of: "translated").label, "das Ungeziefer · noun")
+        XCTAssertEqual(bubbles.part("loading", of: "loading").label, "Translating Ungeziefer")
+        XCTAssertFalse(bubbles.part("translation", of: "loading").exists)
+        XCTAssertFalse(bubbles.part("ipa", of: "loading").exists)
+        XCTAssertEqual(bubbles.part("failure", of: "failed").label, "Translation unavailable")
+        XCTAssertFalse(bubbles.part("loading", of: "failed").exists)
     }
 
     func testGlassButtonsHaveSpecSizesAndToggleOpenState() {
@@ -183,6 +217,30 @@ final class ComponentGalleryTests: UITestCase {
         XCTAssertTrue(segmented.segment("highlights").label.contains("3"), segmented.segment("highlights").label)
     }
 
+    func testSelectableCoversToggleAndToolbarFollowsSelection() {
+        let selection = openGallery().openSelection()
+        let checked = selection.cover("Solaris").waitUntil(\.isSelected, equals: true)
+        XCTAssertEqual(checked.frame.size, CGSize(width: 107, height: 152))
+        XCTAssertFalse(selection.cover("Educated").waitUntilExists().isSelected)
+        XCTAssertEqual(selection.item("collection").label, "Collection")
+        XCTAssertEqual(selection.item("finished").label, "Finished")
+        XCTAssertEqual(selection.item("remove").label, "Remove")
+        for element in ["collection", "finished", "remove"] {
+            XCTAssertEqual(selection.item(element).frame.height, 44, accuracy: 0.5)
+            XCTAssertTrue(selection.item(element).isEnabled)
+        }
+
+        checked.tap()
+
+        checked.waitUntil(\.isSelected, equals: false)
+        for element in ["collection", "finished", "remove"] {
+            selection.item(element).waitUntil(\.isEnabled, equals: false)
+        }
+        selection.cover("Educated").tap()
+        selection.cover("Educated").waitUntil(\.isSelected, equals: true)
+        selection.item("remove").waitUntil(\.isEnabled, equals: true)
+    }
+
     func testSheetsAndPopoverOpenAndClose() {
         let presentations = openGallery().openPresentations()
 
@@ -204,7 +262,10 @@ final class ComponentGalleryTests: UITestCase {
 
     private func openGallery() -> ComponentGalleryScreen {
         let app = launch(
-            LaunchConfiguration(resetsState: true, fixtures: [], opened: [], mocksTranslation: true, now: nil))
+            LaunchConfiguration(
+                resetsState: true, fixtures: [], opened: [], inProgress: [], highlighted: [], translation: .immediate,
+                now: nil,
+                notificationPermission: nil))
         return HomeScreen(app: app).waitUntilShown().openComponentGallery()
     }
 

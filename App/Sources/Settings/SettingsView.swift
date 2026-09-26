@@ -7,9 +7,15 @@ struct SettingsView: View {
     private static let sortOrders: [LibrarySort] = [.recentlyOpened, .recentlyAdded, .title, .author]
 
     @Environment(Settings.self) private var settings
+    @Environment(TranslationService.self) private var translationService
     @Environment(\.modelContext) private var modelContext
     @Environment(\.dismiss) private var dismiss
     @Environment(\.locale) private var locale
+    @Environment(\.openURL) private var openURL
+    @State private var isTimePickerShown = false
+    @State private var isAskingPermission = false
+    @State private var isNotificationsOffAlertShown = false
+    @State private var targetLanguages: [String] = []
 
     var body: some View {
         ScrollView {
@@ -30,6 +36,7 @@ struct SettingsView: View {
         .scrollBounceBehavior(.basedOnSize)
         .background(.surface)
         .toolbar(.hidden, for: .navigationBar)
+        .task { targetLanguages = await translationService.provider.targetLanguages() }
     }
 
     private var header: some View {
@@ -96,17 +103,51 @@ struct SettingsView: View {
                 }
             }
             .accessibilityIdentifier("settings.dailyGoal")
-            ListRow(Text("Reminder at \(reminderTime, format: .dateTime.hour().minute())"), height: .regular) {
-                Toggle(isOn: binding(\.remindsDaily)) {
+            HStack(spacing: .space3) {
+                Button {
+                    isTimePickerShown = true
+                } label: {
+                    ListRow(Text("Reminder at \(reminderTime, format: .dateTime.hour().minute())"), height: .regular) {}
+                }
+                .buttonStyle(.plain)
+                .accessibilityIdentifier("settings.reminderTime")
+                .popover(isPresented: $isTimePickerShown) { timePicker }
+                Toggle(isOn: reminderBinding) {
                     Text("Reminder")
                 }
                 .labelsHidden()
                 .tint(.accent)
                 .accessibilityIdentifier("settings.reminder")
             }
-            .accessibilityElement(children: .contain)
-            .accessibilityIdentifier("settings.reminderRow")
+            .task(id: isAskingPermission) {
+                if isAskingPermission {
+                    await turnOnReminder()
+                }
+            }
+            .alert(Text("Notifications are off"), isPresented: $isNotificationsOffAlertShown) {
+                Button("Not Now", role: .cancel) {}
+                    .accessibilityIdentifier("notificationsOff.notNow")
+                Button("Open Settings") {
+                    if let url = URL(string: UIApplication.openNotificationSettingsURLString) {
+                        openURL(url)
+                    }
+                }
+                .accessibilityIdentifier("notificationsOff.openSettings")
+            } message: {
+                Text("Allow notifications for Scholia in Settings to get a daily reminder.")
+            }
         }
+    }
+
+    private var timePicker: some View {
+        DatePicker(selection: reminderTimeBinding, displayedComponents: .hourAndMinute) {
+            Text("Reminder time")
+        }
+        .datePickerStyle(.wheel)
+        .labelsHidden()
+        .accessibilityIdentifier("reminderTime.picker")
+        .padding(.horizontal, .space4)
+        .popoverStyle()
     }
 
     private var appearance: some View {
@@ -145,7 +186,7 @@ struct SettingsView: View {
     }
 
     private var languages: [String] {
-        TargetLanguage.identifiers.sorted {
+        targetLanguages.sorted {
             languageName($0).localizedStandardCompare(languageName($1)) == .orderedAscending
         }
     }
@@ -156,12 +197,54 @@ struct SettingsView: View {
             ?? .now
     }
 
+    private var reminderTimeBinding: Binding<Date> {
+        Binding {
+            reminderTime
+        } set: { date in
+            let calendar = Calendar.current
+            settings.reminderTime = TimeOfDay(
+                hour: calendar.component(.hour, from: date), minute: calendar.component(.minute, from: date))
+            saveReminder()
+        }
+    }
+
+    private var reminderBinding: Binding<Bool> {
+        Binding {
+            settings.remindsDaily || isAskingPermission
+        } set: { isOn in
+            if isOn {
+                isAskingPermission = true
+            } else {
+                settings.remindsDaily = false
+                saveReminder()
+            }
+        }
+    }
+
     private var version: String {
         Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? ""
     }
 
     private func languageName(_ identifier: String) -> String {
         locale.localizedString(forIdentifier: identifier) ?? identifier
+    }
+
+    private func turnOnReminder() async {
+        switch await ReadingReminder.requestPermission() {
+        case .granted:
+            settings.remindsDaily = true
+            saveReminder()
+        case .declined:
+            break
+        case .turnedOff:
+            isNotificationsOffAlertShown = true
+        }
+        isAskingPermission = false
+    }
+
+    private func saveReminder() {
+        try? modelContext.save()
+        ReadingReminder.schedule(for: settings)
     }
 
     private func binding<Value>(_ keyPath: ReferenceWritableKeyPath<Settings, Value>) -> Binding<Value> {

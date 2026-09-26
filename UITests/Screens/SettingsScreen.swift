@@ -9,13 +9,21 @@ struct SettingsScreen: Screen {
     var translateTo: XCUIElement { app.buttons["settings.translateTo"] }
     var dailyGoal: XCUIElement { app.buttons["settings.dailyGoal"] }
     var reminder: XCUIElement { app.switches["settings.reminder"] }
-    var reminderTitle: XCUIElement { app.otherElements["settings.reminderRow"].staticTexts.firstMatch }
+    var reminderTime: XCUIElement { app.buttons["settings.reminderTime"] }
     var sortBooks: XCUIElement { app.buttons["settings.sortBooks"] }
     var version: XCUIElement { app.staticTexts["settings.version"] }
+    var translationLanguages: XCUIElementQuery {
+        app.buttons.matching(NSPredicate(format: "identifier BEGINSWITH %@", "settings.translateTo."))
+    }
 
     func onWordTap(_ style: String) -> XCUIElement { app.buttons["settings.onWordTap.\(style)"] }
 
     func theme(_ theme: String) -> XCUIElement { app.buttons["settings.theme.\(theme)"] }
+
+    func openTranslationLanguages() {
+        translateTo.waitUntil(\.isHittable, equals: true).tap()
+        translationLanguages.firstMatch.waitUntil(\.isHittable, equals: true)
+    }
 
     func chooseTranslationLanguage(_ identifier: String) {
         choose("settings.translateTo.\(identifier)", from: translateTo)
@@ -29,8 +37,25 @@ struct SettingsScreen: Screen {
         choose("settings.sortBooks.\(order)", from: sortBooks)
     }
 
-    func background() throws -> RGBColor {
-        try app.screenshot().color(at: CGPoint(x: 0.02, y: 0.9))
+    func openReminderTime() -> ReminderTimeScreen {
+        reminderTime.waitUntil(\.isHittable, equals: true).tap()
+        return ReminderTimeScreen(app: app).waitUntilShown()
+    }
+
+    func turnOnReminder() {
+        let asksPermission = readingReminder.waitUntilExists().value as? String == "notDetermined"
+        reminder.waitUntil(\.isHittable, equals: true).tap()
+        if asksPermission {
+            let prompt = NotificationPermissionScreen().waitUntilShown()
+            prompt.root.waitUntil(\.label, equals: "“Scholia” Would Like to Send You Notifications")
+            prompt.allow()
+        }
+        reminder.waitUntil(\.isOn, equals: true)
+    }
+
+    func turnOffReminder() {
+        reminder.waitUntil(\.isHittable, equals: true).tap()
+        reminder.waitUntil(\.isOn, equals: false)
     }
 
     @discardableResult

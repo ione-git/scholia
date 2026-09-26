@@ -9,11 +9,13 @@
         @Environment(\.dismiss) private var dismiss
         @Environment(\.colorScheme) private var colorScheme
         @Environment(Settings.self) private var settings
+        @Environment(TranslationService.self) private var translationService
         @State private var controller: ReaderController?
         @State private var cannotOpen = false
         @State private var chosenTheme: ReaderTheme?
         @State private var pageTurn = ReaderPageTurn.slide
         @State private var isChromeShown = false
+        @State private var translated: WordTranslation?
 
         var body: some View {
             ZStack {
@@ -51,8 +53,7 @@
         private func page(_ controller: ReaderController) -> some View {
             ZStack {
                 if let word = controller.word {
-                    RoundedRectangle(cornerRadius: .radiusXs)
-                        .fill(.wordTap)
+                    Color.clear
                         .frame(width: word.rect.width, height: word.rect.height)
                         .position(x: word.rect.midX, y: word.rect.midY)
                         .allowsHitTesting(false)
@@ -101,6 +102,12 @@
                     .textStyle(.title3)
                     .foregroundStyle(.ink)
                     .accessibilityIdentifier("reader.word")
+                if let translated {
+                    Text(translated.translation)
+                        .textStyle(.translation)
+                        .foregroundStyle(.ink)
+                        .accessibilityIdentifier("reader.translation")
+                }
                 Text(word.sentence)
                     .textStyle(.footnote)
                     .foregroundStyle(.inkMuted)
@@ -110,6 +117,21 @@
             .padding(.space4)
             .glassEffect(.regular, in: RoundedRectangle(cornerRadius: .radiusXl))
             .padding(.horizontal, .space5)
+            .task(id: word) { await translate(word) }
+        }
+
+        private func translate(_ word: ReaderWord) async {
+            translated = nil
+            guard let language = controller?.book.language else {
+                return
+            }
+            let result = try? await translationService.translate(
+                TranslationRequest(
+                    word: word.text, sentence: word.sentence, offsetInSentence: word.offsetInSentence,
+                    source: language, target: settings.translationLanguage))
+            if !Task.isCancelled {
+                translated = result
+            }
         }
 
         private func controls(_ controller: ReaderController) -> some View {
@@ -179,6 +201,7 @@
                 let book = try await ReaderBook.open(url)
                 let controller = ReaderController(
                     book: book,
+                    language: book.language,
                     location: nil,
                     appearance: appearance,
                     typefaces: ReaderFont.allCases.map(\.typeface),

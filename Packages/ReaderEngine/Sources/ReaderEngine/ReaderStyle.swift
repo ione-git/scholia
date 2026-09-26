@@ -52,11 +52,13 @@ public struct ReaderColors: Equatable, Sendable {
     public var page: UIColor
     public var text: UIColor
     public var selection: UIColor
+    public var wordTap: UIColor
 
-    public init(page: UIColor, text: UIColor, selection: UIColor) {
+    public init(page: UIColor, text: UIColor, selection: UIColor, wordTap: UIColor) {
         self.page = page
         self.text = text
         self.selection = selection
+        self.wordTap = wordTap
     }
 }
 

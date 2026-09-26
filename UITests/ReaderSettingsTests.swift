@@ -1,6 +1,9 @@
 import XCTest
 
 final class ReaderSettingsTests: UITestCase {
+    private let germanBook = LaunchConfiguration(
+        resetsState: true, fixtures: [.german], opened: [], inProgress: [], highlighted: [], translation: .immediate,
+        now: nil, notificationPermission: nil)
     private let bookPages = 54
     private let defaultStep = 3
     private let themes = ["paper", "sepia", "night", "black"]
@@ -280,12 +283,14 @@ final class ReaderSettingsTests: UITestCase {
     }
 
     private func launchWithGermanBook() -> XCUIApplication {
-        launch(
-            LaunchConfiguration(resetsState: true, fixtures: [.german], opened: [], mocksTranslation: true, now: nil))
+        launch(germanBook)
     }
 
     private func relaunch() -> XCUIApplication {
-        launch(LaunchConfiguration(resetsState: false, fixtures: [], opened: [], mocksTranslation: true, now: nil))
+        launch(
+            LaunchConfiguration(
+                resetsState: false, fixtures: [], opened: [], inProgress: [], highlighted: [], translation: .immediate,
+                now: nil, notificationPermission: nil))
     }
 
     private func sizeValue(_ step: Int) -> String {

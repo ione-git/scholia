@@ -280,6 +280,7 @@
         return {
           text: word.segment.replace(softHyphen, ""),
           sentence: sentence.segment.replace(softHyphen, "").trim(),
+          offsetInSentence: textIndex.text.slice(sentence.index, word.index).replace(softHyphen, "").trimStart().length,
           x: rect.left,
           y: rect.top,
           width: rect.width,
@@ -313,12 +314,15 @@
     },
   };
 
-  let paintedHighlights = 0;
+  const painted = { paintedHighlights: 0, paintedWordTints: 0 };
+  const paintedClasses = { paintedHighlights: "scholia-highlight", paintedWordTints: "scholia-word-tap" };
   new MutationObserver(() => {
-    const count = document.querySelectorAll(":has(> .scholia-highlight)").length;
-    if (count !== paintedHighlights) {
-      paintedHighlights = count;
-      webkit.messageHandlers.paintedHighlights.postMessage(count);
+    for (const [name, className] of Object.entries(paintedClasses)) {
+      const count = document.querySelectorAll(`:has(> .${className})`).length;
+      if (count !== painted[name]) {
+        painted[name] = count;
+        webkit.messageHandlers[name].postMessage(count);
+      }
     }
   }).observe(document.body, { childList: true, subtree: true });
 })();

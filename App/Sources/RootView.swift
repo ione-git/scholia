@@ -16,6 +16,7 @@ enum Route: Hashable {
 
 struct RootView: View {
     @Environment(Settings.self) private var settings
+    @Environment(TranslationService.self) private var translationService
     @State private var path = NavigationPath()
     @State private var isPickingFile = false
 
@@ -43,6 +44,7 @@ struct RootView: View {
         .background {
             Color.clear.preferredColorScheme(settings.appTheme.colorScheme)
         }
+        .modifier(LanguagePackDownload(isEnabled: translationService.provider.needsLanguagePacks))
     }
 }
 
