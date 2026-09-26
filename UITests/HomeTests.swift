@@ -4,7 +4,7 @@ final class HomeTests: UITestCase {
     func testFixtureLibraryShowsHeroAndRow() {
         let app = launch(
             LaunchConfiguration(
-                resetsState: true, fixtures: [.german, .frenchNoCover, .minimalMetadata], opened: [],
+                resetsState: true, fixtures: [.german, .frenchNoCover, .minimalMetadata], opened: [], inProgress: [],
                 mocksTranslation: true,
                 now: nil, notificationPermission: nil))
         let home = HomeScreen(app: app).waitUntilShown()
@@ -28,7 +28,8 @@ final class HomeTests: UITestCase {
     func testSingleBookIsHeroWithEmptyRow() {
         let app = launch(
             LaunchConfiguration(
-                resetsState: true, fixtures: [.minimalMetadata], opened: [], mocksTranslation: true, now: nil,
+                resetsState: true, fixtures: [.minimalMetadata], opened: [], inProgress: [], mocksTranslation: true,
+                now: nil,
                 notificationPermission: nil))
         let home = HomeScreen(app: app).waitUntilShown()
 
@@ -41,7 +42,7 @@ final class HomeTests: UITestCase {
     func testLibraryOpensFromHome() {
         let app = launch(
             LaunchConfiguration(
-                resetsState: true, fixtures: [.german], opened: [], mocksTranslation: true, now: nil,
+                resetsState: true, fixtures: [.german], opened: [], inProgress: [], mocksTranslation: true, now: nil,
                 notificationPermission: nil))
         let home = HomeScreen(app: app).waitUntilShown()
 
@@ -53,7 +54,7 @@ final class HomeTests: UITestCase {
     func testHeaderHasGoalRingAndGlassButtonsAndOpensSettings() {
         let app = launch(
             LaunchConfiguration(
-                resetsState: true, fixtures: [.german], opened: [], mocksTranslation: true, now: nil,
+                resetsState: true, fixtures: [.german], opened: [], inProgress: [], mocksTranslation: true, now: nil,
                 notificationPermission: nil))
         let home = HomeScreen(app: app).waitUntilShown()
 

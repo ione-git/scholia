@@ -126,11 +126,13 @@ private struct RemoveBooksDialog: ViewModifier {
     }
 
     private func remove() {
-        for book in books {
-            try? FileManager.default.removeItem(at: book.fileURL)
-            context.delete(book)
+        Task {
+            await Storage.removeFiles(at: books.map(\.fileURL))
+            for book in books {
+                context.delete(book)
+            }
+            try? context.save()
+            onRemove()
         }
-        try? context.save()
-        onRemove()
     }
 }

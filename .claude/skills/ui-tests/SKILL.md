@@ -27,7 +27,7 @@ description: Write, run and debug Scholia UI tests (XCUITest) — screen objects
 ## Launch configuration
 
 ```swift
-let app = launch(LaunchConfiguration(resetsState: true, fixtures: [.german], opened: [], mocksTranslation: true, now: nil, notificationPermission: nil))
+let app = launch(LaunchConfiguration(resetsState: true, fixtures: [.german], opened: [], inProgress: [], mocksTranslation: true, now: nil, notificationPermission: nil))
 ```
 
 | Field | Environment key | Meaning for the app |
@@ -35,6 +35,7 @@ let app = launch(LaunchConfiguration(resetsState: true, fixtures: [.german], ope
 | `resetsState` | `SCHOLIA_RESET_STATE=1` | start with empty storage and settings |
 | `fixtures` | `SCHOLIA_FIXTURES=german,drm` | library holds these books, added if missing: title, author, language from the table below, no cover yet, file copied into the app container |
 | `opened` | `SCHOLIA_OPENED=drm,german` | these stored books were opened, most recent first: the first at `now`, each next one a minute earlier |
+| `inProgress` | `SCHOLIA_IN_PROGRESS=german` | these stored books have a saved reading position (chapter 1, offset 0), so Book Info shows "In progress" |
 | `mocksTranslation` | `SCHOLIA_TRANSLATION=mock` | translation provider is the mock |
 | `now` | `SCHOLIA_NOW=<ISO 8601>` | the app's current date and time |
 | `notificationPermission` | `SCHOLIA_NOTIFICATIONS=declined` or `denied` | turning the reminder on gets this answer without asking the system: `declined` as if "Don't Allow" was tapped on the prompt, `denied` as if notifications were already off |
@@ -76,7 +77,7 @@ struct LibraryScreen: Screen {
 
 final class LibraryTests: UITestCase {
     func testOpensBook() {
-        let app = launch(LaunchConfiguration(resetsState: true, fixtures: [.german], opened: [], mocksTranslation: true, now: nil, notificationPermission: nil))
+        let app = launch(LaunchConfiguration(resetsState: true, fixtures: [.german], opened: [], inProgress: [], mocksTranslation: true, now: nil, notificationPermission: nil))
         let reader = LibraryScreen(app: app).waitUntilShown().open("Die Verwandlung")
         reader.title.waitUntil(\.label, equals: "Die Verwandlung")
     }

@@ -14,6 +14,7 @@ struct BookInfoView: View {
     @State private var resetsProgress = false
     @State private var isChoosingLanguage = false
     @State private var isChoosingCollections = false
+    @State private var fileSize: Int?
 
     init(book: Book) {
         self.book = book
@@ -100,6 +101,9 @@ struct BookInfoView: View {
                 LanguagePicker(selection: $language, detected: nil)
             }
         }
+        .task {
+            fileSize = await Storage.fileSize(at: book.fileURL)
+        }
         .modalSheet(isPresented: $isChoosingCollections) {
             AddToCollectionSheet(
                 cover: cover(size: .thumbnail), title: trimmedTitle, author: trimmedAuthor, selection: $collections)
@@ -126,10 +130,10 @@ struct BookInfoView: View {
 
     private var fileInfo: Text {
         let added = book.addedAt.formatted(.dateTime.day().month(.abbreviated).year())
-        guard let size = try? book.fileURL.resourceValues(forKeys: [.fileSizeKey]).fileSize else {
+        guard let fileSize else {
             return Text("EPUB · added \(added)")
         }
-        return Text("EPUB · \(Int64(size).formatted(.byteCount(style: .file))) · added \(added)")
+        return Text("EPUB · \(Int64(fileSize).formatted(.byteCount(style: .file))) · added \(added)")
     }
 
     private var collectionsValue: Text {

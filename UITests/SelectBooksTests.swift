@@ -5,7 +5,8 @@ final class SelectBooksTests: UITestCase {
 
     func testSelectModeCountsSelectedBooks() {
         let app = launch(
-            LaunchConfiguration(resetsState: true, fixtures: fixtures, opened: [], mocksTranslation: true, now: nil))
+            LaunchConfiguration(
+                resetsState: true, fixtures: fixtures, opened: [], inProgress: [], mocksTranslation: true, now: nil))
         let library = HomeScreen(app: app).waitUntilShown().openLibrary()
 
         let selection = library.selectBooks()
@@ -41,7 +42,8 @@ final class SelectBooksTests: UITestCase {
 
     func testSelectedBooksAreMarkedFinishedAndUnread() {
         let app = launch(
-            LaunchConfiguration(resetsState: true, fixtures: fixtures, opened: [], mocksTranslation: true, now: nil))
+            LaunchConfiguration(
+                resetsState: true, fixtures: fixtures, opened: [], inProgress: [], mocksTranslation: true, now: nil))
         let library = HomeScreen(app: app).waitUntilShown().openLibrary()
 
         library.selectBooks().toggle("Die Verwandlung").toggle("Minimal").toggleFinished()
@@ -62,7 +64,8 @@ final class SelectBooksTests: UITestCase {
 
     func testSelectedBooksAreAddedToCollection() {
         let app = launch(
-            LaunchConfiguration(resetsState: true, fixtures: fixtures, opened: [], mocksTranslation: true, now: nil))
+            LaunchConfiguration(
+                resetsState: true, fixtures: fixtures, opened: [], inProgress: [], mocksTranslation: true, now: nil))
         let library = HomeScreen(app: app).waitUntilShown().openLibrary()
         library.openMenu().openNewCollection().type("Classics").create(returningTo: library)
 
@@ -95,7 +98,8 @@ final class SelectBooksTests: UITestCase {
 
     func testSelectedBooksAreRemoved() {
         let app = launch(
-            LaunchConfiguration(resetsState: true, fixtures: fixtures, opened: [], mocksTranslation: true, now: nil))
+            LaunchConfiguration(
+                resetsState: true, fixtures: fixtures, opened: [], inProgress: [], mocksTranslation: true, now: nil))
         let library = HomeScreen(app: app).waitUntilShown().openLibrary()
 
         let selection = library.selectBooks().toggle("Die Verwandlung").toggle("Un matin en ville")

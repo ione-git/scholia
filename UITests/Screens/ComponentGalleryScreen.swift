@@ -31,6 +31,7 @@ struct ComponentGalleryScreen: Screen {
         open("segmentedControl", as: SegmentedControlGalleryScreen.init)
     }
     func openPresentations() -> PresentationGalleryScreen { open("presentations", as: PresentationGalleryScreen.init) }
+    func openSelection() -> SelectionGalleryScreen { open("selection", as: SelectionGalleryScreen.init) }
 }
 
 protocol ComponentGalleryPage: Screen {}
@@ -90,6 +91,15 @@ struct SegmentedControlGalleryScreen: ComponentGalleryPage {
     var root: XCUIElement { app.scrollViews["segmentedControlGallery.scrollView"] }
 
     func segment(_ element: String) -> XCUIElement { app.buttons["segmentedControlGallery.\(element)"] }
+}
+
+struct SelectionGalleryScreen: ComponentGalleryPage {
+    let app: XCUIApplication
+
+    var root: XCUIElement { app.scrollViews["selectionGallery.scrollView"] }
+
+    func cover(_ title: String) -> XCUIElement { app.buttons["selectionGallery.cover.\(title)"] }
+    func item(_ element: String) -> XCUIElement { app.buttons["selectionGallery.\(element)"] }
 }
 
 struct PresentationGalleryScreen: ComponentGalleryPage {

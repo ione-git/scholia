@@ -6,7 +6,7 @@ final class LibraryTests: UITestCase {
     func testGridShowsEveryBookInThreeColumns() {
         let app = launch(
             LaunchConfiguration(
-                resetsState: true, fixtures: allFixtures, opened: [], mocksTranslation: true, now: nil,
+                resetsState: true, fixtures: allFixtures, opened: [], inProgress: [], mocksTranslation: true, now: nil,
                 notificationPermission: nil))
         let library = HomeScreen(app: app).waitUntilShown().openLibrary()
 
@@ -32,7 +32,7 @@ final class LibraryTests: UITestCase {
     func testSearchFiltersByTitleAndAuthor() {
         let app = launch(
             LaunchConfiguration(
-                resetsState: true, fixtures: allFixtures, opened: [], mocksTranslation: true, now: nil,
+                resetsState: true, fixtures: allFixtures, opened: [], inProgress: [], mocksTranslation: true, now: nil,
                 notificationPermission: nil))
         let library = HomeScreen(app: app).waitUntilShown().openLibrary()
 
@@ -57,14 +57,14 @@ final class LibraryTests: UITestCase {
     func testEachSortOrder() throws {
         let earlier = launch(
             LaunchConfiguration(
-                resetsState: true, fixtures: [.german, .minimalMetadata, .corrupted], opened: [],
+                resetsState: true, fixtures: [.german, .minimalMetadata, .corrupted], opened: [], inProgress: [],
                 mocksTranslation: true,
                 now: try Date("2026-03-01T10:00:00Z", strategy: .iso8601), notificationPermission: nil))
         HomeScreen(app: earlier).waitUntilShown()
         earlier.terminate()
         let app = launch(
             LaunchConfiguration(
-                resetsState: false, fixtures: [.frenchNoCover], opened: [.minimalMetadata, .german],
+                resetsState: false, fixtures: [.frenchNoCover], opened: [.minimalMetadata, .german], inProgress: [],
                 mocksTranslation: true, now: try Date("2026-03-02T10:00:00Z", strategy: .iso8601),
                 notificationPermission: nil))
         let library = HomeScreen(app: app).waitUntilShown().openLibrary()
@@ -88,6 +88,7 @@ final class LibraryTests: UITestCase {
         let first = launch(
             LaunchConfiguration(
                 resetsState: true, fixtures: [.german, .frenchNoCover, .minimalMetadata], opened: [.frenchNoCover],
+                inProgress: [],
                 mocksTranslation: true, now: nil, notificationPermission: nil))
         let library = HomeScreen(app: first).waitUntilShown().openLibrary()
         XCTAssertEqual(library.shownTitles, ["Un matin en ville", "Die Verwandlung", "Minimal"])
@@ -97,7 +98,7 @@ final class LibraryTests: UITestCase {
 
         let relaunched = launch(
             LaunchConfiguration(
-                resetsState: false, fixtures: [], opened: [], mocksTranslation: true, now: nil,
+                resetsState: false, fixtures: [], opened: [], inProgress: [], mocksTranslation: true, now: nil,
                 notificationPermission: nil))
         let reopened = HomeScreen(app: relaunched).waitUntilShown().openLibrary()
 
@@ -108,7 +109,7 @@ final class LibraryTests: UITestCase {
     func testMenuShowsActionsAndSortSubmenu() {
         let app = launch(
             LaunchConfiguration(
-                resetsState: true, fixtures: allFixtures, opened: [], mocksTranslation: true, now: nil,
+                resetsState: true, fixtures: allFixtures, opened: [], inProgress: [], mocksTranslation: true, now: nil,
                 notificationPermission: nil))
         let library = HomeScreen(app: app).waitUntilShown().openLibrary()
 

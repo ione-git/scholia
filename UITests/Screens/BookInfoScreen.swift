@@ -27,6 +27,12 @@ struct BookInfoScreen: Screen {
         try replaceText(in: authorField, with: author)
     }
 
+    @discardableResult
+    func resetProgress() -> Self {
+        resetProgressButton.waitUntil(\.isHittable, equals: true).tap()
+        return self
+    }
+
     func chooseLanguage() -> LanguagePickerScreen {
         languageButton.waitUntil(\.isHittable, equals: true).tap()
         return LanguagePickerScreen(app: app).waitUntilShown()

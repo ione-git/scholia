@@ -41,7 +41,7 @@ final class AppIconTests: UITestCase {
     private func showHomeScreen() -> SpringboardScreen {
         let app = launch(
             LaunchConfiguration(
-                resetsState: true, fixtures: [], opened: [], mocksTranslation: true, now: nil,
+                resetsState: true, fixtures: [], opened: [], inProgress: [], mocksTranslation: true, now: nil,
                 notificationPermission: nil))
         HomeScreen(app: app).waitUntilShown()
         XCUIDevice.shared.press(.home)
