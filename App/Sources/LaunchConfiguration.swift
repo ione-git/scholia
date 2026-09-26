@@ -19,6 +19,7 @@ enum TranslationMock: String {
 }
 
 enum NotificationPermission: String {
+    case authorized
     case declined
     case denied
 }
