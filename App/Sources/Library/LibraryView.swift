@@ -107,8 +107,11 @@ private struct LibraryGrid: View {
         LazyVGrid(columns: Self.columns, spacing: .space5) {
             ForEach(books) { book in
                 VStack(alignment: .leading, spacing: .space2) {
-                    BookCover(book: book, size: .library)
-                        .accessibilityIdentifier("library.book.\(book.title)")
+                    NavigationLink(value: Route.reader(book)) {
+                        BookCover(book: book, size: .library)
+                    }
+                    .buttonStyle(.plain)
+                    .accessibilityIdentifier("library.book.\(book.title)")
                     Text(book.title)
                         .textStyle(.caption)
                         .foregroundStyle(.ink)

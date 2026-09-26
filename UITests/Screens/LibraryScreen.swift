@@ -51,6 +51,11 @@ struct LibraryScreen: Screen {
         return NewCollectionAlert(app: app).waitUntilShown()
     }
 
+    func openBook(_ title: String) -> ReaderScreen {
+        book(title).waitUntil(\.isHittable, equals: true).tap()
+        return ReaderScreen(app: app).waitUntilShown()
+    }
+
     func openMenu() -> LibraryMenuScreen {
         moreButton.waitUntil(\.isHittable, equals: true).tap()
         return LibraryMenuScreen(app: app).waitUntilShown()
