@@ -1,11 +1,13 @@
 import Foundation
+import Observation
 import ReadiumShared
 import ReadiumStreamer
 
+@Observable
 public final class ReaderBook {
     public let title: String?
     public let language: String?
-    public let tableOfContents: [ReaderChapter]
+    public private(set) var tableOfContents: [ReaderChapter]
     let url: URL
     let publication: Publication
 
@@ -40,13 +42,31 @@ public final class ReaderBook {
 
     public func chapter(containing location: ReaderLocation) -> ReaderChapter? {
         let start = tableOfContents.map(\.location).filter { $0 <= location }.max()
-        return tableOfContents.first { $0.location == start }
+        return tableOfContents.last { $0.location == start }
+    }
+
+    func unresolvedFragments(inChapter chapter: Int) -> [String] {
+        tableOfContents.filter { $0.location.chapter == chapter }.compactMap(\.unresolvedFragment)
+    }
+
+    func resolveFragments(_ offsets: [String: Int], inChapter chapter: Int) {
+        for index in tableOfContents.indices where tableOfContents[index].location.chapter == chapter {
+            if let fragment = tableOfContents[index].unresolvedFragment {
+                tableOfContents[index].location.offset = offsets[fragment] ?? 0
+                tableOfContents[index].unresolvedFragment = nil
+            }
+        }
     }
 
     private static func chapters(in links: [Link], readingOrder: [Link]) -> [ReaderChapter] {
         links.flatMap { link in
-            let chapter = readingOrder.firstIndexWithHREF(link.url().removingFragment()).flatMap { index in
-                link.title.map { ReaderChapter(title: $0, location: ReaderLocation(chapter: index, offset: 0)) }
+            let url = link.url()
+            let chapter = readingOrder.firstIndexWithHREF(url.removingFragment()).flatMap { index in
+                link.title.map {
+                    ReaderChapter(
+                        title: $0, location: ReaderLocation(chapter: index, offset: 0), unresolvedFragment: url.fragment
+                    )
+                }
             }
             return [chapter].compactMap { $0 } + chapters(in: link.children, readingOrder: readingOrder)
         }
