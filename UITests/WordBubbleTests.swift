@@ -56,12 +56,12 @@ final class WordBubbleTests: UITestCase {
         heading.tap()
         reader.bubbleWord.waitUntil(\.label, equals: "Erster")
         XCTAssertGreaterThan(reader.bubble.frame.minY, heading.screenPoint.y)
-        XCTAssertGreaterThan(reader.bubble.frame.minY, reader.root.frame.maxY)
+        XCTAssertGreaterThan(reader.bubble.frame.minY, reader.runningHead.frame.maxY)
 
         fifthLine.tap()
         reader.bubbleWord.waitUntil(\.label, equals: "panzerartig")
         XCTAssertLessThan(reader.bubble.frame.maxY, fifthLine.screenPoint.y)
-        XCTAssertGreaterThanOrEqual(reader.bubble.frame.minY, reader.root.frame.maxY)
+        XCTAssertGreaterThanOrEqual(reader.bubble.frame.minY, reader.runningHead.frame.maxY)
     }
 
     func testTapOutsideClosesBubbleWithoutChromeAndTapOnBubbleKeepsIt() throws {
