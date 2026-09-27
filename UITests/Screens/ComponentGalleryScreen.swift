@@ -17,6 +17,7 @@ struct ComponentGalleryScreen: Screen {
         open("largeBookCover", as: LargeBookCoverGalleryScreen.init)
     }
     func openListRows() -> ListRowGalleryScreen { open("listRows", as: ListRowGalleryScreen.init) }
+    func openChapterRows() -> ChapterRowGalleryScreen { open("chapterRows", as: ChapterRowGalleryScreen.init) }
     func openSegmentedControls() -> SegmentedControlGalleryScreen {
         open("segmentedControl", as: SegmentedControlGalleryScreen.init)
     }
@@ -59,6 +60,12 @@ struct ListRowGalleryScreen: Screen {
     let app: XCUIApplication
 
     var root: XCUIElement { app.scrollViews["listRowGallery.scrollView"] }
+}
+
+struct ChapterRowGalleryScreen: Screen {
+    let app: XCUIApplication
+
+    var root: XCUIElement { app.scrollViews["chapterRowGallery.scrollView"] }
 }
 
 struct SegmentedControlGalleryScreen: Screen {

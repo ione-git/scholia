@@ -10,6 +10,7 @@ public final class ReaderController {
     public internal(set) var word: ReaderWord?
     public internal(set) var selection: ReaderSelection?
     public private(set) var appearance: ReaderAppearance
+    var startPages: [Int]?
     public var highlights: [ReaderHighlight] {
         didSet { viewController.apply(highlights) }
     }
@@ -52,6 +53,21 @@ public final class ReaderController {
     public func apply(_ appearance: ReaderAppearance) async {
         await viewController.apply(appearance)
         self.appearance = viewController.appearance
+    }
+
+    public func go(to location: ReaderLocation) {
+        viewController.go(to: .location(location))
+    }
+
+    public func go(toChapterAt index: Int) {
+        viewController.go(to: .chapter(index))
+    }
+
+    public func startPage(ofChapterAt index: Int) -> Int? {
+        guard let startPages, startPages.indices.contains(index) else {
+            return nil
+        }
+        return startPages[index]
     }
 
     public func highlightSelection() {

@@ -125,6 +125,51 @@
     return new Promise((resolve) => requestAnimationFrame(() => resolve()));
   }
 
+  function pageOfOffset(offset) {
+    if (offset <= 0) {
+      return 0;
+    }
+    for (const { node, start } of textNodes()) {
+      if (start + node.data.length <= offset) {
+        continue;
+      }
+      const found = pageOfCharacter(node, Math.max(0, offset - start));
+      if (found !== null) {
+        return Math.min(found, lastPage());
+      }
+    }
+    return lastPage();
+  }
+
+  function offsetOfRenderedText(offset) {
+    for (const { node, start } of textNodes()) {
+      if (start + node.data.length <= offset) {
+        continue;
+      }
+      const from = Math.max(0, offset - start);
+      if (boxOfCharacter(node, from)) {
+        return start + from;
+      }
+    }
+    return offset;
+  }
+
+  function offsetsOfElements(ids) {
+    const offsets = {};
+    for (const id of ids) {
+      const element = document.getElementById(id);
+      if (!element) {
+        continue;
+      }
+      const before = document.createRange();
+      before.setStart(document.body, 0);
+      before.setEndBefore(element);
+      const text = before.toString();
+      offsets[id] = text.trim() ? offsetOfRenderedText(text.length) : 0;
+    }
+    return offsets;
+  }
+
   function offsetAt(x, y) {
     const caret = document.caretRangeFromPoint(x, y);
     if (!caret) {
@@ -227,20 +272,7 @@
 
     async showOffset(offset) {
       await document.fonts.ready;
-      let page = 0;
-      if (offset > 0) {
-        page = lastPage();
-        for (const { node, start } of textNodes()) {
-          if (start + node.data.length <= offset) {
-            continue;
-          }
-          const found = pageOfCharacter(node, Math.max(0, offset - start));
-          if (found !== null) {
-            page = Math.min(found, page);
-            break;
-          }
-        }
-      }
+      const page = pageOfOffset(offset);
       const direction = isRightToLeft() ? -1 : 1;
       document.scrollingElement.scrollTo({ left: direction * page * window.innerWidth, behavior: "instant" });
       return page;
@@ -316,20 +348,12 @@
       await nextFrame();
     },
 
-    offsetsOfElements(ids) {
-      const offsets = {};
-      for (const id of ids) {
-        const element = document.getElementById(id);
-        if (!element) {
-          continue;
-        }
-        const before = document.createRange();
-        before.setStart(document.body, 0);
-        before.setEndBefore(element);
-        const text = before.toString();
-        offsets[id] = text.trim() ? text.length : 0;
-      }
-      return offsets;
+    offsetsOfElements,
+
+    pagesOfElements(ids) {
+      return Object.fromEntries(
+        Object.entries(offsetsOfElements(ids)).map(([id, offset]) => [id, pageOfOffset(offset)])
+      );
     },
 
     wordAt(x, y, language) {

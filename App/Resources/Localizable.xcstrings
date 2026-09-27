@@ -124,6 +124,9 @@
     "Card" : {
 
     },
+    "Chapter rows" : {
+      "shouldTranslate" : false
+    },
     "Chip" : {
       "shouldTranslate" : false
     },
@@ -322,6 +325,9 @@
     },
     "Other colours" : {
       "shouldTranslate" : false
+    },
+    "Page %lld" : {
+      "comment" : "Contents row: start page of the chapter"
     },
     "Page turn" : {
 
