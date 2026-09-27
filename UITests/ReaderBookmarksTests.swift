@@ -58,6 +58,20 @@ final class ReaderBookmarksTests: UITestCase {
         reader.subtitle.waitUntil(\.label, equals: "Franz Kafka · Erster Teil")
     }
 
+    func testBookmarkReadsTheSentenceItsPageStartsWith() {
+        let reader = openBook(.german)
+        reader.turnForward(expecting: "2 of \(bookPages)")
+        reader.turnForward(expecting: "3 of \(bookPages)")
+        bookmark(reader)
+
+        let index = reader.openMenu().open("bookmarks")
+
+        index.bookmark(page: 3).waitUntil(
+            \.stringValue,
+            equals:
+                "unruhigen Träumen erwachte, fand er sich in seinem Bett zu einem ungeheueren Ungeziefer verwandelt.")
+    }
+
     func testBookmarksSurviveRelaunch() {
         let page = frenchSecondChapterPage + 2
         var reader = openBook(.frenchNoCover)

@@ -157,14 +157,17 @@
       }
       const textIndex = index(blockOf(node));
       const entry = textIndex.nodes.find((candidate) => candidate.node === node);
-      const word = new Intl.Segmenter(canonicalLocale(document.documentElement.lang), { granularity: "word" })
+      const locale = canonicalLocale(document.documentElement.lang);
+      const word = new Intl.Segmenter(locale, { granularity: "word" })
         .segment(textIndex.text)
         .containing(entry.start + from);
-      return textIndex.text
+      const rest = textIndex.text
         .slice(word?.isWordLike ? word.index : entry.start + from)
         .replace(softHyphen, "")
         .replace(/\s+/g, " ")
         .trim();
+      const sentence = new Intl.Segmenter(locale, { granularity: "sentence" }).segment(rest).containing(0);
+      return sentence ? sentence.segment.trim() : "";
     }
     return "";
   }
