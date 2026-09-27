@@ -94,7 +94,7 @@ struct ReadingView: View {
             let controller = ReaderController(
                 book: readerBook,
                 language: book.language,
-                location: book.position.map { ReaderLocation(chapter: $0.chapter, offset: $0.offset) },
+                location: book.position?.location,
                 style: .book,
                 colors: theme.colors,
                 highlightColor: theme.highlightColor,

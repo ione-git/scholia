@@ -109,17 +109,28 @@ private final class PageCountMessages: NSObject, WKScriptMessageHandler {
         guard
             let body = message.body as? [String: Any],
             let pages = body["pages"] as? Int,
-            let fragmentPages = body["fragmentPages"] as? [String: Int]
+            let pageStarts = body["pageStarts"] as? [Int],
+            let fragmentOffsets = body["fragmentOffsets"] as? [String: Int]
         else {
             return
         }
-        counter?.receive(PageCount(pages: pages, fragmentPages: fragmentPages))
+        counter?.receive(PageCount(pages: pages, pageStarts: pageStarts, fragmentOffsets: fragmentOffsets))
     }
 }
 
 struct PageCount: Codable, Equatable {
     var pages: Int
-    var fragmentPages: [String: Int]
+    var pageStarts: [Int]
+    var fragmentOffsets: [String: Int]
+}
+
+struct FilePages: Equatable {
+    var firstPage: Int
+    var pageStarts: [Int]
+
+    func page(at offset: Int) -> Int {
+        firstPage + (pageStarts.lastIndex { $0 <= offset } ?? 0)
+    }
 }
 
 public enum PageCountCache {

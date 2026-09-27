@@ -3,6 +3,7 @@ import Foundation
 enum Fixture: String {
     case german
     case frenchNoCover = "french-no-cover"
+    case frenchSplit = "french-split"
     case arabic
     case minimalMetadata = "minimal-metadata"
     case corrupted

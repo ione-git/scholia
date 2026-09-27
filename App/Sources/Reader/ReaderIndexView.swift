@@ -47,8 +47,10 @@ struct ReaderIndexView: View {
             switch tab {
             case .contents:
                 ReaderContentsList(controller: controller)
-            case .highlights, .bookmarks:
+            case .highlights:
                 Spacer(minLength: 0)
+            case .bookmarks:
+                ReaderBookmarksList(book: book, controller: controller)
             }
         }
         .background(.surface)

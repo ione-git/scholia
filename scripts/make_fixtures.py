@@ -128,8 +128,10 @@ def chapter(language, title, body, attributes=""):
     return xhtml(language, title, section(title, body, attributes))
 
 
-def anchored_chapters(language, title, chapters):
-    sections = (section(heading, body, f' id="chapter-{index}"') for index, (heading, body) in enumerate(chapters, 1))
+def anchored_chapters(language, title, chapters, first=1):
+    sections = (
+        section(heading, body, f' id="chapter-{index}"') for index, (heading, body) in enumerate(chapters, first)
+    )
     return xhtml(language, title, "\n".join(sections))
 
 
@@ -170,8 +172,14 @@ def package(identifier, title, language, creator, documents, cover):
 """
 
 
-def epub(identifier, title, language, creator, chapters, cover, in_one_file=False, anchored=False):
-    if in_one_file:
+def epub(identifier, title, language, creator, chapters, cover, in_one_file=False, anchored=False, files=None):
+    if files:
+        documents, hrefs, first = [], [], 1
+        for number, size in enumerate(files, 1):
+            documents.append(anchored_chapters(language, title, chapters[first - 1 : first - 1 + size], first))
+            hrefs += [f"chapter-{number}.xhtml#chapter-{index}" for index in range(first, first + size)]
+            first += size
+    elif in_one_file:
         documents = [anchored_chapters(language, title, chapters)]
         hrefs = [f"chapter-1.xhtml#chapter-{index}" for index in range(1, len(chapters) + 1)]
     elif anchored:
@@ -228,6 +236,19 @@ def main():
         None,
         in_one_file=True,
     )
+    french_split = epub(
+        "urn:scholia:fixture:french-split",
+        "Trois matins",
+        "fr",
+        "Scholia",
+        [
+            ("Premier matin", prose(FRENCH * 4)),
+            ("Deuxième matin", prose(FRENCH * 4)),
+            ("Troisième matin", prose(FRENCH * 4)),
+        ],
+        None,
+        files=[1, 2],
+    )
     arabic = epub(
         "urn:scholia:fixture:arabic",
         "صباح في المدينة",
@@ -259,6 +280,7 @@ def main():
     books = {
         "german.epub": archive(german),
         "french-no-cover.epub": archive(french),
+        "french-split.epub": archive(french_split),
         "arabic.epub": archive(arabic),
         "minimal-metadata.epub": minimal,
         "corrupted.epub": minimal[: len(minimal) // 2],

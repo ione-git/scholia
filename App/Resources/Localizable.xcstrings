@@ -12,6 +12,7 @@
       }
     },
     "%@ · %@" : {
+      "comment" : "Two parts of one line joined by a middle dot, e.g. a bookmark's page, then its chapter",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -644,6 +645,30 @@
     },
     "pronoun" : {
 
+    },
+    "readerBookmarks.bookmark" : {
+      "comment" : "Bookmarks row when neither the page nor the chapter of the bookmark is known",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Bookmark"
+          }
+        }
+      }
+    },
+    "readerBookmarks.page" : {
+      "comment" : "Bookmarks row: the page the bookmark is on",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Page %lld"
+          }
+        }
+      }
     },
     "verb" : {
 

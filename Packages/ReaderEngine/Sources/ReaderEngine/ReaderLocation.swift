@@ -20,6 +20,7 @@ public struct ReaderPageSpan: Equatable, Sendable {
     public var chapter: Int
     public var start: Int
     public var end: Int
+    public var firstLine: String
 
     public func contains(_ location: ReaderLocation) -> Bool {
         location.chapter == chapter && start <= location.offset

@@ -86,6 +86,7 @@ let dark = launch(configuration, appearance: .dark)
 |---|---|
 | `.german` | "Die Verwandlung", Franz Kafka, `de`, cover, nav with Erster/Zweiter/Dritter Teil, ~2,400 words each; Zweiter Teil opens with a verse in `<br/>` lines and `<div>` paragraphs |
 | `.frenchNoCover` | "Un matin en ville", Scholia, `fr`, no cover, Premier/Deuxième chapitre in one XHTML file (nav links to `#chapter-1`, `#chapter-2`) |
+| `.frenchSplit` | "Trois matins", Scholia, `fr`, no cover, Premier matin in the first XHTML file, Deuxième and Troisième matin in the second (nav links to `#chapter-1`…`#chapter-3`) |
 | `.arabic` | "صباح في المدينة", Scholia, `ar` (right-to-left), no cover, three chapters of 3 pages each on iPhone, one file each (nav links to `#chapter-1`…`#chapter-3`, the top of each file) |
 | `.minimalMetadata` | cover; only identifier, title "Minimal", language `en`; no author; one chapter "Chapter One" |
 | `.corrupted` | truncated zip, cannot be opened; seeded as "Corrupted", no author, `en` |

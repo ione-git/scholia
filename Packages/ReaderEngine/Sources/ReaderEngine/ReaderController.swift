@@ -8,7 +8,7 @@ public final class ReaderController {
     public internal(set) var location: ReaderLocation?
     public internal(set) var pageSpan: ReaderPageSpan?
     public internal(set) var word: ReaderWord?
-    var startPages: [Int]?
+    var filePages: [FilePages]?
     public var colors: ReaderColors {
         didSet { viewController.apply(colors) }
     }
@@ -55,10 +55,17 @@ public final class ReaderController {
     }
 
     public func startPage(ofChapterAt index: Int) -> Int? {
-        guard let startPages, startPages.indices.contains(index) else {
+        guard book.tableOfContents.indices.contains(index) else {
             return nil
         }
-        return startPages[index]
+        return page(at: book.tableOfContents[index].location)
+    }
+
+    public func page(at location: ReaderLocation) -> Int? {
+        guard let filePages, filePages.indices.contains(location.chapter) else {
+            return nil
+        }
+        return filePages[location.chapter].page(at: location.offset)
     }
 }
 

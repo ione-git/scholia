@@ -4,7 +4,8 @@ function reportPageCount(fragments) {
     const pages = Math.round(document.scrollingElement.scrollWidth / window.innerWidth);
     webkit.messageHandlers.pageCount.postMessage({
       pages: Math.max(1, pages),
-      fragmentPages: scholia.pagesOfElements(fragments),
+      pageStarts: scholia.pageStartOffsets(),
+      fragmentOffsets: scholia.offsetsOfElements(fragments),
     });
   }
 

@@ -108,6 +108,67 @@
     return Math.max(0, Math.round(document.scrollingElement.scrollWidth / window.innerWidth) - 1);
   }
 
+  function firstCharacterOnPage(node, page) {
+    let low = 0;
+    let high = node.data.length - 1;
+    while (low < high) {
+      const middle = (low + high) >> 1;
+      const found = pageOfCharacter(node, middle);
+      if (found === null || found >= page) {
+        high = middle;
+      } else {
+        low = middle + 1;
+      }
+    }
+    return low;
+  }
+
+  function pageStarts(through) {
+    const nodes = textNodes();
+    const starts = [0];
+    for (const { node, start } of nodes) {
+      if (starts.length > through) {
+        break;
+      }
+      const range = document.createRange();
+      range.selectNodeContents(node);
+      const rects = boxes(range);
+      const lastPageOfNode = rects.length === 0 ? -1 : pageOf(rects[rects.length - 1]);
+      while (starts.length <= Math.min(through, lastPageOfNode)) {
+        starts.push(start + firstCharacterOnPage(node, starts.length));
+      }
+    }
+    const last = nodes[nodes.length - 1];
+    const end = last ? last.start + last.node.data.length : 0;
+    while (starts.length <= through) {
+      starts.push(end);
+    }
+    return starts;
+  }
+
+  function lineAt(offset) {
+    for (const { node, start } of textNodes()) {
+      if (start + node.data.length <= offset) {
+        continue;
+      }
+      const from = Math.max(0, offset - start);
+      if (!boxOfCharacter(node, from)) {
+        continue;
+      }
+      const textIndex = index(blockOf(node));
+      const entry = textIndex.nodes.find((candidate) => candidate.node === node);
+      const word = new Intl.Segmenter(canonicalLocale(document.documentElement.lang), { granularity: "word" })
+        .segment(textIndex.text)
+        .containing(entry.start + from);
+      return textIndex.text
+        .slice(word?.isWordLike ? word.index : entry.start + from)
+        .replace(softHyphen, "")
+        .replace(/\s+/g, " ")
+        .trim();
+    }
+    return "";
+  }
+
   function pageOfOffset(offset) {
     if (offset <= 0) {
       return 0;
@@ -165,33 +226,13 @@
   }
 
   window.scholia = {
-    offsetOfPage(page) {
-      if (page <= 0) {
-        return 0;
-      }
-      const nodes = textNodes();
-      for (const { node, start } of nodes) {
-        const range = document.createRange();
-        range.selectNodeContents(node);
-        const rects = boxes(range);
-        if (rects.length === 0 || pageOf(rects[rects.length - 1]) < page) {
-          continue;
-        }
-        let low = 0;
-        let high = node.data.length - 1;
-        while (low < high) {
-          const middle = (low + high) >> 1;
-          const found = pageOfCharacter(node, middle);
-          if (found === null || found >= page) {
-            high = middle;
-          } else {
-            low = middle + 1;
-          }
-        }
-        return start + low;
-      }
-      const last = nodes[nodes.length - 1];
-      return last ? last.start + last.node.data.length : 0;
+    pageSpan(page) {
+      const starts = pageStarts(page + 1);
+      return { start: starts[page], end: starts[page + 1], firstLine: lineAt(starts[page]) };
+    },
+
+    pageStartOffsets() {
+      return pageStarts(lastPage());
     },
 
     async showOffset(offset) {
@@ -216,21 +257,15 @@
       }
     },
 
-    visibleOffsets() {
+    visibleSpan() {
       const lineStart = isRightToLeft() ? window.innerWidth - 1 : 0;
       const lineEnd = window.innerWidth - 1 - lineStart;
       const start = offsetAt(lineStart, 0);
       const end = offsetAt(lineEnd, window.innerHeight - 1);
-      return start === null || end === null ? null : [start, end];
+      return start === null || end === null ? null : { start, end, firstLine: lineAt(start) };
     },
 
     offsetsOfElements,
-
-    pagesOfElements(ids) {
-      return Object.fromEntries(
-        Object.entries(offsetsOfElements(ids)).map(([id, offset]) => [id, pageOfOffset(offset)])
-      );
-    },
 
     wordAt(x, y, language) {
       const caret = document.caretRangeFromPoint(x, y);
