@@ -13,6 +13,7 @@ struct WordCardScreen: Screen {
     var loading: XCUIElement { app.descendants(matching: .any)["wordCard.loading"] }
     var failure: XCUIElement { app.staticTexts["wordCard.failure"] }
     var pronounceButton: XCUIElement { app.buttons["wordCard.pronounce"] }
+    var closeButton: XCUIElement { app.buttons["wordCard.close"] }
     var pronunciations: XCUIElement { app.descendants(matching: .any)["debug.pronunciations"] }
 
     var meaningLabels: [String] {
@@ -25,7 +26,7 @@ struct WordCardScreen: Screen {
 
     @discardableResult
     func close() -> ReaderScreen {
-        app.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.1)).tap()
+        closeButton.waitUntil(\.isHittable, equals: true).tap()
         root.waitUntilGone()
         return ReaderScreen(app: app).waitUntilShown()
     }

@@ -43,6 +43,7 @@ final class WordCardTests: UITestCase {
         let card = WordCardScreen(app: reader.app).waitUntilShown()
         XCTAssertEqual(card.word.label, "Ungeziefer")
         card.translation.waitUntil(\.label, equals: "vermin")
+        XCTAssertEqual(card.closeButton.waitUntilExists().label, "Close card")
         card.close()
         reader.paintedWordTints.waitUntil(\.label, equals: "0")
         XCTAssertFalse(reader.bubble.exists)

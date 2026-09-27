@@ -4,41 +4,49 @@ extension View {
     public func modalSheet<Content: View>(
         isPresented: Binding<Bool>, @ViewBuilder content: @escaping () -> Content
     ) -> some View {
-        scrim(isShown: isPresented.wrappedValue) { isPresented.wrappedValue = false }
-            .sheet(isPresented: isPresented) {
-                content()
-                    .presentationBackground(.surface)
-                    .presentationCornerRadius(.radiusSheet)
-                    .scrimmedSheetChrome()
-            }
+        scrim(isShown: isPresented.wrappedValue) {
+            Color.scrim
+                .onTapGesture { isPresented.wrappedValue = false }
+        }
+        .sheet(isPresented: isPresented) {
+            content()
+                .presentationBackground(.surface)
+                .presentationCornerRadius(.radiusSheet)
+                .sheetGrabber()
+                .presentationBackgroundInteraction(.enabled(upThrough: .large))
+        }
     }
 
     public func cardSheet<Item: Identifiable, Content: View>(
-        item: Binding<Item?>, onDismiss: @escaping () -> Void, @ViewBuilder content: @escaping (Item) -> Content
+        item: Binding<Item?>, closeLabel: Text, closeIdentifier: String, onDismiss: @escaping () -> Void,
+        @ViewBuilder content: @escaping (Item) -> Content
     ) -> some View {
-        scrim(isShown: item.wrappedValue != nil) { item.wrappedValue = nil }
-            .sheet(item: item, onDismiss: onDismiss) { item in
-                FittedSheet { content(item) }
-            }
+        let close = { item.wrappedValue = nil }
+        return scrim(isShown: item.wrappedValue != nil) {
+            Color.scrim
+                .onTapGesture(perform: close)
+                .accessibilityElement()
+                .accessibilityLabel(closeLabel)
+                .accessibilityAddTraits(.isButton)
+                .accessibilityAction(.default, close)
+                .accessibilityIdentifier(closeIdentifier)
+        }
+        .sheet(item: item, onDismiss: onDismiss) { item in
+            FittedSheet { content(item) }
+        }
     }
 
-    fileprivate func scrim(isShown: Bool, dismiss: @escaping () -> Void) -> some View {
+    fileprivate func scrim<Scrim: View>(isShown: Bool, @ViewBuilder scrim: () -> Scrim) -> some View {
         accessibilityHidden(isShown)
             .overlay {
                 ZStack {
                     if isShown {
-                        Color.scrim
+                        scrim()
                             .ignoresSafeArea()
-                            .onTapGesture(perform: dismiss)
                     }
                 }
                 .animation(.default, value: isShown)
             }
-    }
-
-    fileprivate func scrimmedSheetChrome() -> some View {
-        sheetGrabber()
-            .presentationBackgroundInteraction(.enabled(upThrough: .large))
     }
 
     public func glassSheetStyle() -> some View {
@@ -75,8 +83,13 @@ private struct FittedSheet<Content: View>: View {
         }
         .scrollBounceBehavior(.basedOnSize)
         .presentationDetents(height.map { [.height($0)] } ?? [.medium])
+        .presentationBackground {
+            Color.clear
+                .glassEffect(.regular.tint(.surfaceGlassStrong), in: RoundedRectangle(cornerRadius: .radiusSheet))
+        }
         .presentationCornerRadius(.radiusSheet)
-        .scrimmedSheetChrome()
+        .sheetGrabber()
+        .presentationBackgroundInteraction(.enabled)
     }
 }
 

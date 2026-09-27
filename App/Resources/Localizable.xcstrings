@@ -146,6 +146,9 @@
     "Close" : {
 
     },
+    "Close card" : {
+      "comment" : "Word card: VoiceOver label of the dimmed page that closes the card"
+    },
     "Close menu" : {
 
     },

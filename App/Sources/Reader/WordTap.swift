@@ -17,7 +17,12 @@ struct WordTap: ViewModifier {
     func body(content: Content) -> some View {
         content
             .overlay { inline }
-            .cardSheet(item: card, onDismiss: closeDetails) { item in
+            .cardSheet(
+                item: card,
+                closeLabel: Text(
+                    "Close card", comment: "Word card: VoiceOver label of the dimmed page that closes the card"),
+                closeIdentifier: "wordCard.close", onDismiss: closeDetails
+            ) { item in
                 WordCardSheet(
                     lookup: lookup(of: item.word), language: language,
                     translationLanguage: settings.translationLanguage, canPronounce: canPronounce
@@ -96,6 +101,7 @@ struct WordTap: ViewModifier {
     }
 
     private func translate(_ word: ReaderWord?) async {
+        lookup = nil
         guard let word, case .loading = lookup(of: word).phase else {
             return
         }
