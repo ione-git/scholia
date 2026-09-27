@@ -77,6 +77,7 @@ let dark = launch(configuration, appearance: .dark)
 - `debug.storedLibrary` (any screen: `screen.storedLibrary`) lists the stored books by title, one per line as `title · author · language · file name` (`no author`, `no file` when missing); see `DataModelTests`. Its value lists the files in the app's books folder, sorted, one per line (`BookActionsTests/testRemoveAsksThenDeletesBookAndFile`).
 - `debug.storedHighlights` (any screen: `screen.storedHighlights`) has the number of stored highlights as its label, including any left without a book (`SelectBooksTests/testSelectedBooksAreRemovedWithTheirHighlights`), and one `text · colour` line per highlight, sorted by text, as its value (`SelectionTests`).
 - `debug.readingReminder` (any screen: `screen.readingReminder`) has the pending local notifications as its label, one per line as `identifier · title · body · HH:mm · repeats` (`none` when there are none), and the notification permission as its value (`notDetermined`, `authorized`, `denied`), read at launch and after each change of the reminder toggle or time, once the schedule is updated; see `ReminderTests`.
+- `debug.privacyManifest` (any screen: `screen.privacyManifest`) reads `PrivacyInfo.xcprivacy` from the app bundle: its label lists the accessed API categories, one per line as `category · reasons`, sorted, and its value is `tracking <true|false> · <n> tracking domains · <n> collected data types` (`no manifest` in both when the file is missing or invalid); see `PrivacyManifestTests`.
 - `debug.colorScheme` (any screen: `screen.colorScheme`) has the colour scheme the app renders in as its label, `light` or `dark`, after the Theme setting and the system appearance; see `SettingsTests/testThemeOverridesSystemAppearance`.
 - Notification permission is not reset by `resetsState` and cannot be changed in the simulator's Settings app: a simulator asks once, then keeps the answer until the app is uninstalled (`xcrun simctl uninstall <udid> com.ione.scholia`). Turn the reminder on with `SettingsScreen.turnOnReminder()`, which checks the system prompt's title and allows it when it comes; never deny it in a test, use `notificationPermission` instead. A test that needs the reminder on but does not check scheduling (snapshots) launches with `notificationPermission: .authorized`, then `tapReminder()` and waits for `isOn`; never `turnOnReminder()` there, it waits for a prompt that `.authorized` skips.
 - Translation mock (`App/Sources/Translation/MockTranslationProvider.swift`): every word gets the same `MockTranslationProvider.translation` (translation "vermin"), target languages are `TargetLanguage.identifiers`, no language packs. `debug.translationRequests` (any screen: `reader.translationRequests`) lists the requests that reached the mock, one per line as `word · offset in sentence (UTF-16) · source → target`; cached repeats do not appear; a `.held` request appears as soon as it is made; see `TranslationTests`, `WordBubbleTests`.
@@ -90,7 +91,9 @@ let dark = launch(configuration, appearance: .dark)
 | `.arabic` | "صباح في المدينة", Scholia, `ar` (right-to-left), no cover, three chapters of 3 pages each on iPhone, one file each (nav links to `#chapter-1`…`#chapter-3`, the top of each file) |
 | `.minimalMetadata` | cover; only identifier, title "Minimal", language `en`; no author; one chapter "Chapter One" |
 | `.corrupted` | truncated zip, cannot be opened; seeded as "Corrupted", no author, `en` |
-| `.drm` | "Encrypted", `META-INF/encryption.xml` (aes128-cbc), chapter bytes scrambled |
+| `.drm` | "Encrypted", `META-INF/encryption.xml` (aes128-cbc), chapter bytes scrambled; import and reader refuse it as protected |
+| `.zip64` | "ZIP64", Franz Kafka, `de`, no cover, one chapter; ZIP64 end-of-central-directory record and locator, classic end record holds the ZIP64 placeholders |
+| `.fontObfuscation` | "Obfuscated Font", Franz Kafka, `de`, no cover, one chapter; `META-INF/encryption.xml` lists only the IDPF font obfuscation for `font.otf`, so it is not protected |
 
 ## Screen objects
 
@@ -217,7 +220,9 @@ Tests that switch the appearance (`launch(_:appearance:)`, every dark snapshot) 
 
 ## Read failures
 
-Every run writes `build/Results-<timestamp>.xcresult`; the path is printed first.
+Every run writes `build/Results-<timestamp>.xcresult`; the path is printed first. `scripts/test-report` prints the failed tests with their reasons for the newest bundle.
+
+On CI the report step prints the same table and puts it on the run page; `gh run view <run-id> --log-failed` shows it. Download the bundle (`gh run download <run-id> -n xcresult`) only when the reason is not enough.
 
 ```sh
 xcrun xcresulttool get test-results summary --path <bundle>

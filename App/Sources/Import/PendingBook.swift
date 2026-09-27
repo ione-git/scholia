@@ -4,7 +4,7 @@ import UIKit
 
 nonisolated struct ImportFailure: Error {
     let fileName: String
-    let reason: EPUBMetadata.Failure
+    let reason: ReaderError
 }
 
 nonisolated struct PendingBook: Identifiable, Sendable {
@@ -41,10 +41,10 @@ nonisolated struct PendingBook: Identifiable, Sendable {
         if url.isInsideAppDocuments {
             try? FileManager.default.removeItem(at: url)
         }
-        do throws(EPUBMetadata.Failure) {
+        do throws(ReaderError) {
             let metadata = try await EPUBMetadata.read(from: file)
             guard let size = try? file.resourceValues(forKeys: [.fileSizeKey]).fileSize else {
-                throw EPUBMetadata.Failure.unreadable
+                throw ReaderError.unreadable
             }
             return PendingBook(
                 id: id, file: file, size: size, source: source,

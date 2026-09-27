@@ -84,6 +84,18 @@ ENCRYPTION = """<?xml version="1.0" encoding="UTF-8"?>
 </encryption>
 """
 
+FONT_ENCRYPTION = """<?xml version="1.0" encoding="UTF-8"?>
+<encryption xmlns="urn:oasis:names:tc:opendocument:xmlns:container"
+    xmlns:enc="http://www.w3.org/2001/04/xmlenc#">
+  <enc:EncryptedData>
+    <enc:EncryptionMethod Algorithm="http://www.idpf.org/2008/embedding"/>
+    <enc:CipherData>
+      <enc:CipherReference URI="OEBPS/font.otf"/>
+    </enc:CipherData>
+  </enc:EncryptedData>
+</encryption>
+"""
+
 
 def png_chunk(kind, data):
     return struct.pack(">I", len(data)) + kind + data + struct.pack(">I", zlib.crc32(kind + data))
@@ -206,6 +218,15 @@ def archive(files):
     return buffer.getvalue()
 
 
+def zip64(data):
+    end = len(data) - 22
+    count, size, offset = struct.unpack("<HII", data[end + 10 : end + 20])
+    record = struct.pack("<IQHHIIQQQQ", 0x06064B50, 44, 45, 45, 0, 0, count, count, size, offset)
+    locator = struct.pack("<IIQI", 0x07064B50, 0, end, 1)
+    classic = struct.pack("<IHHHHIIH", 0x06054B50, 0, 0, 0xFFFF, 0xFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0)
+    return data[:end] + record + locator + classic
+
+
 def main():
     german = epub(
         "urn:scholia:fixture:german",
@@ -256,6 +277,20 @@ def main():
     drm["OEBPS/chapter-1.xhtml"] = hashlib.shake_256(drm["OEBPS/chapter-1.xhtml"]).digest(
         len(drm["OEBPS/chapter-1.xhtml"])
     )
+    large = epub("urn:scholia:fixture:zip64", "ZIP64", "de", "Franz Kafka", [("Erster Teil", prose(KAFKA))], None)
+    font = epub(
+        "urn:scholia:fixture:font-obfuscation",
+        "Obfuscated Font",
+        "de",
+        "Franz Kafka",
+        [("Erster Teil", prose(KAFKA))],
+        None,
+    )
+    font["META-INF/encryption.xml"] = FONT_ENCRYPTION.encode()
+    font["OEBPS/content.opf"] = font["OEBPS/content.opf"].replace(
+        b"<manifest>\n", b'<manifest>\n<item id="font" href="font.otf" media-type="font/otf"/>\n'
+    )
+    font["OEBPS/font.otf"] = hashlib.shake_256(b"scholia-font").digest(2048)
     books = {
         "german.epub": archive(german),
         "french-no-cover.epub": archive(french),
@@ -263,6 +298,8 @@ def main():
         "minimal-metadata.epub": minimal,
         "corrupted.epub": minimal[: len(minimal) // 2],
         "drm.epub": archive(drm),
+        "zip64.epub": zip64(archive(large)),
+        "font-obfuscation.epub": archive(font),
     }
     OUTPUT.mkdir(exist_ok=True)
     for name, data in books.items():
