@@ -20,7 +20,10 @@
         @State private var appearance = Appearance.system
 
         var body: some View {
-            GalleryPage(identifier: "componentGallery.scrollView", colorScheme: appearance.colorScheme) {
+            GalleryPage(
+                title: Text("Component Gallery"), identifier: "componentGallery.scrollView",
+                colorScheme: appearance.colorScheme
+            ) {
                 GroupedSection(Text("Appearance")) {
                     ListRow(Text("Theme"), height: .control) {
                         SegmentedControl(
@@ -56,7 +59,6 @@
                     }
                 }
             }
-            .navigationTitle("Component Gallery")
         }
 
         private func link(_ title: Text, element: String, @ViewBuilder destination: () -> some View) -> some View {
@@ -74,7 +76,9 @@
         @State private var isReaderMenuOpen = false
 
         var body: some View {
-            GalleryPage(identifier: "glassButtonGallery.scrollView", colorScheme: colorScheme) {
+            GalleryPage(
+                title: Text("Glass button"), identifier: "glassButtonGallery.scrollView", colorScheme: colorScheme
+            ) {
                 HStack(spacing: .space4) {
                     button(.back, label: Text("Back"), element: "back", size: .regular, isActive: false) {}
                     button(.add, label: Text("Add a book"), element: "add", size: .regular, isActive: false) {}
@@ -97,7 +101,6 @@
                 .padding(.space5)
                 .background(.surfacePaper, in: RoundedRectangle(cornerRadius: .radiusLg))
             }
-            .navigationTitle("Glass button")
         }
 
         private func button(
@@ -115,7 +118,7 @@
         @State private var collections = [("Biographies", 4), ("Fiction", 11)]
 
         var body: some View {
-            GalleryPage(identifier: "chipGallery.scrollView", colorScheme: colorScheme) {
+            GalleryPage(title: Text("Chip"), identifier: "chipGallery.scrollView", colorScheme: colorScheme) {
                 ScrollView(.horizontal) {
                     HStack(spacing: .space2) {
                         chip(Text("All"), key: "All", count: 24)
@@ -132,7 +135,6 @@
                 .scrollIndicators(.hidden)
                 .scrollClipDisabled()
             }
-            .navigationTitle("Chip")
         }
 
         private func chip(_ title: Text, key: String, count: Int) -> some View {
@@ -145,7 +147,8 @@
         let colorScheme: ColorScheme?
 
         var body: some View {
-            GalleryPage(identifier: "bookCoverGallery.scrollView", colorScheme: colorScheme) {
+            GalleryPage(title: Text("Book cover"), identifier: "bookCoverGallery.scrollView", colorScheme: colorScheme)
+            {
                 HStack(alignment: .top, spacing: .space4) {
                     GalleryBookCover(
                         title: "Die Verwandlung", author: "Franz Kafka", color: 0x2E3A4F, image: nil, size: .hero,
@@ -169,7 +172,6 @@
                         isFinished: true)
                 }
             }
-            .navigationTitle("Book cover")
         }
     }
 
@@ -177,7 +179,10 @@
         let colorScheme: ColorScheme?
 
         var body: some View {
-            GalleryPage(identifier: "largeBookCoverGallery.scrollView", colorScheme: colorScheme) {
+            GalleryPage(
+                title: Text("Large and image covers"), identifier: "largeBookCoverGallery.scrollView",
+                colorScheme: colorScheme
+            ) {
                 HStack(alignment: .top, spacing: .space4) {
                     VStack(spacing: .space4) {
                         GalleryBookCover(
@@ -192,7 +197,6 @@
                         isFinished: false)
                 }
             }
-            .navigationTitle("Large and image covers")
         }
 
         private var sampleImage: Image {
@@ -229,7 +233,7 @@
         @State private var isFictionChecked = true
 
         var body: some View {
-            GalleryPage(identifier: "listRowGallery.scrollView", colorScheme: colorScheme) {
+            GalleryPage(title: Text("List rows"), identifier: "listRowGallery.scrollView", colorScheme: colorScheme) {
                 GroupedSection(Text("Translation")) {
                     ListRow(Text("Translate to"), height: .regular) { ListRowValue(Text("Russian")) }
                         .accessibilityElement(children: .combine)
@@ -275,7 +279,6 @@
                     .accessibilityIdentifier("listRowGallery.action")
                 }
             }
-            .navigationTitle("List rows")
         }
     }
 
@@ -291,7 +294,10 @@
         @State private var onWordTap = "bubble"
 
         var body: some View {
-            GalleryPage(identifier: "segmentedControlGallery.scrollView", colorScheme: colorScheme) {
+            GalleryPage(
+                title: Text("Segmented control"), identifier: "segmentedControlGallery.scrollView",
+                colorScheme: colorScheme
+            ) {
                 SegmentedControl(
                     selection: $tab, size: .regular,
                     segments: [
@@ -316,7 +322,6 @@
                         .init("card", title: Text("Card"), count: nil, identifier: "segmentedControlGallery.card"),
                     ])
             }
-            .navigationTitle("Segmented control")
         }
     }
 
@@ -328,7 +333,10 @@
         @State private var pageTurn = "slide"
 
         var body: some View {
-            GalleryPage(identifier: "presentationGallery.scrollView", colorScheme: colorScheme) {
+            GalleryPage(
+                title: Text("Sheets and popover"), identifier: "presentationGallery.scrollView",
+                colorScheme: colorScheme
+            ) {
                 GroupedList {
                     row(Text("Modal sheet"), element: "modalSheet") { isModalSheetShown = true }
                     row(Text("Glass sheet"), element: "glassSheet") { isGlassSheetShown = true }
@@ -343,7 +351,6 @@
                         }
                 }
             }
-            .navigationTitle("Sheets and popover")
             .modalSheet(isPresented: $isModalSheetShown) {
                 VStack(spacing: .space4) {
                     SheetHeader(Text("Add to Collection")) {
@@ -408,7 +415,10 @@
         @State private var selected: Set<String> = ["Solaris"]
 
         var body: some View {
-            GalleryPage(identifier: "selectionGallery.scrollView", colorScheme: colorScheme) {
+            GalleryPage(
+                title: Text("Selection and toolbar"), identifier: "selectionGallery.scrollView",
+                colorScheme: colorScheme
+            ) {
                 HStack(alignment: .top, spacing: .space4) {
                     cover("Solaris", color: 0x35545E)
                     cover("Educated", color: 0x8A6D2F)
@@ -423,7 +433,6 @@
                 }
                 .disabled(selected.isEmpty)
             }
-            .navigationTitle("Selection and toolbar")
         }
 
         private func cover(_ title: String, color: UInt32) -> some View {

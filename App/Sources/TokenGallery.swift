@@ -14,7 +14,7 @@
         }
 
         var body: some View {
-            GalleryPage(identifier: "tokenGallery.scrollView", colorScheme: nil) {
+            GalleryPage(title: Text("Token Gallery"), identifier: "tokenGallery.scrollView", colorScheme: nil) {
                 GroupedList {
                     section(Text("Surface colours"), name: "coloursSurfaces") { colourRows(Self.surfaceColours) }
                     section(Text("Ink and control colours"), name: "coloursInkAndControls") {
@@ -82,7 +82,6 @@
                     }
                 }
             }
-            .navigationTitle("Token Gallery")
         }
 
         private static func colours(prefixedBy prefixes: [String]) -> [ColorToken] {
@@ -91,10 +90,9 @@
 
         private func section(_ title: Text, name: String, @ViewBuilder content: () -> some View) -> some View {
             NavigationLink {
-                GalleryPage(identifier: "tokenGallery.section.\(name)", colorScheme: nil) {
+                GalleryPage(title: title, identifier: "tokenGallery.section.\(name)", colorScheme: nil) {
                     VStack(alignment: .leading, spacing: .space3) { content() }
                 }
-                .navigationTitle(title)
             } label: {
                 ListRow(title, height: .regular) { ListRowChevron() }
             }
