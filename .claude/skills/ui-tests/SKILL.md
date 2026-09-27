@@ -216,7 +216,9 @@ Tests that switch the appearance (`launch(_:appearance:)`, every dark snapshot) 
 
 ## Read failures
 
-Every run writes `build/Results-<timestamp>.xcresult`; the path is printed first.
+Every run writes `build/Results-<timestamp>.xcresult`; the path is printed first. `scripts/test-report` prints the failed tests with their reasons for the newest bundle.
+
+On CI the report step prints the same table and puts it on the run page; `gh run view <run-id> --log-failed` shows it. Download the bundle (`gh run download <run-id> -n xcresult`) only when the reason is not enough.
 
 ```sh
 xcrun xcresulttool get test-results summary --path <bundle>

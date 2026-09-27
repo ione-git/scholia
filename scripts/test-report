@@ -1,0 +1,29 @@
+#!/bin/bash
+set -euo pipefail
+
+bundle=${1:-$(ls -td build/Results-*.xcresult 2>/dev/null | head -1)}
+if [ -z "$bundle" ] || [ ! -f "$bundle/Info.plist" ]; then
+    echo "No test results: the build or the test run stopped before any test finished." >&2
+    exit 1
+fi
+
+xcrun xcresulttool get test-results summary --path "$bundle" >build/summary.json
+python3 - build/summary.json <<'EOF'
+import json, os, sys
+
+s = json.load(open(sys.argv[1]))
+minutes = round((s["finishTime"] - s["startTime"]) / 60)
+lines = [f"**{s['result']}**: {s['passedTests']} passed, {s['failedTests']} failed, {s['skippedTests']} skipped in {minutes} min", ""]
+failures = s.get("testFailures", [])
+if failures:
+    lines += ["| Test | Reason |", "| --- | --- |"]
+    for f in failures:
+        reason = " ".join(f.get("failureText", "").split()).replace("|", "\\|")
+        lines.append(f"| `{f['testIdentifierString']}` | {reason} |")
+report = "\n".join(lines)
+print(report)
+if os.environ.get("GITHUB_STEP_SUMMARY"):
+    with open(os.environ["GITHUB_STEP_SUMMARY"], "a") as out:
+        out.write(report + "\n")
+sys.exit(1 if s["failedTests"] else 0)
+EOF
