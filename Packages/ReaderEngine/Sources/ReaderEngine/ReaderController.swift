@@ -8,6 +8,7 @@ public final class ReaderController {
     public internal(set) var location: ReaderLocation?
     public internal(set) var pageSpan: ReaderPageSpan?
     public internal(set) var word: ReaderWord?
+    var startPages: [Int]?
     public var colors: ReaderColors {
         didSet { viewController.apply(colors) }
     }
@@ -43,6 +44,21 @@ public final class ReaderController {
 
     public func clearWord() {
         viewController.clearWord()
+    }
+
+    public func go(to location: ReaderLocation) {
+        viewController.go(to: .location(location))
+    }
+
+    public func go(toChapterAt index: Int) {
+        viewController.go(to: .chapter(index))
+    }
+
+    public func startPage(ofChapterAt index: Int) -> Int? {
+        guard let startPages, startPages.indices.contains(index) else {
+            return nil
+        }
+        return startPages[index]
     }
 }
 

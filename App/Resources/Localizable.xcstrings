@@ -293,6 +293,9 @@
     "Open Settings" : {
 
     },
+    "Page %lld" : {
+      "comment" : "Contents row: start page of the chapter"
+    },
     "Paper" : {
 
     },
