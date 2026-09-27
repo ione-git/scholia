@@ -71,8 +71,8 @@ final class ReaderCurlTests: UITestCase {
         let reader = openInCurlMode(germanBook, appearance: .light)
         reader.pageCurl.waitUntil(\.label, equals: "ready")
 
-        try reader.wordPoint(onLine: 5, x: 60).press(
-            forDuration: 1, thenDragTo: try reader.wordPoint(onLine: 6, x: 200))
+        try reader.wordPoint(onLine: 6, x: 200).press(
+            forDuration: 1, thenDragTo: try reader.wordPoint(onLine: 5, x: 60))
 
         reader.paintedHighlights.waitUntil(\.label, equals: "1")
         XCTAssertEqual(reader.pageCounter.label, "1 of \(bookPages)")

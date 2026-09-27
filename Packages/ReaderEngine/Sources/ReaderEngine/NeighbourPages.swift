@@ -29,6 +29,7 @@ final class NeighbourPages: NSObject {
     private var navigator: EPUBNavigatorViewController?
     private var chapter: Int?
     private var isLoaded = false
+    private var visibility: ScrollObservation?
     private var loadWaiters: [CheckedContinuation<Void, Never>] = []
     private var pageCounts: [Int: Int] = [:]
     private var epoch = 0
@@ -254,6 +255,7 @@ final class NeighbourPages: NSObject {
 
     private func removeNavigator() {
         isLoaded = false
+        visibility = nil
         chapter = nil
         resumeLoadWaiters()
         guard let navigator else {
@@ -275,9 +277,14 @@ final class NeighbourPages: NSObject {
     }
 
     fileprivate func didLoad(_ loaded: EPUBNavigatorViewController?) {
-        guard loaded === navigator else {
+        guard loaded === navigator, let scrollView = visibleWebView()?.scrollView else {
             return
         }
+        guard scrollView.alpha == 1 else {
+            visibility = ScrollObservation(scrollView, keyPath: \.alpha) { [weak self] in self?.didLoad(loaded) }
+            return
+        }
+        visibility = nil
         isLoaded = true
         resumeLoadWaiters()
     }

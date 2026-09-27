@@ -1127,7 +1127,7 @@ private struct PageLayout: Equatable {
     var isScrolled: Bool
 }
 
-private struct ScrollObservation {
+struct ScrollObservation {
     weak var scrollView: UIScrollView?
     let observation: NSKeyValueObservation
 
