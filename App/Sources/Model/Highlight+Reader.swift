@@ -20,7 +20,11 @@ extension Highlight {
         self.range.start == range.start && self.range.end == range.end
     }
 
+    var readerID: String {
+        "\(start.chapter):\(start.offset)-\(end.offset)"
+    }
+
     func readerHighlight(color: UIColor) -> ReaderHighlight {
-        ReaderHighlight(id: "\(start.chapter):\(start.offset)-\(end.offset)", range: range, color: color)
+        ReaderHighlight(id: readerID, range: range, color: color)
     }
 }

@@ -39,6 +39,9 @@ struct ComponentGalleryScreen: Screen {
     func openSelectionMenu() -> SelectionMenuGalleryScreen {
         open("selectionMenu", as: SelectionMenuGalleryScreen.init)
     }
+    func openHighlightColorMenu() -> HighlightColorMenuGalleryScreen {
+        open("highlightColorMenu", as: HighlightColorMenuGalleryScreen.init)
+    }
 }
 
 protocol ComponentGalleryPage: Screen {}
@@ -137,6 +140,15 @@ struct SelectionMenuGalleryScreen: ComponentGalleryPage {
     var menu: XCUIElement { app.otherElements["selectionMenuGallery.menu"] }
 
     func item(_ element: String) -> XCUIElement { app.buttons["selectionMenuGallery.\(element)"] }
+}
+
+struct HighlightColorMenuGalleryScreen: ComponentGalleryPage {
+    let app: XCUIApplication
+
+    var root: XCUIElement { app.scrollViews["highlightColorMenuGallery.scrollView"] }
+    var menu: XCUIElement { app.otherElements["highlightColorMenuGallery.menu"] }
+
+    func item(_ element: String) -> XCUIElement { app.buttons["highlightColorMenuGallery.\(element)"] }
 }
 
 struct PresentationGalleryScreen: ComponentGalleryPage {

@@ -46,7 +46,9 @@ struct ReadingView: View {
             }
             .ignoresSafeArea()
             if let controller {
+                HighlightPainter(book: book, controller: controller, theme: theme)
                 SelectionMenuLayer(controller: controller)
+                HighlightMenuLayer(book: book, controller: controller)
             }
             if let controller, let word = controller.word {
                 TranslationBubblePlacement(anchor: word.rect, topLimit: .navTop + .controlH, gap: .bubble) {
@@ -64,6 +66,10 @@ struct ReadingView: View {
             .background {
                 PaintedDiagnostics(identifier: "debug.paintedHighlights", count: controller?.paintedHighlights ?? 0)
             }
+            .background {
+                PaintedDiagnostics(
+                    identifier: "debug.paintedHighlightRings", count: controller?.paintedHighlightRings ?? 0)
+            }
         #endif
         .accessibilityElement(children: .contain)
         .accessibilityIdentifier("reader.page")
@@ -80,7 +86,7 @@ struct ReadingView: View {
         }
         .task { await open() }
         .onChange(of: theme) { recolor() }
-        .onChange(of: book.highlights) { paintHighlights() }
+        .onChange(of: settings.highlightColor) { recolor() }
         .onChange(of: controller?.location) { _, location in save(location) }
         .onChange(of: controller?.page) { _, page in save(page) }
     }
@@ -117,7 +123,6 @@ struct ReadingView: View {
                 Self.addHighlight(range, color: settings.highlightColor, to: book, in: modelContext)
             }
             self.controller = controller
-            paintHighlights()
             book.openedAt = LaunchConfiguration.current.now ?? .now
             try? modelContext.save()
         } catch {
@@ -131,11 +136,6 @@ struct ReadingView: View {
         }
         controller.colors = theme.colors
         controller.highlightColor = theme.highlightColor(settings.highlightColor)
-        paintHighlights()
-    }
-
-    private func paintHighlights() {
-        controller?.highlights = book.highlights.map { $0.readerHighlight(color: theme.highlightColor($0.color)) }
     }
 
     private static func addHighlight(
@@ -172,6 +172,22 @@ struct ReadingView: View {
 }
 
 private let logger = Logger(subsystem: "com.ione.scholia", category: "reader")
+
+private struct HighlightPainter: View {
+    let book: Book
+    let controller: ReaderController
+    let theme: ReaderTheme
+
+    var body: some View {
+        let highlights = book.highlights.map { $0.readerHighlight(color: theme.highlightColor($0.color)) }
+        Color.clear
+            .frame(width: 0, height: 0)
+            .accessibilityHidden(true)
+            .onChange(of: highlights, initial: true) { _, highlights in
+                controller.highlights = highlights
+            }
+    }
+}
 
 #if DEBUG
     private struct PaintedDiagnostics: View {

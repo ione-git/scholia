@@ -9,6 +9,7 @@ public final class ReaderController {
     public internal(set) var pageSpan: ReaderPageSpan?
     public internal(set) var word: ReaderWord?
     public internal(set) var selection: ReaderSelection?
+    public internal(set) var tappedHighlight: ReaderTappedHighlight?
     public var colors: ReaderColors {
         didSet { viewController.apply(colors) }
     }
@@ -17,6 +18,7 @@ public final class ReaderController {
     }
     public internal(set) var paintedHighlights: Int
     public internal(set) var paintedWordTints: Int
+    public internal(set) var paintedHighlightRings: Int
     public var highlightColor: UIColor
     public var pageTurn: ReaderPageTurn {
         didSet { viewController.apply(pageTurn) }
@@ -37,6 +39,7 @@ public final class ReaderController {
         highlights = []
         paintedHighlights = 0
         paintedWordTints = 0
+        paintedHighlightRings = 0
         viewController = ReaderViewController(
             book: book, language: language, location: location, style: style, colors: colors, pageTurn: pageTurn)
         viewController.controller = self
@@ -60,6 +63,10 @@ public final class ReaderController {
 
     public func clearSelection() {
         viewController.clearSelection()
+    }
+
+    public func clearTappedHighlight() {
+        viewController.clearTappedHighlight()
     }
 }
 

@@ -29,20 +29,13 @@ extension ReaderTheme {
             page: UIColor(page),
             text: UIColor(text),
             selection: UIColor(isDark ? ColorToken.selectionHandle.dark : ColorToken.selectionHandle.light),
-            wordTap: UIColor(isDark ? ColorToken.wordTap.dark : ColorToken.wordTap.light)
+            wordTap: UIColor(isDark ? ColorToken.wordTap.dark : ColorToken.wordTap.light),
+            highlightRing: UIColor(isDark ? ColorToken.highlightRing.dark : ColorToken.highlightRing.light)
         )
     }
 
     func highlightColor(_ color: HighlightColor) -> UIColor {
-        let token: ColorToken =
-            switch color {
-            case .yellow: .highlightYellow
-            case .green: .highlightGreen
-            case .blue: .highlightBlue
-            case .pink: .highlightPink
-            case .purple: .highlightPurple
-            }
-        return UIColor(isDark ? token.dark : token.light)
+        UIColor(isDark ? color.fill.dark : color.fill.light)
     }
 
     func shown(in colorScheme: ColorScheme) -> ReaderTheme {

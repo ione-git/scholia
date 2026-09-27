@@ -4,14 +4,17 @@ public struct TranslationBubblePlacement: Layout {
     public enum Gap: Sendable {
         case bubble
         case selectionMenu
+        case highlightMenu
 
         private static let bubbleGap: CGFloat = 10
         private static let selectionMenuGap: CGFloat = 18
+        private static let highlightMenuGap: CGFloat = 14
 
         var value: CGFloat {
             switch self {
             case .bubble: Self.bubbleGap
             case .selectionMenu: Self.selectionMenuGap
+            case .highlightMenu: Self.highlightMenuGap
             }
         }
     }

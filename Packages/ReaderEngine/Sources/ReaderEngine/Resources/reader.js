@@ -324,8 +324,12 @@
     },
   };
 
-  const painted = { paintedHighlights: 0, paintedWordTints: 0 };
-  const paintedClasses = { paintedHighlights: "scholia-highlight", paintedWordTints: "scholia-word-tap" };
+  const painted = { paintedHighlights: 0, paintedWordTints: 0, paintedHighlightRings: 0 };
+  const paintedClasses = {
+    paintedHighlights: "scholia-highlight",
+    paintedWordTints: "scholia-word-tap",
+    paintedHighlightRings: "scholia-highlight-ring",
+  };
   new MutationObserver(() => {
     for (const [name, className] of Object.entries(paintedClasses)) {
       const count = document.querySelectorAll(`:has(> .${className})`).length;

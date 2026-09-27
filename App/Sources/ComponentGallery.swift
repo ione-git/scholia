@@ -60,6 +60,9 @@
                     link(Text("Selection menu"), element: "selectionMenu") {
                         SelectionMenuGallery(colorScheme: appearance.colorScheme)
                     }
+                    link(Text("Highlight color menu"), element: "highlightColorMenu") {
+                        HighlightColorMenuGallery(colorScheme: appearance.colorScheme)
+                    }
                 }
             }
             .navigationTitle("Component Gallery")
@@ -561,6 +564,31 @@
                 .background(.surfacePaper, in: RoundedRectangle(cornerRadius: .radiusLg))
             }
             .navigationTitle("Selection menu")
+        }
+    }
+
+    private struct HighlightColorMenuGallery: View {
+        let colorScheme: ColorScheme?
+
+        var body: some View {
+            GalleryPage(identifier: "highlightColorMenuGallery", colorScheme: colorScheme) {
+                HighlightColorMenu {
+                    ForEach(HighlightColor.allCases, id: \.self) { color in
+                        HighlightSwatch(color: color.swatch, label: Text(color.name), isSelected: color == .yellow) {}
+                            .accessibilityIdentifier("highlightColorMenuGallery.\(color.rawValue)")
+                    }
+                } delete: {
+                    HighlightDeleteButton(
+                        label: Text("Remove highlight", comment: "Button in the highlight colour menu that deletes it")
+                    ) {}
+                    .accessibilityIdentifier("highlightColorMenuGallery.delete")
+                }
+                .accessibilityIdentifier("highlightColorMenuGallery.menu")
+                .padding(.space5)
+                .frame(maxWidth: .infinity)
+                .background(.surfacePaper, in: RoundedRectangle(cornerRadius: .radiusLg))
+            }
+            .navigationTitle("Highlight color menu")
         }
     }
 

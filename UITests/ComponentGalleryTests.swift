@@ -81,6 +81,15 @@ final class ComponentGalleryTests: UITestCase {
             attachScreenshot("SelectionMenu\(suffix)")
             gallery = selectionMenu.goBack()
 
+            let highlightColorMenu = gallery.openHighlightColorMenu()
+            XCTAssertEqual(highlightColorMenu.root.value as? String, appearance.rawValue)
+            highlightColorMenu.menu.waitUntilExists()
+            for element in HighlightMenuScreen.colors + ["delete"] {
+                highlightColorMenu.item(element).waitUntilExists()
+            }
+            XCTAssertTrue(highlightColorMenu.item("yellow").isSelected)
+            gallery = highlightColorMenu.goBack()
+
             let presentations = gallery.openPresentations()
             XCTAssertEqual(presentations.root.value as? String, appearance.rawValue)
             let modal = presentations.openModalSheet()
