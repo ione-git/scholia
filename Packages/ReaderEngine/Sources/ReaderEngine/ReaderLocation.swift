@@ -1,6 +1,6 @@
 import UIKit
 
-public struct ReaderLocation: Codable, Hashable, Sendable {
+nonisolated public struct ReaderLocation: Codable, Hashable, Sendable {
     public var chapter: Int
     public var offset: Int
 
@@ -34,14 +34,16 @@ public struct ReaderChapter: Equatable, Sendable {
     var unresolvedFragment: String?
 }
 
-public struct ReaderTextRange: Codable, Hashable, Sendable {
-    public var chapter: String
+nonisolated public struct ReaderTextRange: Codable, Hashable, Sendable {
+    public var start: ReaderLocation
+    public var end: ReaderLocation
     public var text: String
     public var before: String
     public var after: String
 
-    public init(chapter: String, text: String, before: String, after: String) {
-        self.chapter = chapter
+    public init(start: ReaderLocation, end: ReaderLocation, text: String, before: String, after: String) {
+        self.start = start
+        self.end = end
         self.text = text
         self.before = before
         self.after = after
@@ -62,7 +64,12 @@ public struct ReaderWord: Equatable, Sendable {
     public var range: ReaderTextRange
 }
 
-public struct ReaderHighlight: Identifiable, Equatable {
+public struct ReaderSelection: Equatable, Sendable {
+    public var text: String
+    public var rect: CGRect
+}
+
+nonisolated public struct ReaderHighlight: Identifiable, Equatable {
     public var id: String
     public var range: ReaderTextRange
     public var color: UIColor
