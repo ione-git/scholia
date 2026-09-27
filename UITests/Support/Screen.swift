@@ -35,6 +35,10 @@ extension Screen {
         app.descendants(matching: .any)["debug.colorScheme"]
     }
 
+    var readingSessions: XCUIElement {
+        app.descendants(matching: .any)["debug.readingSessions"]
+    }
+
     @discardableResult
     func waitUntilShown(file: StaticString = #filePath, line: UInt = #line) -> Self {
         root.waitUntilExists(file: file, line: line)

@@ -11,6 +11,9 @@
         }
       }
     },
+    "%@ left" : {
+
+    },
     "%@ · %@" : {
       "comment" : "Two parts of one line joined by a middle dot, e.g. a bookmark's page, then its chapter",
       "localizations" : {
@@ -50,7 +53,26 @@
     "%lld books" : {
 
     },
+    "%lld h %lld min left" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$lld h %2$lld min left"
+          }
+        }
+      }
+    },
+    "%lld h left" : {
+
+    },
     "%lld min" : {
+
+    },
+    "%lld min left" : {
+
+    },
+    "%lld min to go" : {
 
     },
     "%lld of %lld" : {
@@ -246,6 +268,9 @@
     },
     "Glass sheet" : {
       "shouldTranslate" : false
+    },
+    "Goal done" : {
+
     },
     "Green" : {
       "comment" : "Highlight colour name, label of its swatch"
@@ -709,6 +734,134 @@
     },
     "Title" : {
 
+    },
+    "Today: %lld minutes read, %lld minutes to go" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Today: %#@read@, %#@toGo@"
+          },
+          "substitutions" : {
+            "read" : {
+              "argNum" : 1,
+              "formatSpecifier" : "lld",
+              "variations" : {
+                "plural" : {
+                  "one" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "%arg minute read"
+                    }
+                  },
+                  "other" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "%arg minutes read"
+                    }
+                  }
+                }
+              }
+            },
+            "toGo" : {
+              "argNum" : 2,
+              "formatSpecifier" : "lld",
+              "variations" : {
+                "plural" : {
+                  "one" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "%arg minute to go"
+                    }
+                  },
+                  "other" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "%arg minutes to go"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "Today: %lld of %lld minutes read" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Today: %1$lld of %#@goal@ read"
+          },
+          "substitutions" : {
+            "goal" : {
+              "argNum" : 2,
+              "formatSpecifier" : "lld",
+              "variations" : {
+                "plural" : {
+                  "one" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "%arg minute"
+                    }
+                  },
+                  "other" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "%arg minutes"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "Today: goal done, %lld minutes read" : {
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Today: goal done, %lld minute read"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Today: goal done, %lld minutes read"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "Today: goal reached, %lld minutes read" : {
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Today: goal reached, %lld minute read"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Today: goal reached, %lld minutes read"
+                }
+              }
+            }
+          }
+        }
+      }
     },
     "Token Gallery" : {
       "shouldTranslate" : false

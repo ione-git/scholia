@@ -55,6 +55,7 @@ struct ScholiaApp: App {
                     .background { TranslationDiagnostics(provider: translationService.provider) }
                     .background { SafeAreaDiagnostics() }
                     .background { PronunciationDiagnostics(pronouncer: pronouncer) }
+                    .background { ReadingDiagnostics() }
                     .background { PasteboardDiagnostics() }
                 #endif
         }

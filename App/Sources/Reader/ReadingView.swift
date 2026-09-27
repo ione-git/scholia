@@ -124,6 +124,7 @@ struct ReadingView: View {
             transition.end()
             orientationLock.unlock(in: window.window)
         }
+        .modifier(ReadingTime(controller: controller))
     }
 
     private var theme: ReaderTheme {
@@ -225,6 +226,7 @@ struct ReadingView: View {
             return
         }
         book.progress = Double(page.number) / Double(page.count)
+        book.pagesLeft = page.count - page.number
         try? modelContext.save()
     }
 }

@@ -43,6 +43,7 @@ struct LaunchConfiguration {
     var now: Date?
     var notificationPermission: NotificationPermission?
     var collections: [FixtureCollection] = []
+    var minutesRead = 0
 
     static let current = LaunchConfiguration(environment: ProcessInfo.processInfo.environment)
 }
@@ -58,6 +59,7 @@ extension LaunchConfiguration {
         static let now = "SCHOLIA_NOW"
         static let notificationPermission = "SCHOLIA_NOTIFICATIONS"
         static let collections = "SCHOLIA_COLLECTIONS"
+        static let minutesRead = "SCHOLIA_MINUTES_READ"
     }
 
     init(environment: [String: String]) {
@@ -71,7 +73,8 @@ extension LaunchConfiguration {
                 translation: environment[Key.translation].flatMap(TranslationMock.init),
                 now: environment[Key.now].flatMap { try? Date($0, strategy: .iso8601) },
                 notificationPermission: environment[Key.notificationPermission].flatMap(NotificationPermission.init),
-                collections: Self.collections(environment[Key.collections])
+                collections: Self.collections(environment[Key.collections]),
+                minutesRead: environment[Key.minutesRead].flatMap { Int($0) } ?? 0
             )
         #else
             self.init(
@@ -123,6 +126,9 @@ extension LaunchConfiguration {
                 "\(collection.name):\(collection.books.map(\.rawValue).joined(separator: ","))"
             }
             .joined(separator: ";")
+        }
+        if minutesRead > 0 {
+            environment[Key.minutesRead] = String(minutesRead)
         }
         return environment
     }
