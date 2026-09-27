@@ -140,8 +140,10 @@ def chapter(language, title, body, attributes=""):
     return xhtml(language, title, section(title, body, attributes))
 
 
-def anchored_chapters(language, title, chapters):
-    sections = (section(heading, body, f' id="chapter-{index}"') for index, (heading, body) in enumerate(chapters, 1))
+def anchored_chapters(language, title, chapters, first=1):
+    sections = (
+        section(heading, body, f' id="chapter-{index}"') for index, (heading, body) in enumerate(chapters, first)
+    )
     return xhtml(language, title, "\n".join(sections))
 
 
@@ -182,8 +184,21 @@ def package(identifier, title, language, creator, documents, cover):
 """
 
 
-def epub(identifier, title, language, creator, chapters, cover, in_one_file=False, anchored=False):
-    if in_one_file:
+def epub(identifier, title, language, creator, chapters, cover, in_one_file=False, anchored=False, files=None):
+    if files:
+        documents = []
+        hrefs = []
+        first = 1
+        for number, count in enumerate(files, 1):
+            group = chapters[first - 1 : first - 1 + count]
+            if count == 1:
+                documents.append(chapter(language, *group[0]))
+                hrefs.append(f"chapter-{number}.xhtml")
+            else:
+                documents.append(anchored_chapters(language, title, group, first))
+                hrefs.extend(f"chapter-{number}.xhtml#chapter-{index}" for index in range(first, first + count))
+            first += count
+    elif in_one_file:
         documents = [anchored_chapters(language, title, chapters)]
         hrefs = [f"chapter-1.xhtml#chapter-{index}" for index in range(1, len(chapters) + 1)]
     elif anchored:
@@ -251,6 +266,19 @@ def main():
         None,
         in_one_file=True,
     )
+    french_sections = epub(
+        "urn:scholia:fixture:french-sections",
+        "Un soir en ville",
+        "fr",
+        "Scholia",
+        [
+            ("Premier chapitre", prose(FRENCH * 2)),
+            ("Deuxième chapitre", prose(FRENCH * 2)),
+            ("Troisième chapitre", prose(FRENCH * 2)),
+        ],
+        None,
+        files=[1, 2],
+    )
     arabic = epub(
         "urn:scholia:fixture:arabic",
         "صباح في المدينة",
@@ -296,6 +324,7 @@ def main():
     books = {
         "german.epub": archive(german),
         "french-no-cover.epub": archive(french),
+        "french-sections.epub": archive(french_sections),
         "arabic.epub": archive(arabic),
         "minimal-metadata.epub": minimal,
         "corrupted.epub": minimal[: len(minimal) // 2],

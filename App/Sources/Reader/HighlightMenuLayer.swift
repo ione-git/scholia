@@ -13,13 +13,13 @@ struct HighlightMenuLayer: View {
 
     var body: some View {
         if let tapped = controller.tappedHighlight,
-            let highlight = book.highlights.first(where: { $0.readerID == tapped.id })
+            let highlight = book.highlights.first(where: { $0.key == tapped.id })
         {
             TranslationBubblePlacement(anchor: tapped.rect, topLimit: .navTop + .controlH, gap: .highlightMenu) {
                 HighlightColorMenu {
                     ForEach(HighlightColor.allCases, id: \.self) { color in
                         HighlightSwatch(
-                            color: color.swatch, label: Text(color.name), isSelected: highlight.color == color
+                            color: color.solid.color, label: Text(color.name), isSelected: highlight.color == color
                         ) {
                             recolor(highlight, to: color)
                         }

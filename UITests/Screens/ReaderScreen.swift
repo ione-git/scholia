@@ -90,7 +90,11 @@ struct ReaderScreen: Screen {
     }
 
     func selectWord(onLine index: Int, x: CGFloat) throws -> SelectionMenuScreen {
-        try wordPoint(onLine: index, x: x).press(forDuration: 1)
+        try selectWord(onLine: index, x: x, in: germanParagraph)
+    }
+
+    func selectWord(onLine index: Int, x: CGFloat, in paragraph: XCUIElement) throws -> SelectionMenuScreen {
+        try point(in: paragraph, onLine: index, x: x).press(forDuration: 1)
         return SelectionMenuScreen(app: app).waitUntilShown()
     }
 

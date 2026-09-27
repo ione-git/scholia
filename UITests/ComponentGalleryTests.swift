@@ -49,6 +49,14 @@ final class ComponentGalleryTests: UITestCase {
         assertSnapshot(of: openGallery(.dark).openChapterRows(), named: "ComponentGallery-ChapterRows")
     }
 
+    func testComponentGalleryHighlightCardsSnapshotLight() {
+        assertSnapshot(of: openGallery(.light).openHighlightCards(), named: "ComponentGallery-HighlightCards")
+    }
+
+    func testComponentGalleryHighlightCardsSnapshotDark() {
+        assertSnapshot(of: openGallery(.dark).openHighlightCards(), named: "ComponentGallery-HighlightCards")
+    }
+
     func testComponentGallerySegmentedControlSnapshotLight() {
         assertSnapshot(of: openGallery(.light).openSegmentedControls(), named: "ComponentGallery-SegmentedControl")
     }

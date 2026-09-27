@@ -47,7 +47,9 @@ struct ReaderIndexView: View {
             switch tab {
             case .contents:
                 ReaderContentsList(controller: controller)
-            case .highlights, .bookmarks:
+            case .highlights:
+                ReaderHighlightsList(book: book, controller: controller)
+            case .bookmarks:
                 Spacer(minLength: 0)
             }
         }

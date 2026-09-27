@@ -252,6 +252,9 @@
     "Highlight" : {
       "comment" : "Selection menu item that highlights the selected text"
     },
+    "Highlight cards" : {
+
+    },
     "Highlight color" : {
       "comment" : "Menu of colours for a tapped highlight"
     },
@@ -768,6 +771,66 @@
     },
     "pronoun" : {
 
+    },
+    "readerHighlights.meta.chapterPage" : {
+      "comment" : "Highlights list row, under the quote: chapter title and page of the highlight",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@ · Page %2$lld"
+          }
+        }
+      }
+    },
+    "readerHighlights.meta.page" : {
+      "comment" : "Highlights list row, under the quote: page of a highlight outside any chapter",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Page %lld"
+          }
+        }
+      }
+    },
+    "readerHighlights.value.colorChapter" : {
+      "comment" : "Highlights list row, VoiceOver value: colour and chapter title of the highlight",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@, %2$@"
+          }
+        }
+      }
+    },
+    "readerHighlights.value.colorChapterPage" : {
+      "comment" : "Highlights list row, VoiceOver value: colour, chapter title and page of the highlight",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@, %2$@, Page %3$lld"
+          }
+        }
+      }
+    },
+    "readerHighlights.value.colorPage" : {
+      "comment" : "Highlights list row, VoiceOver value: colour and page of a highlight outside any chapter",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@, Page %2$lld"
+          }
+        }
+      }
     },
     "readerSettings.font.system" : {
       "comment" : "Font chip in the reader settings sheet: the system sans-serif typeface",

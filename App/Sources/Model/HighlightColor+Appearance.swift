@@ -1,5 +1,5 @@
 import DesignSystem
-import SwiftUI
+import Foundation
 
 extension HighlightColor {
     var fill: ColorToken {
@@ -12,7 +12,7 @@ extension HighlightColor {
         }
     }
 
-    var swatch: Color {
+    var solid: ColorToken {
         switch self {
         case .yellow: .highlightYellowSolid
         case .green: .highlightGreenSolid

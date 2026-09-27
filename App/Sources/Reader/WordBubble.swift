@@ -9,7 +9,7 @@ struct WordBubble: View {
 
     var body: some View {
         TranslationBubble(
-            word: Text(verbatim: lookup.word.text),
+            word: Text(verbatim: lookup.word.text, spokenIn: Locale(identifier: language)),
             phase: phase,
             wordLocale: Locale(identifier: language),
             translationLocale: Locale(identifier: translationLanguage),
