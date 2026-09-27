@@ -1,44 +1,88 @@
 import XCTest
 
 final class TokenGalleryTests: UITestCase {
-    func testGalleryShowsEveryTokenInLightAndDark() throws {
-        let gallery = openGallery()
-        let tokens = try DesignTokens.load()
-        var expected: [String] = []
-        for token in tokens.color.tokens {
-            expected += ["tokenGallery.lightSwatch.\(token.name)", "tokenGallery.darkSwatch.\(token.name)"]
-        }
-        expected += tokens.type.groups.flatMap(\.styles).map { "tokenGallery.textStyle.\($0.name)" }
-        expected += tokens.spacing.tokens.map { "tokenGallery.spacing.\($0.name)" }
-        expected += tokens.radius.tokens.map { "tokenGallery.radius.\($0.name)" }
-        expected += tokens.shadow.tokens.map { "tokenGallery.shadow.\($0.name)" }
-        expected += tokens.effects.tokens.map { "tokenGallery.effect.\($0.name)" }
-        expected += ["paper", "sepia", "night", "black"].map { "tokenGallery.readerTheme.\($0)" }
-
-        let shown = try gallery.shownElements()
-
-        XCTAssertEqual(expected.filter { shown[$0] == nil }, [])
+    func testTokenGalleryColoursSurfacesSnapshotLight() {
+        assertSnapshot(of: openSection("coloursSurfaces", .light), named: "TokenGallery-Colours-Surfaces")
     }
 
-    func testSerifStylesUseBundledLiterata() throws {
-        let gallery = openGallery()
-        let serifStyles = try DesignTokens.load().type.groups.filter { $0.family == "serif" }.flatMap(\.styles)
-
-        let shown = try gallery.shownElements()
-
-        XCTAssertFalse(serifStyles.isEmpty)
-        for style in serifStyles {
-            let fontName = try XCTUnwrap(shown["tokenGallery.textStyle.\(style.name)"], style.name)
-            XCTAssertTrue(fontName.hasPrefix("Literata-Regular"), "\(style.name) uses \(fontName)")
-        }
+    func testTokenGalleryColoursSurfacesSnapshotDark() {
+        assertSnapshot(of: openSection("coloursSurfaces", .dark), named: "TokenGallery-Colours-Surfaces")
     }
 
-    private func openGallery() -> TokenGalleryScreen {
-        let app = launch(
-            LaunchConfiguration(
-                resetsState: true, fixtures: [], opened: [], inProgress: [], highlighted: [], translation: .immediate,
-                now: nil,
-                notificationPermission: nil))
-        return HomeScreen(app: app).waitUntilShown().openTokenGallery()
+    func testTokenGalleryColoursInkAndControlsSnapshotLight() {
+        assertSnapshot(of: openSection("coloursInkAndControls", .light), named: "TokenGallery-Colours-InkAndControls")
+    }
+
+    func testTokenGalleryColoursInkAndControlsSnapshotDark() {
+        assertSnapshot(of: openSection("coloursInkAndControls", .dark), named: "TokenGallery-Colours-InkAndControls")
+    }
+
+    func testTokenGalleryColoursHighlightsSnapshotLight() {
+        assertSnapshot(of: openSection("coloursHighlights", .light), named: "TokenGallery-Colours-Highlights")
+    }
+
+    func testTokenGalleryColoursHighlightsSnapshotDark() {
+        assertSnapshot(of: openSection("coloursHighlights", .dark), named: "TokenGallery-Colours-Highlights")
+    }
+
+    func testTokenGalleryColoursOtherSnapshotLight() {
+        assertSnapshot(of: openSection("coloursOther", .light), named: "TokenGallery-Colours-Other")
+    }
+
+    func testTokenGalleryColoursOtherSnapshotDark() {
+        assertSnapshot(of: openSection("coloursOther", .dark), named: "TokenGallery-Colours-Other")
+    }
+
+    func testTokenGalleryTextStylesSnapshotLight() {
+        assertSnapshot(of: openSection("textStyles", .light), named: "TokenGallery-TextStyles")
+    }
+
+    func testTokenGalleryTextStylesSnapshotDark() {
+        assertSnapshot(of: openSection("textStyles", .dark), named: "TokenGallery-TextStyles")
+    }
+
+    func testTokenGallerySpacingSnapshotLight() {
+        assertSnapshot(of: openSection("spacing", .light), named: "TokenGallery-Spacing")
+    }
+
+    func testTokenGallerySpacingSnapshotDark() {
+        assertSnapshot(of: openSection("spacing", .dark), named: "TokenGallery-Spacing")
+    }
+
+    func testTokenGalleryRadiusSnapshotLight() {
+        assertSnapshot(of: openSection("radius", .light), named: "TokenGallery-Radius")
+    }
+
+    func testTokenGalleryRadiusSnapshotDark() {
+        assertSnapshot(of: openSection("radius", .dark), named: "TokenGallery-Radius")
+    }
+
+    func testTokenGalleryShadowsSnapshotLight() {
+        assertSnapshot(of: openSection("shadows", .light), named: "TokenGallery-Shadows")
+    }
+
+    func testTokenGalleryShadowsSnapshotDark() {
+        assertSnapshot(of: openSection("shadows", .dark), named: "TokenGallery-Shadows")
+    }
+
+    func testTokenGalleryEffectsSnapshotLight() {
+        assertSnapshot(of: openSection("effects", .light), named: "TokenGallery-Effects")
+    }
+
+    func testTokenGalleryEffectsSnapshotDark() {
+        assertSnapshot(of: openSection("effects", .dark), named: "TokenGallery-Effects")
+    }
+
+    func testTokenGalleryReaderThemesSnapshotLight() {
+        assertSnapshot(of: openSection("readerThemes", .light), named: "TokenGallery-ReaderThemes")
+    }
+
+    func testTokenGalleryReaderThemesSnapshotDark() {
+        assertSnapshot(of: openSection("readerThemes", .dark), named: "TokenGallery-ReaderThemes")
+    }
+
+    private func openSection(_ section: String, _ appearance: XCUIDevice.Appearance) -> TokenGallerySectionScreen {
+        HomeScreen(app: launch(.withoutBooks, appearance: appearance)).waitUntilShown().openTokenGallery()
+            .open(section)
     }
 }

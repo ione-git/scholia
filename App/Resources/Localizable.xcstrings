@@ -142,9 +142,6 @@
     "Collections" : {
 
     },
-    "Colours" : {
-      "shouldTranslate" : false
-    },
     "Component Gallery" : {
       "shouldTranslate" : false
     },
@@ -215,14 +212,23 @@
     "Highlight" : {
       "comment" : "Selection menu item that highlights the selected text"
     },
+    "Highlight colours" : {
+      "shouldTranslate" : false
+    },
     "Highlights" : {
 
     },
     "In progress" : {
 
     },
+    "Ink and control colours" : {
+      "shouldTranslate" : false
+    },
     "Language" : {
 
+    },
+    "Large and image covers" : {
+      "shouldTranslate" : false
     },
     "Launch Screen" : {
       "shouldTranslate" : false
@@ -295,6 +301,9 @@
     },
     "Open Settings" : {
 
+    },
+    "Other colours" : {
+      "shouldTranslate" : false
     },
     "Paper" : {
 
@@ -414,6 +423,9 @@
 
     },
     "Spacing" : {
+      "shouldTranslate" : false
+    },
+    "Surface colours" : {
       "shouldTranslate" : false
     },
     "System" : {
