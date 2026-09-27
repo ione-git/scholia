@@ -85,6 +85,20 @@ final class ReaderCurlTests: UITestCase {
         reader.bubble.waitUntilGone()
     }
 
+    func testSlideAfterCurlTurnsPagesWithSwipes() {
+        let reader = openInCurlMode(germanBook, appearance: .light)
+        reader.curlForward(expecting: "2 of \(bookPages)")
+
+        let sheet = reader.openSettings()
+        sheet.choose(sheet.pageTurn("slide"))
+        XCTAssertFalse(sheet.pageTurn("curl").isSelected)
+        reader.pageCurl.waitUntil(\.label, equals: "off")
+        sheet.closeByTappingPage(reader)
+        reader.hideChrome()
+
+        reader.turnForward(expecting: "3 of \(bookPages)")
+    }
+
     func testReaderCurlSnapshotLight() {
         assertSnapshot(of: turnedPage(appearance: .light), named: "Reader-Curl")
     }
