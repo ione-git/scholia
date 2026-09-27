@@ -125,8 +125,14 @@
     "Bookmark" : {
       "shouldTranslate" : false
     },
+    "Bookmark this page" : {
+
+    },
+    "Bookmarked. Remove bookmark" : {
+
+    },
     "Bookmarks" : {
-      "shouldTranslate" : false
+
     },
     "Bubble" : {
 
@@ -174,7 +180,7 @@
       "shouldTranslate" : false
     },
     "Contents" : {
-      "shouldTranslate" : false
+
     },
     "Create" : {
 
@@ -225,6 +231,9 @@
     "Glass button" : {
       "shouldTranslate" : false
     },
+    "Glass menu" : {
+      "shouldTranslate" : false
+    },
     "Glass sheet" : {
       "shouldTranslate" : false
     },
@@ -262,7 +271,7 @@
 
     },
     "Menu" : {
-      "shouldTranslate" : false
+
     },
     "Minimal" : {
 
@@ -602,7 +611,7 @@
 
     },
     "Themes & Settings" : {
-      "shouldTranslate" : false
+
     },
     "This book can't be opened." : {
       "shouldTranslate" : false

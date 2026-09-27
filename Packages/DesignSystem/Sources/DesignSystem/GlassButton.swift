@@ -5,7 +5,7 @@ public struct GlassButton: View {
         case regular
         case reader
 
-        var diameter: CGFloat {
+        public var diameter: CGFloat {
             switch self {
             case .regular: .controlH
             case .reader: 48
