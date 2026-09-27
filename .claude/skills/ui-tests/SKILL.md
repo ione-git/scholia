@@ -91,7 +91,9 @@ let dark = launch(configuration, appearance: .dark)
 | `.arabic` | "صباح في المدينة", Scholia, `ar` (right-to-left), no cover, three chapters of 3 pages each on iPhone |
 | `.minimalMetadata` | cover; only identifier, title "Minimal", language `en`; no author; one chapter "Chapter One" |
 | `.corrupted` | truncated zip, cannot be opened; seeded as "Corrupted", no author, `en` |
-| `.drm` | "Encrypted", `META-INF/encryption.xml` (aes128-cbc), chapter bytes scrambled |
+| `.drm` | "Encrypted", `META-INF/encryption.xml` (aes128-cbc), chapter bytes scrambled; import and reader refuse it as protected |
+| `.zip64` | "ZIP64", Franz Kafka, `de`, no cover, one chapter; ZIP64 end-of-central-directory record and locator, classic end record holds the ZIP64 placeholders |
+| `.fontObfuscation` | "Obfuscated Font", Franz Kafka, `de`, no cover, one chapter; `META-INF/encryption.xml` lists only the IDPF font obfuscation for `font.otf`, so it is not protected |
 
 ## Screen objects
 

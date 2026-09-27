@@ -7,6 +7,8 @@ enum Fixture: String {
     case minimalMetadata = "minimal-metadata"
     case corrupted
     case drm
+    case zip64
+    case fontObfuscation = "font-obfuscation"
 
     var url: URL? {
         Bundle.main.url(forResource: rawValue, withExtension: "epub", subdirectory: "Fixtures")
