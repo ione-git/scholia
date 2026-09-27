@@ -91,6 +91,9 @@
     "Black" : {
 
     },
+    "Black theme" : {
+
+    },
     "Book Info" : {
 
     },
@@ -192,7 +195,7 @@
       "shouldTranslate" : false
     },
     "Fade" : {
-      "shouldTranslate" : false
+
     },
     "Fiction" : {
       "shouldTranslate" : false
@@ -230,6 +233,9 @@
     "Large and image covers" : {
       "shouldTranslate" : false
     },
+    "Larger text" : {
+
+    },
     "Launch Screen" : {
       "shouldTranslate" : false
     },
@@ -241,6 +247,12 @@
     },
     "List rows" : {
       "shouldTranslate" : false
+    },
+    "Lock rotation" : {
+
+    },
+    "Loose line spacing" : {
+
     },
     "Mark as Finished" : {
 
@@ -272,6 +284,9 @@
     "Night" : {
 
     },
+    "Night theme" : {
+
+    },
     "No books yet" : {
 
     },
@@ -279,6 +294,9 @@
 
     },
     "None" : {
+
+    },
+    "Normal line spacing" : {
 
     },
     "Not Now" : {
@@ -305,7 +323,13 @@
     "Other colours" : {
       "shouldTranslate" : false
     },
+    "Page turn" : {
+
+    },
     "Paper" : {
+
+    },
+    "Paper theme" : {
 
     },
     "Pick up where you left off." : {
@@ -375,7 +399,7 @@
       "shouldTranslate" : false
     },
     "Scroll" : {
-      "shouldTranslate" : false
+
     },
     "Search" : {
 
@@ -401,6 +425,9 @@
     "Sepia" : {
 
     },
+    "Sepia theme" : {
+
+    },
     "Settings" : {
 
     },
@@ -411,7 +438,10 @@
       "shouldTranslate" : false
     },
     "Slide" : {
-      "shouldTranslate" : false
+
+    },
+    "Smaller text" : {
+
     },
     "Sort books by" : {
 
@@ -429,6 +459,9 @@
       "shouldTranslate" : false
     },
     "System" : {
+
+    },
+    "Text size" : {
 
     },
     "Text styles" : {
@@ -600,6 +633,9 @@
     "This book can’t be opened." : {
 
     },
+    "Tight line spacing" : {
+
+    },
     "Time to read" : {
 
     },
@@ -659,6 +695,18 @@
     },
     "pronoun" : {
 
+    },
+    "readerSettings.font.system" : {
+      "comment" : "Font chip in the reader settings sheet: the system sans-serif typeface",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "System"
+          }
+        }
+      }
     },
     "verb" : {
 

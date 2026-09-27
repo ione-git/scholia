@@ -30,17 +30,55 @@ public struct Chip: View {
             .lineLimit(1)
             .padding(.horizontal, Self.padding)
             .frame(height: chipHeight)
-            .background {
-                if isSelected {
-                    Capsule().fill(.ink)
-                } else {
-                    Capsule().fill(.surfaceCard).strokeBorder(.controlBorder, lineWidth: .hairlineW)
-                }
-            }
+            .background { ChipBackground(isSelected: isSelected) }
             .contentShape(.capsule)
         }
         .buttonStyle(.plain)
         .accessibilityAddTraits(isSelected ? .isSelected : [])
+    }
+}
+
+public struct FontChip: View {
+    private static let minHeight: CGFloat = 40
+    private static let padding: CGFloat = 16
+
+    let title: Text
+    let font: Font
+    let isSelected: Bool
+    let action: () -> Void
+
+    public init(_ title: Text, font: Font, isSelected: Bool, action: @escaping () -> Void) {
+        self.title = title
+        self.font = font
+        self.isSelected = isSelected
+        self.action = action
+    }
+
+    public var body: some View {
+        Button(action: action) {
+            title
+                .font(font)
+                .foregroundStyle(isSelected ? Color.onInk : Color.ink)
+                .lineLimit(1)
+                .padding(.horizontal, Self.padding)
+                .frame(minHeight: Self.minHeight)
+                .background { ChipBackground(isSelected: isSelected) }
+                .contentShape(.capsule)
+        }
+        .buttonStyle(.plain)
+        .accessibilityAddTraits(isSelected ? .isSelected : [])
+    }
+}
+
+private struct ChipBackground: View {
+    let isSelected: Bool
+
+    var body: some View {
+        if isSelected {
+            Capsule().fill(.ink)
+        } else {
+            Capsule().fill(.surfaceCard).strokeBorder(.controlBorder, lineWidth: .hairlineW)
+        }
     }
 }
 

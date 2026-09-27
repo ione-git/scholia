@@ -16,13 +16,23 @@ public struct SegmentedControl<Value: Hashable>: View {
     public struct Segment {
         let value: Value
         let title: Text
+        let icon: Icon?
         let count: Int?
         let identifier: String
 
         public init(_ value: Value, title: Text, count: Int?, identifier: String) {
             self.value = value
             self.title = title
+            icon = nil
             self.count = count
+            self.identifier = identifier
+        }
+
+        public init(_ value: Value, icon: Icon, label: Text, identifier: String) {
+            self.value = value
+            title = label
+            self.icon = icon
+            count = nil
             self.identifier = identifier
         }
     }
@@ -31,6 +41,8 @@ public struct SegmentedControl<Value: Hashable>: View {
     private static var countSpacing: CGFloat { 5 }
     private static var edgeOffset: CGFloat { 1 }
     private static var edgeBlur: CGFloat { 3 }
+    private static var iconSize: CGFloat { 20 }
+    private static var iconStroke: CGFloat { 2 }
 
     @Binding var selection: Value
     let size: Size
@@ -55,18 +67,25 @@ public struct SegmentedControl<Value: Hashable>: View {
     private func button(_ segment: Segment) -> some View {
         let isSelected = segment.value == selection
         let shape = RoundedRectangle(cornerRadius: .radiusMd - Self.inset)
-        return Button {
+        let button = Button {
             selection = segment.value
         } label: {
-            HStack(spacing: Self.countSpacing) {
-                segment.title.foregroundStyle(.ink)
-                    .textStyle(isSelected ? TextStyle.subhead.weighted(TextStyle.title3.weight) : .subhead)
-                if let count = segment.count {
-                    Text(count, format: .number).foregroundStyle(.inkMuted)
+            Group {
+                if let icon = segment.icon {
+                    IconView(icon: icon, size: Self.iconSize, stroke: Self.iconStroke)
+                        .foregroundStyle(.ink)
+                } else {
+                    HStack(spacing: Self.countSpacing) {
+                        segment.title.foregroundStyle(.ink)
+                            .textStyle(isSelected ? TextStyle.subhead.weighted(TextStyle.title3.weight) : .subhead)
+                        if let count = segment.count {
+                            Text(count, format: .number).foregroundStyle(.inkMuted)
+                        }
+                    }
+                    .textStyle(.subhead)
+                    .lineLimit(1)
                 }
             }
-            .textStyle(.subhead)
-            .lineLimit(1)
             .padding(.horizontal, size == .compact ? .space3 : 0)
             .frame(maxWidth: size == .regular ? .infinity : nil)
             .frame(height: size.height)
@@ -79,6 +98,13 @@ public struct SegmentedControl<Value: Hashable>: View {
             .contentShape(shape)
         }
         .buttonStyle(.plain)
+        return Group {
+            if segment.icon == nil {
+                button
+            } else {
+                button.accessibilityLabel(segment.title)
+            }
+        }
         .accessibilityIdentifier(segment.identifier)
         .accessibilityAddTraits(isSelected ? .isSelected : [])
     }

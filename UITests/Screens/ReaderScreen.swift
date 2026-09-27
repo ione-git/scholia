@@ -34,6 +34,7 @@ struct ReaderScreen: Screen {
     var bubbleFailure: XCUIElement { app.staticTexts["reader.bubble.failure"] }
     var germanParagraph: XCUIElement { paragraph(startingWith: germanFirstParagraph) }
     var germanHeading: XCUIElement { paragraph(startingWith: germanFirstHeading) }
+    var appearance: XCUIElement { app.descendants(matching: .any)["debug.readerAppearance"] }
 
     func theme(_ name: String) -> XCUIElement { app.buttons["reader.theme.\(name)"] }
     func pageTurn(_ name: String) -> XCUIElement { app.buttons["reader.pageTurn.\(name)"] }
@@ -81,6 +82,14 @@ struct ReaderScreen: Screen {
     func openMenu() -> ReaderMenuScreen {
         menuButton.waitUntil(\.isHittable, equals: true).tap()
         return ReaderMenuScreen(app: app).waitUntilShown()
+    }
+
+    @discardableResult
+    func openSettings() -> ReaderSettingsScreen {
+        if !menuButton.exists {
+            showChrome()
+        }
+        return openMenu().openSettings()
     }
 
     func toggleBookmark() {

@@ -4,6 +4,7 @@ import SwiftUI
 
 @main
 struct ScholiaApp: App {
+    @UIApplicationDelegateAdaptor private var appDelegate: AppDelegate
     private let container: ModelContainer
     private let settings: Settings
     private let translationService: TranslationService
@@ -35,6 +36,7 @@ struct ScholiaApp: App {
             RootView()
                 .environment(settings)
                 .environment(translationService)
+                .environment(appDelegate.orientationLock)
                 .transaction { transaction in
                     if TestAnimations.areOff {
                         transaction.animation = nil
