@@ -42,6 +42,9 @@
                         BookCoverGallery(colorScheme: appearance.colorScheme)
                     }
                     link(Text("List rows"), element: "listRows") { ListRowGallery(colorScheme: appearance.colorScheme) }
+                    link(Text("Chapter rows"), element: "chapterRows") {
+                        ChapterRowGallery(colorScheme: appearance.colorScheme)
+                    }
                     link(Text("Segmented control"), element: "segmentedControl") {
                         SegmentedControlGallery(colorScheme: appearance.colorScheme)
                     }
@@ -303,6 +306,38 @@
                 }
             }
             .navigationTitle("List rows")
+        }
+    }
+
+    private struct ChapterRowGallery: View {
+        private struct Chapter: Hashable {
+            let element: String
+            let title: String
+            let page: Int?
+            let isCurrent: Bool
+        }
+
+        let colorScheme: ColorScheme?
+
+        private let chapters = [
+            Chapter(element: "current", title: "Erster Teil", page: 1, isCurrent: true),
+            Chapter(
+                element: "long",
+                title: "Zweiter Teil, in dem Gregor nach vielen Tagen zum ersten Mal wieder sein Zimmer verlässt",
+                page: 19, isCurrent: false),
+            Chapter(element: "noPage", title: "Dritter Teil", page: nil, isCurrent: false),
+        ]
+
+        var body: some View {
+            GalleryPage(identifier: "chapterRowGallery", colorScheme: colorScheme) {
+                LazyGroupedList(chapters) { chapter in
+                    ChapterRow(Text(verbatim: chapter.title), page: chapter.page, isCurrent: chapter.isCurrent)
+                        .accessibilityElement(children: .combine)
+                        .accessibilityAddTraits(chapter.isCurrent ? .isSelected : [])
+                        .accessibilityIdentifier("chapterRowGallery.\(chapter.element)")
+                }
+            }
+            .navigationTitle("Chapter rows")
         }
     }
 

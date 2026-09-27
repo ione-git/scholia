@@ -46,6 +46,14 @@ final class ComponentGalleryTests: UITestCase {
             attachScreenshot("ListRows\(suffix)")
             gallery = rows.goBack()
 
+            let chapters = gallery.openChapterRows()
+            XCTAssertEqual(chapters.root.value as? String, appearance.rawValue)
+            for element in ["current", "long", "noPage"] {
+                chapters.row(element).waitUntilExists()
+            }
+            attachScreenshot("ChapterRows\(suffix)")
+            gallery = chapters.goBack()
+
             let segmented = gallery.openSegmentedControls()
             XCTAssertEqual(segmented.root.value as? String, appearance.rawValue)
             for element in ["contents", "highlights", "bookmarks", "bubble", "minimal", "card"] {
@@ -200,6 +208,20 @@ final class ComponentGalleryTests: UITestCase {
         rows.segment("bubble").waitUntil(\.isSelected, equals: false)
         rows.checkbox.waitUntil(\.isSelected, equals: false)
         XCTAssertTrue(rows.dailyGoal.label.contains("25 min"), rows.dailyGoal.label)
+    }
+
+    func testChapterRowsMarkTheCurrentChapterAndWrapLongTitles() {
+        let chapters = openGallery().openChapterRows()
+        let current = chapters.row("current").waitUntil(\.isSelected, equals: true)
+        let long = chapters.row("long").waitUntilExists()
+        let noPage = chapters.row("noPage").waitUntilExists()
+
+        XCTAssertFalse(long.isSelected)
+        XCTAssertFalse(noPage.isSelected)
+        XCTAssertEqual(current.label, "Erster Teil")
+        XCTAssertEqual(current.frame.height, 56, accuracy: 0.5)
+        XCTAssertEqual(noPage.frame.height, 56, accuracy: 0.5)
+        XCTAssertGreaterThan(long.frame.height, current.frame.height)
     }
 
     func testSegmentedControlSelectsOneSegment() {

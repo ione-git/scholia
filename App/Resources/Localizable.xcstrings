@@ -121,6 +121,9 @@
     "Card" : {
 
     },
+    "Chapter rows" : {
+      "shouldTranslate" : false
+    },
     "Chip" : {
       "shouldTranslate" : false
     },
