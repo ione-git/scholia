@@ -25,6 +25,7 @@ struct ReaderScreen: Screen {
     var wordTint: XCUIElement { app.descendants(matching: .any)["reader.wordTint"] }
     var paintedHighlights: XCUIElement { app.descendants(matching: .any)["debug.paintedHighlights"] }
     var paintedWordTints: XCUIElement { app.descendants(matching: .any)["debug.paintedWordTints"] }
+    var paintedHighlightRings: XCUIElement { app.descendants(matching: .any)["debug.paintedHighlightRings"] }
     var systemEditMenu: XCUIElement { app.menuItems.firstMatch }
     var paintedLive: XCUIElement { app.descendants(matching: .any)["debug.paintedLive"] }
     var bubble: XCUIElement { app.otherElements["reader.bubble"] }
@@ -91,6 +92,11 @@ struct ReaderScreen: Screen {
     func selectWord(onLine index: Int, x: CGFloat) throws -> SelectionMenuScreen {
         try wordPoint(onLine: index, x: x).press(forDuration: 1)
         return SelectionMenuScreen(app: app).waitUntilShown()
+    }
+
+    func tapHighlight(onLine index: Int, x: CGFloat) throws -> HighlightMenuScreen {
+        try tapWord(onLine: index, x: x)
+        return HighlightMenuScreen(app: app).waitUntilShown()
     }
 
     @discardableResult

@@ -305,7 +305,7 @@ extension NeighbourPages: EPUBNavigatorDelegate {
                 WKUserScript(source: script, injectionTime: .atDocumentEnd, forMainFrameOnly: true))
         }
         userContentController.add(LoadMessages(pages: self, navigator: navigator), name: "pageCount")
-        for name in ["paintedHighlights", "paintedWordTints", "paintedLive"] {
+        for name in ["paintedHighlights", "paintedWordTints", "paintedLive", "paintedHighlightRings"] {
             userContentController.add(IgnoredMessages(), name: name)
         }
     }

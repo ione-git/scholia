@@ -69,6 +69,11 @@ public struct ReaderSelection: Equatable, Sendable {
     public var rect: CGRect
 }
 
+public struct ReaderTappedHighlight: Equatable, Sendable {
+    public var id: String
+    public var rect: CGRect
+}
+
 nonisolated public struct ReaderHighlight: Identifiable, Equatable {
     public var id: String
     public var range: ReaderTextRange

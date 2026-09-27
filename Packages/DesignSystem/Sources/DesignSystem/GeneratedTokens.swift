@@ -162,6 +162,11 @@ extension ColorToken {
         light: UIColor(rgb: 0xb48cf2, opacity: 1),
         dark: UIColor(rgb: 0xb48cf2, opacity: 1)
     )
+    public static let highlightRing = ColorToken(
+        name: "highlight-ring",
+        light: UIColor(rgb: 0xb0471f, opacity: 0.35),
+        dark: UIColor(rgb: 0xd8683a, opacity: 0.35)
+    )
     public static let danger = ColorToken(
         name: "danger",
         light: UIColor(rgb: 0xb3261e, opacity: 1),
@@ -215,6 +220,7 @@ extension ColorToken {
         .highlightBlueSolid,
         .highlightPinkSolid,
         .highlightPurpleSolid,
+        .highlightRing,
         .danger,
         .scrim,
         .nightText,
@@ -255,6 +261,7 @@ extension ShapeStyle where Self == Color {
     public static var highlightBlueSolid: Color { ColorToken.highlightBlueSolid.color }
     public static var highlightPinkSolid: Color { ColorToken.highlightPinkSolid.color }
     public static var highlightPurpleSolid: Color { ColorToken.highlightPurpleSolid.color }
+    public static var highlightRing: Color { ColorToken.highlightRing.color }
     public static var danger: Color { ColorToken.danger.color }
     public static var scrim: Color { ColorToken.scrim.color }
     public static var nightText: Color { ColorToken.nightText.color }

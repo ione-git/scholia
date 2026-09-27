@@ -55,7 +55,9 @@ struct ReadingView: View {
             }
             .ignoresSafeArea()
             if let controller {
+                HighlightPainter(book: book, controller: controller, theme: theme)
                 SelectionMenuLayer(controller: controller)
+                HighlightMenuLayer(book: book, controller: controller)
             }
         }
         .background { WindowAnchor(reference: window) }
@@ -69,6 +71,10 @@ struct ReadingView: View {
             }
             .background {
                 PaintedDiagnostics(identifier: "debug.paintedLive", count: controller?.paintedLive ?? 0)
+            }
+            .background {
+                PaintedDiagnostics(
+                    identifier: "debug.paintedHighlightRings", count: controller?.paintedHighlightRings ?? 0)
             }
         #endif
         .accessibilityElement(children: .contain)
@@ -98,7 +104,6 @@ struct ReadingView: View {
             if scenePhase != .background {
                 transition.begin(in: window.window)
             }
-            paintHighlights()
         }
         .onChange(of: colorScheme) {
             if scenePhase != .background {
@@ -107,7 +112,9 @@ struct ReadingView: View {
         }
         .onChange(of: isSettingsShown) { controller?.looksUpWords = !isSettingsShown }
         .onChange(of: settings.locksRotation) { lockRotation() }
-        .onChange(of: book.highlights) { paintHighlights() }
+        .onChange(of: settings.highlightColor) {
+            controller?.highlightColor = theme.highlightColor(settings.highlightColor)
+        }
         .onChange(of: controller?.location) { _, location in save(location) }
         .onChange(of: controller?.page) { _, page in save(page) }
         .onDisappear {
@@ -161,7 +168,6 @@ struct ReadingView: View {
                 Self.addHighlight(range, color: settings.highlightColor, to: book, in: modelContext)
             }
             self.controller = controller
-            paintHighlights()
             lockRotation()
             book.openedAt = LaunchConfiguration.current.now ?? .now
             try? modelContext.save()
@@ -187,10 +193,6 @@ struct ReadingView: View {
         } else {
             orientationLock.unlock(in: window.window)
         }
-    }
-
-    private func paintHighlights() {
-        controller?.highlights = book.highlights.map { $0.readerHighlight(color: theme.highlightColor($0.color)) }
     }
 
     private static func addHighlight(
@@ -228,6 +230,22 @@ struct ReadingView: View {
 }
 
 private let logger = Logger(subsystem: "com.ione.scholia", category: "reader")
+
+private struct HighlightPainter: View {
+    let book: Book
+    let controller: ReaderController
+    let theme: ReaderTheme
+
+    var body: some View {
+        let highlights = book.highlights.map { $0.readerHighlight(color: theme.highlightColor($0.color)) }
+        Color.clear
+            .frame(width: 0, height: 0)
+            .accessibilityHidden(true)
+            .onChange(of: highlights, initial: true) { _, highlights in
+                controller.highlights = highlights
+            }
+    }
+}
 
 #if DEBUG
     private struct PaintedDiagnostics: View {

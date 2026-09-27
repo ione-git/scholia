@@ -11,12 +11,14 @@ public final class ReaderController {
     public internal(set) var selection: ReaderSelection?
     public private(set) var appearance: ReaderAppearance
     var startPages: [Int]?
+    public internal(set) var tappedHighlight: ReaderTappedHighlight?
     public var highlights: [ReaderHighlight] {
         didSet { viewController.apply(highlights) }
     }
     public internal(set) var paintedHighlights: Int
     public internal(set) var paintedWordTints: Int
     public internal(set) var paintedLive: Int
+    public internal(set) var paintedHighlightRings: Int
     public var highlightColor: UIColor
     #if DEBUG
         public internal(set) var renderedStyle: ReaderRenderedStyle?
@@ -39,6 +41,7 @@ public final class ReaderController {
         paintedHighlights = 0
         paintedWordTints = 0
         paintedLive = 0
+        paintedHighlightRings = 0
         #if DEBUG
             pageCurl = ReaderPageCurl(state: .off, completed: 0, cancelled: 0)
         #endif
@@ -86,6 +89,10 @@ public final class ReaderController {
 
     public func clearSelection() {
         viewController.clearSelection()
+    }
+
+    public func clearTappedHighlight() {
+        viewController.clearTappedHighlight()
     }
 }
 

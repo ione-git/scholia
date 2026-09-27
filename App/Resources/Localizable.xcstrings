@@ -119,6 +119,9 @@
     "Black theme" : {
 
     },
+    "Blue" : {
+      "comment" : "Highlight colour name, label of its swatch"
+    },
     "Book Info" : {
 
     },
@@ -243,8 +246,17 @@
     "Glass sheet" : {
       "shouldTranslate" : false
     },
+    "Green" : {
+      "comment" : "Highlight colour name, label of its swatch"
+    },
     "Highlight" : {
       "comment" : "Selection menu item that highlights the selected text"
+    },
+    "Highlight color" : {
+      "comment" : "Menu of colours for a tapped highlight"
+    },
+    "Highlight color menu" : {
+
     },
     "Highlight colours" : {
       "shouldTranslate" : false
@@ -375,6 +387,9 @@
     "Pick up where you left off." : {
 
     },
+    "Pink" : {
+      "comment" : "Highlight colour name, label of its swatch"
+    },
     "Popover" : {
       "shouldTranslate" : false
     },
@@ -383,6 +398,9 @@
     },
     "Pronounce" : {
       "comment" : "Word card: VoiceOver label of the button that speaks the word aloud"
+    },
+    "Purple" : {
+      "comment" : "Highlight colour name, label of its swatch"
     },
     "Radius" : {
       "shouldTranslate" : false
@@ -422,6 +440,9 @@
     },
     "Remove from Library" : {
 
+    },
+    "Remove highlight" : {
+      "comment" : "Button in the highlight colour menu that deletes it"
     },
     "Remove “%@” from your library?" : {
 
@@ -714,6 +735,9 @@
     },
     "Word card" : {
       "comment" : "Component Gallery: row and title of the word card page"
+    },
+    "Yellow" : {
+      "comment" : "Highlight colour name, label of its swatch"
     },
     "adjective" : {
 

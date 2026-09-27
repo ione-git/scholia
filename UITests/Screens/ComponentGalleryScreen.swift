@@ -34,6 +34,9 @@ struct ComponentGalleryScreen: Screen {
     func openSelectionMenu() -> SelectionMenuGalleryScreen {
         open("selectionMenu", as: SelectionMenuGalleryScreen.init)
     }
+    func openHighlightColorMenu() -> HighlightColorMenuGalleryScreen {
+        open("highlightColorMenu", as: HighlightColorMenuGalleryScreen.init)
+    }
 }
 
 struct GlassButtonGalleryScreen: Screen {
@@ -112,6 +115,12 @@ struct SelectionMenuGalleryScreen: Screen {
     let app: XCUIApplication
 
     var root: XCUIElement { app.scrollViews["selectionMenuGallery.scrollView"] }
+}
+
+struct HighlightColorMenuGalleryScreen: Screen {
+    let app: XCUIApplication
+
+    var root: XCUIElement { app.scrollViews["highlightColorMenuGallery.scrollView"] }
 }
 
 struct PresentationGalleryScreen: Screen {

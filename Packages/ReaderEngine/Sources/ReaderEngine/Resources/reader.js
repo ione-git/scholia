@@ -351,6 +351,7 @@
     paintedHighlights: "scholia-highlight",
     paintedWordTints: "scholia-word-tap",
     paintedLive: "scholia-paint",
+    paintedHighlightRings: "scholia-highlight-ring",
   };
   let press = null;
   let livePaint = null;
@@ -673,7 +674,7 @@
     },
   };
 
-  const painted = { paintedHighlights: 0, paintedWordTints: 0, paintedLive: 0 };
+  const painted = { paintedHighlights: 0, paintedWordTints: 0, paintedLive: 0, paintedHighlightRings: 0 };
   new MutationObserver((records) => {
     if (livePaint && !livePaint.isFollowing && records.some(addsHighlight)) {
       removePaint();

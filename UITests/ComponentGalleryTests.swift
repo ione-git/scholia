@@ -133,6 +133,14 @@ final class ComponentGalleryTests: UITestCase {
         assertSnapshot(of: openGallery(.dark).openSelectionMenu(), named: "ComponentGallery-SelectionMenu")
     }
 
+    func testComponentGalleryHighlightColorMenuSnapshotLight() {
+        assertSnapshot(of: openGallery(.light).openHighlightColorMenu(), named: "ComponentGallery-HighlightColorMenu")
+    }
+
+    func testComponentGalleryHighlightColorMenuSnapshotDark() {
+        assertSnapshot(of: openGallery(.dark).openHighlightColorMenu(), named: "ComponentGallery-HighlightColorMenu")
+    }
+
     private func openGallery(_ appearance: XCUIDevice.Appearance) -> ComponentGalleryScreen {
         HomeScreen(app: launch(.withoutBooks, appearance: appearance)).waitUntilShown().openComponentGallery()
     }

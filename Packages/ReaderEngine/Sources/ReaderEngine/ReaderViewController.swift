@@ -58,6 +58,9 @@ final class ReaderViewController: UIViewController {
     static let highlightGroup = "highlights"
     private static let wordGroup = "word"
     private static let wordDecoration = "word"
+    private static let ringGroup = "highlightRing"
+    private static let ringDecoration = "ring"
+    private static let ringWidth: CGFloat = 1.5
     private static let cssFontWeights = 1...1000
     private static let revealDuration: TimeInterval = 0.25
     private static let fadeDuration: TimeInterval = 0.2
@@ -145,6 +148,7 @@ final class ReaderViewController: UIViewController {
             stopPainting()
             clearSelection()
             stopNeighbours()
+            clearTappedHighlight()
         }
         countPages()
     }
@@ -175,8 +179,44 @@ final class ReaderViewController: UIViewController {
     }
 
     private func show(_ word: ReaderWord) {
+        clearTappedHighlight()
         controller?.word = word
         paintWord()
+    }
+
+    func clearTappedHighlight() {
+        guard controller?.tappedHighlight != nil else {
+            return
+        }
+        controller?.tappedHighlight = nil
+        paintRing()
+    }
+
+    private func highlightTapped(_ event: OnDecorationActivatedEvent) {
+        guard let rect = event.rect else {
+            return
+        }
+        clearWord()
+        clearSelection()
+        controller?.tappedHighlight = ReaderTappedHighlight(
+            id: event.decoration.id, rect: navigator.view.convert(rect, to: view))
+        paintRing()
+    }
+
+    private func paintRing() {
+        let highlight = controller?.tappedHighlight.flatMap { tapped in
+            controller?.highlights.first { $0.id == tapped.id }
+        }
+        let decorations = highlight.flatMap { highlight in
+            locator(for: highlight.range).map {
+                Decoration(
+                    id: Self.ringDecoration, locator: $0,
+                    style: Decoration.Style(
+                        id: .highlightRing,
+                        config: Decoration.Style.HighlightConfig(tint: appearance.colors.highlightRing)))
+            }
+        }
+        navigator.apply(decorations: decorations.map { [$0] } ?? [], in: Self.ringGroup)
     }
 
     func highlightSelection() {
@@ -237,6 +277,7 @@ final class ReaderViewController: UIViewController {
         }
         if shown != nil {
             clearWord()
+            clearTappedHighlight()
         }
         controller?.selection = shown
     }
@@ -297,6 +338,9 @@ final class ReaderViewController: UIViewController {
         highlightDecorations = decorations
         stopNeighbours()
         settleCurl()
+        if let tapped = controller?.tappedHighlight, !highlights.contains(where: { $0.id == tapped.id }) {
+            clearTappedHighlight()
+        }
     }
 
     func go(to target: ReaderJump) {
@@ -405,6 +449,7 @@ final class ReaderViewController: UIViewController {
         countedLayout = nil
         clearWord()
         clearSelection()
+        clearTappedHighlight()
         controller?.pageSpan = nil
         controller?.page = nil
     }
@@ -414,6 +459,7 @@ final class ReaderViewController: UIViewController {
         curtain.backgroundColor = appearance.colors.page
         view.tintColor = appearance.colors.selection
         paintWord()
+        paintRing()
     }
 
     private func applyGestures() {
@@ -672,6 +718,9 @@ final class ReaderViewController: UIViewController {
                 await self?.tapped(at: event.location)
                 return true
             })
+        navigator.observeDecorationInteractions(inGroup: Self.highlightGroup) { [weak self] event in
+            self?.highlightTapped(event)
+        }
     }
 
     private func embed(_ child: UIViewController, at index: Int? = nil) {
@@ -879,6 +928,7 @@ final class ReaderViewController: UIViewController {
 
     private func pageMoved() {
         clearWord()
+        clearTappedHighlight()
         if !press.isHeld {
             stopPainting()
             if pageSelection != nil {
@@ -1105,6 +1155,10 @@ final class ReaderViewController: UIViewController {
             return
         }
         tapGeneration += 1
+        guard controller?.tappedHighlight == nil else {
+            clearTappedHighlight()
+            return
+        }
         let tap = tapGeneration
         let isShowingWord = controller?.word != nil
         let word = await word(at: point)
@@ -1176,6 +1230,7 @@ final class ReaderViewController: UIViewController {
         switch (recognizer.state, press) {
         case (.began, .touched(let generation)):
             clearWord()
+            clearTappedHighlight()
             guard let webView = webView(at: location) else {
                 press = .idle
                 return
@@ -1259,6 +1314,7 @@ final class ReaderViewController: UIViewController {
         isTurning = true
         clearWord()
         clearSelection()
+        clearTappedHighlight()
         let forward = (swipe.direction == .left) == (navigator.presentation.readingProgression != .rtl)
         turnTask = Task {
             await fade(forward: forward)
@@ -1320,6 +1376,7 @@ final class ReaderViewController: UIViewController {
             decorationTemplates: [
                 .highlight: tintTemplate(className: "scholia-highlight", radius: style.highlightRadius),
                 .wordTap: tintTemplate(className: "scholia-word-tap", radius: style.highlightRadius),
+                .highlightRing: ringTemplate(className: "scholia-highlight-ring", radius: style.highlightRadius),
             ],
             fontFamilyDeclarations: typefaces.compactMap(fontDeclaration),
             readiumCSSRSProperties: CSSRSProperties(
@@ -1365,6 +1422,17 @@ final class ReaderViewController: UIViewController {
             stylesheet: ".\(className) { border-radius: \(radius)px; z-index: -1; }"
         )
     }
+
+    private static func ringTemplate(className: String, radius: CGFloat) -> HTMLDecorationTemplate {
+        HTMLDecorationTemplate(
+            layout: .boxes,
+            element: { decoration in
+                let tint = (decoration.style.config as? Decoration.Style.HighlightConfig)?.tint ?? .clear
+                return "<div class=\"\(className)\" style=\"box-shadow: 0 0 0 \(ringWidth)px \(tint.css) !important\"/>"
+            },
+            stylesheet: ".\(className) { border-radius: \(radius)px; z-index: -1; }"
+        )
+    }
 }
 
 extension ReaderViewController: EPUBNavigatorDelegate {
@@ -1403,6 +1471,8 @@ extension ReaderViewController: EPUBNavigatorDelegate {
         userContentController.add(
             PaintedCount(controller: controller, count: \.paintedWordTints), name: "paintedWordTints")
         userContentController.add(PaintedCount(controller: controller, count: \.paintedLive), name: "paintedLive")
+        userContentController.add(
+            PaintedCount(controller: controller, count: \.paintedHighlightRings), name: "paintedHighlightRings")
         userContentController.add(SelectionMessages(viewController: self), name: "scholiaSelection")
     }
 
@@ -1557,6 +1627,7 @@ struct ScrollObservation {
 
 extension Decoration.Style.Id {
     fileprivate static let wordTap: Self = "wordTap"
+    fileprivate static let highlightRing: Self = "highlightRing"
 }
 
 extension UIView {
