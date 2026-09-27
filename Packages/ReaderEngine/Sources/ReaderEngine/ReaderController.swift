@@ -17,12 +17,13 @@ public final class ReaderController {
     }
     public internal(set) var paintedHighlights: Int
     public internal(set) var paintedWordTints: Int
+    public internal(set) var paintedLive: Int
     public var highlightColor: UIColor
     public var pageTurn: ReaderPageTurn {
         didSet { viewController.apply(pageTurn) }
     }
     @ObservationIgnored public var onPageTap: (() -> Void)?
-    @ObservationIgnored public var onHighlight: ((ReaderTextRange) -> Void)?
+    @ObservationIgnored public var onHighlight: ((ReaderTextRange) -> Bool)?
     @ObservationIgnored let viewController: ReaderViewController
 
     public init(
@@ -37,6 +38,7 @@ public final class ReaderController {
         highlights = []
         paintedHighlights = 0
         paintedWordTints = 0
+        paintedLive = 0
         viewController = ReaderViewController(
             book: book, language: language, location: location, style: style, colors: colors, pageTurn: pageTurn)
         viewController.controller = self

@@ -64,6 +64,9 @@ struct ReadingView: View {
             .background {
                 PaintedDiagnostics(identifier: "debug.paintedHighlights", count: controller?.paintedHighlights ?? 0)
             }
+            .background {
+                PaintedDiagnostics(identifier: "debug.paintedLive", count: controller?.paintedLive ?? 0)
+            }
         #endif
         .accessibilityElement(children: .contain)
         .accessibilityIdentifier("reader.page")
@@ -140,9 +143,9 @@ struct ReadingView: View {
 
     private static func addHighlight(
         _ range: ReaderTextRange, color: HighlightColor, to book: Book, in modelContext: ModelContext
-    ) {
+    ) -> Bool {
         guard !book.highlights.contains(where: { $0.covers(range) }) else {
-            return
+            return false
         }
         let highlight = Highlight(range: range, color: color)
         modelContext.insert(highlight)
@@ -152,6 +155,7 @@ struct ReadingView: View {
         } catch {
             logger.error("Saving a highlight failed: \(error.localizedDescription, privacy: .public)")
         }
+        return true
     }
 
     private func save(_ location: ReaderLocation?) {

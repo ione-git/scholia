@@ -1,6 +1,8 @@
 (() => {
   const contextLength = 32;
   const softHyphen = /\u00AD/g;
+  const rectTolerance = 1;
+  const minimumBoxArea = 4;
 
   function blockOf(node) {
     let element = node.parentElement;
@@ -84,6 +86,111 @@
 
   function boxes(range) {
     return Array.from(range.getClientRects()).filter((rect) => rect.width > 0 || rect.height > 0);
+  }
+
+  function almostEqual(a, b) {
+    return Math.abs(a - b) <= rectTolerance;
+  }
+
+  function touchOrOverlap(first, second, isTolerant) {
+    const near = (a, b) => isTolerant && almostEqual(a, b);
+    return (
+      (first.left < second.right || near(first.left, second.right)) &&
+      (second.left < first.right || near(second.left, first.right)) &&
+      (first.top < second.bottom || near(first.top, second.bottom)) &&
+      (second.top < first.bottom || near(second.top, first.bottom))
+    );
+  }
+
+  function rectangle(left, top, right, bottom) {
+    return { left, top, right, bottom, width: right - left, height: bottom - top };
+  }
+
+  function containsRect(outer, inner) {
+    const inside = (low, value, high) =>
+      (low < value || almostEqual(low, value)) && (high > value || almostEqual(high, value));
+    return (
+      inside(outer.left, inner.left, outer.right) &&
+      inside(outer.left, inner.right, outer.right) &&
+      inside(outer.top, inner.top, outer.bottom) &&
+      inside(outer.top, inner.bottom, outer.bottom)
+    );
+  }
+
+  function mergeTouching(rects) {
+    for (const [index, first] of rects.entries()) {
+      for (const second of rects.slice(index + 1)) {
+        const sameLine = almostEqual(first.top, second.top) && almostEqual(first.bottom, second.bottom);
+        const sameColumn = almostEqual(first.left, second.left) && almostEqual(first.right, second.right);
+        if (sameLine && !sameColumn && touchOrOverlap(first, second, true)) {
+          const merged = rectangle(
+            Math.min(first.left, second.left),
+            Math.min(first.top, second.top),
+            Math.max(first.right, second.right),
+            Math.max(first.bottom, second.bottom)
+          );
+          return mergeTouching([...rects.filter((rect) => rect !== first && rect !== second), merged]);
+        }
+      }
+    }
+    return rects;
+  }
+
+  function removeContained(rects) {
+    const kept = new Set(rects);
+    for (const rect of rects) {
+      if (rect.width <= rectTolerance || rect.height <= rectTolerance) {
+        kept.delete(rect);
+        continue;
+      }
+      if (rects.some((other) => other !== rect && kept.has(other) && containsRect(other, rect))) {
+        kept.delete(rect);
+      }
+    }
+    return Array.from(kept);
+  }
+
+  function subtract(rect, cut) {
+    const left = Math.max(rect.left, cut.left);
+    const right = Math.min(rect.right, cut.right);
+    const top = Math.max(rect.top, cut.top);
+    const bottom = Math.min(rect.bottom, cut.bottom);
+    if (right <= left || bottom <= top) {
+      return [rect];
+    }
+    return [
+      rectangle(rect.left, rect.top, left, rect.bottom),
+      rectangle(left, rect.top, right, top),
+      rectangle(left, bottom, right, rect.bottom),
+      rectangle(right, rect.top, rect.right, rect.bottom),
+    ].filter((part) => part.width !== 0 && part.height !== 0);
+  }
+
+  function replaceOverlapping(rects) {
+    for (const [index, first] of rects.entries()) {
+      for (const second of rects.slice(index + 1)) {
+        if (!touchOrOverlap(first, second, false)) {
+          continue;
+        }
+        const firstParts = subtract(first, second);
+        const secondParts = subtract(second, first);
+        const [removed, added] =
+          firstParts.length === 1 || firstParts.length < secondParts.length
+            ? [first, firstParts]
+            : [second, secondParts];
+        return replaceOverlapping([...rects.filter((rect) => rect !== removed), ...added]);
+      }
+    }
+    return rects;
+  }
+
+  function lineBoxes(range) {
+    const rects = Array.from(range.getClientRects(), (rect) =>
+      rectangle(rect.left, rect.top, rect.right, rect.bottom)
+    );
+    const kept = replaceOverlapping(removeContained(mergeTouching(rects)));
+    const visible = kept.filter((rect) => rect.width * rect.height > minimumBoxArea);
+    return (visible.length > 0 ? visible : kept.slice(0, 1)).sort((a, b) => a.top - b.top || a.left - b.left);
   }
 
   function boxOfCharacter(node, from) {
@@ -178,6 +285,115 @@
     };
   }
 
+  const paintedClasses = {
+    paintedHighlights: "scholia-highlight",
+    paintedWordTints: "scholia-word-tap",
+    paintedLive: "scholia-paint",
+  };
+  let press = null;
+  let livePaint = null;
+  let isHandlingPress = false;
+
+  function caretAt(x, y) {
+    const caret = document.caretRangeFromPoint(x, y);
+    if (!caret || caret.startContainer.nodeType !== Node.TEXT_NODE) {
+      return null;
+    }
+    const textIndex = index(blockOf(caret.startContainer));
+    const offset = textIndex.nodes.find((entry) => entry.node === caret.startContainer).start + caret.startOffset;
+    return { textIndex, offset };
+  }
+
+  function wordsAround(caret, locale) {
+    const words = new Intl.Segmenter(locale, { granularity: "word" }).segment(caret.textIndex.text);
+    return [caret.offset, caret.offset - 1]
+      .map((offset) => (offset >= 0 ? words.containing(offset) : undefined))
+      .filter((word) => word?.isWordLike)
+      .map((word) => ({ word, range: range(caret.textIndex, word.index, word.index + word.segment.length) }));
+  }
+
+  function wordUnder(x, y, locale) {
+    const caret = caretAt(x, y);
+    for (const candidate of caret ? wordsAround(caret, locale) : []) {
+      const rect = Array.from(candidate.range.getClientRects()).find((box) => contains(box, x, y));
+      if (rect) {
+        return { ...candidate, rect, textIndex: caret.textIndex };
+      }
+    }
+    return null;
+  }
+
+  function wordNear(x, y, locale) {
+    const caret = caretAt(x, y);
+    if (!caret) {
+      return null;
+    }
+    return wordsAround(caret, locale)[0]?.range ?? range(caret.textIndex, caret.offset, caret.offset);
+  }
+
+  function spanning(first, second) {
+    const spanned = document.createRange();
+    const start = first.compareBoundaryPoints(Range.START_TO_START, second) <= 0 ? first : second;
+    const end = first.compareBoundaryPoints(Range.END_TO_END, second) >= 0 ? first : second;
+    spanned.setStart(start.startContainer, start.startOffset);
+    spanned.setEnd(end.endContainer, end.endOffset);
+    return spanned;
+  }
+
+  function setSelectable(isSelectable) {
+    if (isSelectable) {
+      document.documentElement.style.removeProperty("-webkit-user-select");
+    } else {
+      document.documentElement.style.setProperty("-webkit-user-select", "none");
+    }
+  }
+
+  function followPress() {
+    if (!press || !livePaint?.isFollowing) {
+      return;
+    }
+    press.frame = 0;
+    const focus = wordNear(press.point.x, press.point.y, press.locale);
+    if (focus) {
+      livePaint.range = spanning(press.anchor, focus);
+    }
+    drawPaint();
+  }
+
+  function removePaint() {
+    livePaint?.container.remove();
+    livePaint = null;
+  }
+
+  function drawPaint() {
+    const { scrollLeft, scrollTop } = document.scrollingElement;
+    livePaint.container.replaceChildren(
+      ...lineBoxes(livePaint.range).map((rect) => {
+        const box = document.createElement("div");
+        box.className = paintedClasses.paintedLive;
+        Object.assign(box.style, {
+          position: "absolute",
+          left: `${rect.left + scrollLeft}px`,
+          top: `${rect.top + scrollTop}px`,
+          width: `${rect.width}px`,
+          height: `${rect.height}px`,
+          backgroundColor: livePaint.fill,
+          borderRadius: `${livePaint.radius}px`,
+          zIndex: "-1",
+          pointerEvents: "none",
+        });
+        return box;
+      })
+    );
+  }
+
+  function addsHighlight(record) {
+    const selector = `.${paintedClasses.paintedHighlights}`;
+    return Array.from(record.addedNodes).some(
+      (node) => node.nodeType === Node.ELEMENT_NODE && (node.matches(selector) || node.querySelector(selector))
+    );
+  }
+
   window.scholia = {
     offsetOfPage(page) {
       if (page <= 0) {
@@ -268,41 +484,85 @@
     },
 
     wordAt(x, y, language) {
-      const caret = document.caretRangeFromPoint(x, y);
-      if (!caret || caret.startContainer.nodeType !== Node.TEXT_NODE) {
+      const locale = canonicalLocale(language);
+      const found = wordUnder(x, y, locale);
+      if (!found) {
         return null;
       }
-      const textIndex = index(blockOf(caret.startContainer));
-      const caretOffset =
-        textIndex.nodes.find((entry) => entry.node === caret.startContainer).start + caret.startOffset;
+      const { word, rect, textIndex } = found;
+      const sentence = new Intl.Segmenter(locale, { granularity: "sentence" })
+        .segment(textIndex.text)
+        .containing(word.index);
+      return {
+        text: word.segment.replace(softHyphen, ""),
+        sentence: sentence.segment.replace(softHyphen, "").trim(),
+        offsetInSentence: textIndex.text.slice(sentence.index, word.index).replace(softHyphen, "").trimStart().length,
+        x: rect.left,
+        y: rect.top,
+        width: rect.width,
+        height: rect.height,
+        range: quote(found.range),
+      };
+    },
+
+    beginPress(x, y, language) {
       const locale = canonicalLocale(language);
-      const words = new Intl.Segmenter(locale, { granularity: "word" }).segment(textIndex.text);
-      for (const offset of [caretOffset, caretOffset - 1]) {
-        const word = offset >= 0 ? words.containing(offset) : undefined;
-        if (!word || !word.isWordLike) {
-          continue;
-        }
-        const end = word.index + word.segment.length;
-        const wordRange = range(textIndex, word.index, end);
-        const rect = Array.from(wordRange.getClientRects()).find((candidate) => contains(candidate, x, y));
-        if (!rect) {
-          continue;
-        }
-        const sentence = new Intl.Segmenter(locale, { granularity: "sentence" })
-          .segment(textIndex.text)
-          .containing(word.index);
-        return {
-          text: word.segment.replace(softHyphen, ""),
-          sentence: sentence.segment.replace(softHyphen, "").trim(),
-          offsetInSentence: textIndex.text.slice(sentence.index, word.index).replace(softHyphen, "").trimStart().length,
-          x: rect.left,
-          y: rect.top,
-          width: rect.width,
-          height: rect.height,
-          range: quote(wordRange),
-        };
+      const anchor = wordUnder(x, y, locale)?.range;
+      press = anchor ? { anchor, locale, point: null, frame: 0 } : null;
+      isHandlingPress = press !== null;
+    },
+
+    selectPress() {
+      const anchor = press?.anchor;
+      press = null;
+      if (!anchor) {
+        return;
       }
-      return null;
+      setSelectable(true);
+      const selection = window.getSelection();
+      selection.removeAllRanges();
+      selection.addRange(anchor);
+    },
+
+    startPainting(fill, radius) {
+      removePaint();
+      if (!press) {
+        return;
+      }
+      const container = document.createElement("div");
+      container.style.pointerEvents = "none";
+      document.body.append(container);
+      livePaint = { fill, radius, container, range: press.anchor, isFollowing: true };
+      drawPaint();
+    },
+
+    paintTo(x, y) {
+      if (!press || !livePaint?.isFollowing) {
+        return;
+      }
+      press.point = { x, y };
+      press.frame ||= requestAnimationFrame(followPress);
+    },
+
+    takePaint() {
+      if (press?.frame) {
+        cancelAnimationFrame(press.frame);
+        followPress();
+      }
+      press = null;
+      if (!livePaint?.isFollowing) {
+        return null;
+      }
+      livePaint.isFollowing = false;
+      return { range: quote(livePaint.range) };
+    },
+
+    stopPainting() {
+      if (press?.frame) {
+        cancelAnimationFrame(press.frame);
+      }
+      press = null;
+      removePaint();
     },
 
     takeSelection(language) {
@@ -324,9 +584,11 @@
     },
   };
 
-  const painted = { paintedHighlights: 0, paintedWordTints: 0 };
-  const paintedClasses = { paintedHighlights: "scholia-highlight", paintedWordTints: "scholia-word-tap" };
-  new MutationObserver(() => {
+  const painted = { paintedHighlights: 0, paintedWordTints: 0, paintedLive: 0 };
+  new MutationObserver((records) => {
+    if (livePaint && !livePaint.isFollowing && records.some(addsHighlight)) {
+      removePaint();
+    }
     for (const [name, className] of Object.entries(paintedClasses)) {
       const count = document.querySelectorAll(`:has(> .${className})`).length;
       if (count !== painted[name]) {
@@ -336,8 +598,39 @@
     }
   }).observe(document.body, { childList: true, subtree: true });
 
+  setSelectable(false);
   let selectionFrame = 0;
   let hasPostedSelection = false;
+  window.addEventListener(
+    "touchstart",
+    () => {
+      isHandlingPress = false;
+    },
+    { capture: true, passive: true }
+  );
+  window.addEventListener(
+    "pointerup",
+    (event) => {
+      if (isHandlingPress) {
+        event.stopImmediatePropagation();
+        event.target.dispatchEvent(new PointerEvent("pointercancel", event));
+      }
+    },
+    true
+  );
+  for (const type of ["mousedown", "click"]) {
+    window.addEventListener(
+      type,
+      (event) => {
+        if (isHandlingPress) {
+          event.preventDefault();
+          event.stopImmediatePropagation();
+        }
+      },
+      true
+    );
+  }
+
   document.addEventListener("selectionchange", () => {
     if (selectionFrame) {
       return;
@@ -345,6 +638,9 @@
     selectionFrame = requestAnimationFrame(() => {
       selectionFrame = 0;
       const selected = selectedRange();
+      if (!selected) {
+        setSelectable(false);
+      }
       if (!selected && !hasPostedSelection) {
         return;
       }

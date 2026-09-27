@@ -15,15 +15,21 @@ final class ReaderViewController: UIViewController {
     private var colors: ReaderColors
     private var pageTurn: ReaderPageTurn
     private var swipes: [UISwipeGestureRecognizer] = []
-    private var pressOrigin: CGPoint?
-    private var isPressing = false
-    private var isPainting = false
+    private var press = Press.idle {
+        didSet {
+            if press.isHeld != oldValue.isHeld {
+                enablePans()
+            }
+            publishSelection()
+        }
+    }
+    private var pressGeneration = 0
+    private weak var livePaint: WKWebView?
     private var isCurling = false
     private var isShowing = false
     private var isShown = false
     private weak var pager: UIScrollView?
-    private weak var selectionWebView: WKWebView?
-    private var pageSelection: ReaderSelection?
+    private var pageSelection: PageSelection?
     private var observations: [ScrollObservation] = []
     private var shownPage: ChapterPage?
     private var laidOutSize: CGSize?
@@ -90,6 +96,10 @@ final class ReaderViewController: UIViewController {
                 return true
             })
 
+        view.addGestureRecognizer(
+            TouchObserver(
+                onTouchDown: { [weak self] in self?.touchedDown() }, onTouchUp: { [weak self] in self?.touchedUp() }))
+
         let press = UILongPressGestureRecognizer(target: self, action: #selector(pressed))
         press.cancelsTouchesInView = false
         press.delegate = self
@@ -118,6 +128,8 @@ final class ReaderViewController: UIViewController {
         if view.bounds.size != laidOutSize {
             laidOutSize = view.bounds.size
             clearWord()
+            press = .idle
+            stopPainting()
             clearSelection()
         }
         countPages()
@@ -155,7 +167,7 @@ final class ReaderViewController: UIViewController {
             guard let range = await self?.takeSelection(in: webView)?.range else {
                 return
             }
-            self?.controller?.onHighlight?(range)
+            _ = self?.controller?.onHighlight?(range)
         }
     }
 
@@ -189,7 +201,7 @@ final class ReaderViewController: UIViewController {
     }
 
     private func withdrawSelection() -> WKWebView? {
-        guard controller?.selection != nil, let webView = selectionWebView else {
+        guard controller?.selection != nil, let webView = pageSelection?.webView else {
             return nil
         }
         pageSelection = nil
@@ -198,7 +210,7 @@ final class ReaderViewController: UIViewController {
     }
 
     private func publishSelection() {
-        let shown = isPressing || isPainting ? nil : pageSelection
+        let shown = press == .idle ? pageSelection?.selection : nil
         guard shown != controller?.selection else {
             return
         }
@@ -213,7 +225,7 @@ final class ReaderViewController: UIViewController {
             return
         }
         guard let found = body as? [String: Any] else {
-            if webView === selectionWebView {
+            if webView === pageSelection?.webView {
                 pageSelection = nil
                 publishSelection()
             }
@@ -222,8 +234,7 @@ final class ReaderViewController: UIViewController {
         guard let text = found["text"] as? String, let rect = rect(found, in: webView) else {
             return
         }
-        selectionWebView = webView
-        pageSelection = ReaderSelection(text: text, rect: rect)
+        pageSelection = PageSelection(selection: ReaderSelection(text: text, rect: rect), webView: webView)
         publishSelection()
     }
 
@@ -269,8 +280,12 @@ final class ReaderViewController: UIViewController {
         for swipe in swipes {
             swipe.isEnabled = pageTurn == .curl
         }
+        enablePans()
+    }
+
+    private func enablePans() {
         for scrollView in navigator.view.descendants(of: UIScrollView.self) {
-            scrollView.panGestureRecognizer.isEnabled = pageTurn == .slide
+            scrollView.panGestureRecognizer.isEnabled = pageTurn == .slide && !press.isHeld
         }
     }
 
@@ -362,8 +377,11 @@ final class ReaderViewController: UIViewController {
 
     private func pageMoved() {
         clearWord()
-        if !isPainting, pageSelection != nil {
-            clearSelection()
+        if !press.isHeld {
+            stopPainting()
+            if pageSelection != nil {
+                clearSelection()
+            }
         }
         trackPage()
     }
@@ -569,56 +587,99 @@ final class ReaderViewController: UIViewController {
         return candidate as? WKWebView
     }
 
-    @objc private func pressed(_ press: UILongPressGestureRecognizer) {
-        let location = press.location(in: view)
-        switch press.state {
-        case .began:
-            pressOrigin = location
-            isPressing = true
-            publishSelection()
-        case .changed:
-            guard
-                !isPainting,
-                let pressOrigin,
-                hypot(location.x - pressOrigin.x, location.y - pressOrigin.y) > press.allowableMovement
-            else {
-                return
-            }
-            isPainting = true
-            view.tintColor = controller?.highlightColor.withAlphaComponent(1)
-        case .ended where isPainting:
-            isPressing = false
-            paintSelection()
-        default:
-            isPressing = false
-            stopPainting()
-            publishSelection()
+    private func touchedDown() {
+        stopPainting()
+        guard pageSelection == nil else {
+            return
+        }
+        pressGeneration += 1
+        press = .touched(generation: pressGeneration)
+    }
+
+    private func touchedUp() {
+        if case .touched = press {
+            press = .idle
         }
     }
 
-    private func paintSelection() {
-        pageSelection = nil
-        guard let webView = selectionWebView ?? pressOrigin.flatMap(webView(at:)) else {
-            stopPainting()
-            return
-        }
-        selectionTask?.cancel()
-        selectionTask = Task { [weak self] in
-            let range = await self?.takeSelection(in: webView)?.range
-            guard let self else {
+    @objc private func pressed(_ recognizer: UILongPressGestureRecognizer) {
+        let location = recognizer.location(in: view)
+        switch (recognizer.state, press) {
+        case (.began, .touched(let generation)):
+            clearWord()
+            guard let webView = webView(at: location) else {
+                press = .idle
                 return
             }
+            let point = view.convert(location, to: webView)
+            webView.callAsyncJavaScript(
+                "scholia.beginPress(x, y, language)",
+                arguments: ["x": point.x, "y": point.y, "language": language ?? NSNull()], in: nil, in: .page)
+            press = .pressing(generation: generation, origin: location, webView: webView)
+        case (.changed, .pressing(let generation, let origin, let webView)):
+            guard hypot(location.x - origin.x, location.y - origin.y) > recognizer.allowableMovement else {
+                return
+            }
+            startPainting(in: webView)
+            paint(to: location, in: webView)
+            press = .painting(generation: generation, webView: webView)
+        case (.changed, .painting(_, let webView)):
+            paint(to: location, in: webView)
+        case (.ended, .painting(let generation, let webView)):
+            commit(generation, in: webView)
+        case (.ended, .pressing(_, _, let webView)):
+            webView.callAsyncJavaScript("scholia.selectPress()", in: nil, in: .page)
+            press = .idle
+        case (.cancelled, .pressing), (.failed, .pressing):
+            press = .idle
+        case (.cancelled, .painting), (.failed, .painting):
+            press = .idle
             stopPainting()
-            if let range {
-                controller?.onHighlight?(range)
+        default:
+            break
+        }
+    }
+
+    private func commit(_ generation: Int, in webView: WKWebView) {
+        press = .committing(generation: generation)
+        selectionTask?.cancel()
+        selectionTask = Task { [weak self] in
+            let found =
+                try? await webView.callAsyncJavaScript("return scholia.takePaint()", contentWorld: .page)
+                as? [String: Any]
+            guard let self, !Task.isCancelled, press == .committing(generation: generation) else {
+                return
+            }
+            press = .idle
+            let isAdded = textRange(found?["range"], in: webView).flatMap { controller?.onHighlight?($0) } ?? false
+            if !isAdded {
+                stopPainting()
             }
         }
+    }
+
+    private func startPainting(in webView: WKWebView) {
+        guard let color = controller?.highlightColor else {
+            return
+        }
+        livePaint = webView
+        webView.callAsyncJavaScript(
+            "scholia.startPainting(fill, radius)", arguments: ["fill": color.css, "radius": style.highlightRadius],
+            in: nil, in: .page)
+    }
+
+    private func paint(to location: CGPoint, in webView: WKWebView) {
+        let point = view.convert(location, to: webView)
+        webView.callAsyncJavaScript(
+            "scholia.paintTo(x, y)", arguments: ["x": point.x, "y": point.y], in: nil, in: .page)
     }
 
     private func stopPainting() {
-        pressOrigin = nil
-        isPainting = false
-        view.tintColor = colors.selection
+        guard let webView = livePaint else {
+            return
+        }
+        livePaint = nil
+        webView.callAsyncJavaScript("scholia.stopPainting()", in: nil, in: .page)
     }
 
     @objc private func swiped(_ swipe: UISwipeGestureRecognizer) {
@@ -781,6 +842,7 @@ extension ReaderViewController: EPUBNavigatorDelegate {
             PaintedCount(controller: controller, count: \.paintedHighlights), name: "paintedHighlights")
         userContentController.add(
             PaintedCount(controller: controller, count: \.paintedWordTints), name: "paintedWordTints")
+        userContentController.add(PaintedCount(controller: controller, count: \.paintedLive), name: "paintedLive")
         userContentController.add(SelectionMessages(viewController: self), name: "scholiaSelection")
     }
 
@@ -821,11 +883,78 @@ private final class SelectionMessages: NSObject, WKScriptMessageHandler {
 }
 
 extension ReaderViewController: UIGestureRecognizerDelegate {
+    func gestureRecognizerShouldBegin(_ gestureRecognizer: UIGestureRecognizer) -> Bool {
+        !(gestureRecognizer is UISwipeGestureRecognizer && press.isHeld)
+    }
+
     func gestureRecognizer(
         _ gestureRecognizer: UIGestureRecognizer,
         shouldRecognizeSimultaneouslyWith otherGestureRecognizer: UIGestureRecognizer
     ) -> Bool {
         true
+    }
+}
+
+private enum Press: Equatable {
+    case idle
+    case touched(generation: Int)
+    case pressing(generation: Int, origin: CGPoint, webView: WKWebView)
+    case painting(generation: Int, webView: WKWebView)
+    case committing(generation: Int)
+
+    var isHeld: Bool {
+        switch self {
+        case .pressing, .painting: true
+        case .idle, .touched, .committing: false
+        }
+    }
+}
+
+private struct PageSelection {
+    let selection: ReaderSelection
+    weak var webView: WKWebView?
+}
+
+private final class TouchObserver: UIGestureRecognizer {
+    private let onTouchDown: () -> Void
+    private let onTouchUp: () -> Void
+    private var isTouching = false
+
+    init(onTouchDown: @escaping () -> Void, onTouchUp: @escaping () -> Void) {
+        self.onTouchDown = onTouchDown
+        self.onTouchUp = onTouchUp
+        super.init(target: nil, action: nil)
+        cancelsTouchesInView = false
+        delaysTouchesEnded = false
+    }
+
+    override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent) {
+        guard !isTouching else {
+            return
+        }
+        isTouching = true
+        onTouchDown()
+    }
+
+    override func touchesEnded(_ touches: Set<UITouch>, with event: UIEvent) {
+        finishWhenLifted(event)
+    }
+
+    override func touchesCancelled(_ touches: Set<UITouch>, with event: UIEvent) {
+        finishWhenLifted(event)
+    }
+
+    override func reset() {
+        isTouching = false
+    }
+
+    private func finishWhenLifted(_ event: UIEvent) {
+        let isLifted = event.touches(for: self)?.allSatisfy { $0.phase == .ended || $0.phase == .cancelled } ?? true
+        guard isLifted else {
+            return
+        }
+        onTouchUp()
+        state = .failed
     }
 }
 
