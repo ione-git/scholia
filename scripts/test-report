@@ -7,8 +7,9 @@ if [ -z "$bundle" ] || [ ! -f "$bundle/Info.plist" ]; then
     exit 1
 fi
 
-xcrun xcresulttool get test-results summary --path "$bundle" >build/summary.json
-python3 - build/summary.json <<'EOF'
+summary=$(mktemp)
+xcrun xcresulttool get test-results summary --path "$bundle" >"$summary"
+python3 - "$summary" <<'EOF'
 import json, os, sys
 
 s = json.load(open(sys.argv[1]))
