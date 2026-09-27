@@ -50,7 +50,7 @@ struct ReaderIndexView: View {
             case .highlights:
                 ReaderHighlightsList(book: book, controller: controller)
             case .bookmarks:
-                Spacer(minLength: 0)
+                ReaderBookmarksList(book: book, controller: controller)
             }
         }
         .background(.surface)

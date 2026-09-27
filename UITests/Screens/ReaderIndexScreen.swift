@@ -9,6 +9,10 @@ struct ReaderIndexScreen: Screen {
 
     var chapters: [XCUIElement] { chapterRows.allElementsBoundByIndex }
     var highlights: [XCUIElement] { highlightRows.allElementsBoundByIndex }
+    var bookmarks: [XCUIElement] {
+        app.buttons.matching(NSPredicate(format: "identifier BEGINSWITH %@", "readerIndex.bookmark."))
+            .allElementsBoundByIndex
+    }
 
     private var chapterRows: XCUIElementQuery {
         app.buttons.matching(NSPredicate(format: "identifier BEGINSWITH %@", "readerIndex.chapter."))
@@ -23,6 +27,8 @@ struct ReaderIndexScreen: Screen {
     func chapter(_ title: String) -> XCUIElement { app.buttons["readerIndex.chapter.\(title)"] }
 
     func highlight(_ key: String) -> XCUIElement { app.buttons["readerIndex.highlight.\(key)"] }
+
+    func bookmark(page: Int) -> XCUIElement { app.buttons["readerIndex.bookmark.\(page)"] }
 
     @discardableResult
     func waitUntilStartPagesShown(file: StaticString = #filePath, line: UInt = #line) -> ReaderIndexScreen {
@@ -40,6 +46,13 @@ struct ReaderIndexScreen: Screen {
     @discardableResult
     func jump(toHighlight row: XCUIElement) -> ReaderScreen {
         row.waitUntil(\.isHittable, equals: true).tap()
+        root.waitUntilGone()
+        return ReaderScreen(app: app).waitUntilShown()
+    }
+
+    @discardableResult
+    func jump(toBookmarkOnPage page: Int) -> ReaderScreen {
+        bookmark(page: page).waitUntil(\.isHittable, equals: true).tap()
         root.waitUntilGone()
         return ReaderScreen(app: app).waitUntilShown()
     }

@@ -130,7 +130,7 @@
                         before: "ur un banc près de la fontaine.\n", after: " Elle tient une tasse de café en",
                         color: .yellow)
                 ]
-            case .frenchNoCover, .arabic, .minimalMetadata, .corrupted, .drm, .zip64, .fontObfuscation:
+            case .frenchNoCover, .frenchSplit, .arabic, .minimalMetadata, .corrupted, .drm, .zip64, .fontObfuscation:
                 nil
             }
         }
@@ -140,6 +140,7 @@
             case .german: "Die Verwandlung"
             case .frenchNoCover: "Un matin en ville"
             case .frenchSections: "Un soir en ville"
+            case .frenchSplit: "Trois matins"
             case .arabic: "صباح في المدينة"
             case .minimalMetadata: "Minimal"
             case .corrupted: "Corrupted"
@@ -152,7 +153,7 @@
         fileprivate var author: String? {
             switch self {
             case .german, .drm, .zip64, .fontObfuscation: "Franz Kafka"
-            case .frenchNoCover, .frenchSections, .arabic: "Scholia"
+            case .frenchNoCover, .frenchSections, .frenchSplit, .arabic: "Scholia"
             case .minimalMetadata, .corrupted: nil
             }
         }
@@ -160,7 +161,7 @@
         fileprivate var language: String {
             switch self {
             case .german, .drm, .zip64, .fontObfuscation: "de"
-            case .frenchNoCover, .frenchSections: "fr"
+            case .frenchNoCover, .frenchSections, .frenchSplit: "fr"
             case .arabic: "ar"
             case .minimalMetadata, .corrupted: "en"
             }

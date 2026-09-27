@@ -1019,7 +1019,7 @@ final class ReaderViewController: UIViewController {
         let isScrolled = navigator.presentation.scroll
         let script =
             isScrolled
-            ? "return scholia.visibleOffsets()" : "return [scholia.offsetOfPage(page), scholia.offsetOfPage(page + 1)]"
+            ? "return scholia.visibleSpan()" : "return scholia.pageSpan(page)"
         let epoch = epoch
         locateTask = Task {
             if isScrolled {
@@ -1029,14 +1029,19 @@ final class ReaderViewController: UIViewController {
                 }
             }
             await resolveFragments(inChapter: page.chapter, in: webView)
-            let offsets =
+            let found =
                 try? await webView.callAsyncJavaScript(script, arguments: ["page": page.page], contentWorld: .page)
-                as? [Int]
-            guard !Task.isCancelled, epoch == self.epoch, let offsets, let start = offsets.first, let end = offsets.last
+                as? [String: Any]
+            guard
+                !Task.isCancelled,
+                epoch == self.epoch,
+                let start = found?["start"] as? Int,
+                let end = found?["end"] as? Int,
+                let firstLine = found?["firstLine"] as? String
             else {
                 return
             }
-            let span = ReaderPageSpan(chapter: page.chapter, start: start, end: end)
+            let span = ReaderPageSpan(chapter: page.chapter, start: start, end: end, firstLine: firstLine)
             controller?.location = landed(in: span) ?? ReaderLocation(chapter: page.chapter, offset: start)
             controller?.pageSpan = span
         }

@@ -152,6 +152,52 @@ public struct ChapterRow: View {
     }
 }
 
+public struct BookmarkRow: View {
+    private static let iconSize: CGFloat = 20
+    private static let iconStroke: CGFloat = 2
+    private static let iconTopInset: CGFloat = 2
+    private static let iconSpacing: CGFloat = 14
+    private static let lineSpacing: CGFloat = 6
+
+    let title: Text
+    let line: Text?
+    let lineLocale: Locale
+
+    public init(title: Text, line: Text?, lineLocale: Locale) {
+        self.title = title
+        self.line = line
+        self.lineLocale = lineLocale
+    }
+
+    public static func page(_ page: Text) -> Text {
+        page.font(TextStyle.body.weighted(TextStyle.title3.weight).font).foregroundStyle(.ink)
+    }
+
+    public var body: some View {
+        HStack(alignment: .top, spacing: Self.iconSpacing) {
+            IconView(icon: .bookmarkFilled, size: Self.iconSize, stroke: Self.iconStroke)
+                .foregroundStyle(.ink)
+                .padding(.top, Self.iconTopInset)
+            VStack(alignment: .leading, spacing: Self.lineSpacing) {
+                title
+                    .textStyle(.body)
+                    .foregroundStyle(.inkMuted)
+                if let line {
+                    line
+                        .textStyle(.readingQuote)
+                        .foregroundStyle(.inkMuted)
+                        .lineLimit(1)
+                        .truncationMode(.tail)
+                        .environment(\.locale, lineLocale)
+                }
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+        }
+        .padding(.vertical, .space4)
+        .contentShape(.rect)
+    }
+}
+
 public struct ListRowValue: View {
     let value: Text
 

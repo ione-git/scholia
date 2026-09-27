@@ -259,6 +259,32 @@
     return new Promise((resolve) => requestAnimationFrame(() => resolve()));
   }
 
+  function lineAt(offset) {
+    for (const { node, start } of textNodes()) {
+      if (start + node.data.length <= offset) {
+        continue;
+      }
+      const from = Math.max(0, offset - start);
+      if (!boxOfCharacter(node, from)) {
+        continue;
+      }
+      const textIndex = index(blockOf(node));
+      const entry = textIndex.nodes.find((candidate) => candidate.node === node);
+      const locale = canonicalLocale(document.documentElement.lang);
+      const word = new Intl.Segmenter(locale, { granularity: "word" })
+        .segment(textIndex.text)
+        .containing(entry.start + from);
+      const rest = textIndex.text
+        .slice(word?.isWordLike ? word.index : entry.start + from)
+        .replace(softHyphen, "")
+        .replace(/\s+/g, " ")
+        .trim();
+      const sentence = new Intl.Segmenter(locale, { granularity: "sentence" }).segment(rest).containing(0);
+      return sentence ? sentence.segment.trim() : "";
+    }
+    return "";
+  }
+
   function pageOfOffset(offset) {
     if (offset <= 0) {
       return 0;
@@ -514,6 +540,11 @@
       return starts;
     },
 
+    pageSpan(page) {
+      const start = scholia.offsetOfPage(page);
+      return { start, end: scholia.offsetOfPage(page + 1), firstLine: lineAt(start) };
+    },
+
     async showOffset(offset) {
       await document.fonts.ready;
       const page = pageOfOffset(offset);
@@ -557,12 +588,12 @@
       }
     },
 
-    visibleOffsets() {
+    visibleSpan() {
       const lineStart = isRightToLeft() ? window.innerWidth - 1 : 0;
       const lineEnd = window.innerWidth - 1 - lineStart;
       const start = offsetAt(lineStart, 0);
       const end = offsetAt(lineEnd, window.innerHeight - 1);
-      return start === null || end === null ? null : [start, end];
+      return start === null || end === null ? null : { start, end, firstLine: lineAt(start) };
     },
 
     style() {

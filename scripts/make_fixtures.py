@@ -279,6 +279,19 @@ def main():
         None,
         files=[1, 2],
     )
+    french_split = epub(
+        "urn:scholia:fixture:french-split",
+        "Trois matins",
+        "fr",
+        "Scholia",
+        [
+            ("Premier matin", prose(FRENCH * 4)),
+            ("Deuxième matin", prose(FRENCH * 4)),
+            ("Troisième matin", prose(FRENCH * 4)),
+        ],
+        None,
+        files=[1, 2],
+    )
     arabic = epub(
         "urn:scholia:fixture:arabic",
         "صباح في المدينة",
@@ -325,6 +338,7 @@ def main():
         "german.epub": archive(german),
         "french-no-cover.epub": archive(french),
         "french-sections.epub": archive(french_sections),
+        "french-split.epub": archive(french_split),
         "arabic.epub": archive(arabic),
         "minimal-metadata.epub": minimal,
         "corrupted.epub": minimal[: len(minimal) // 2],
