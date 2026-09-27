@@ -110,7 +110,8 @@ final class ReaderContentsTests: UITestCase {
 
     private func configuration(with fixture: Fixture) -> LaunchConfiguration {
         LaunchConfiguration(
-            resetsState: true, fixtures: [fixture], opened: [], inProgress: [], highlighted: [], mocksTranslation: true,
+            resetsState: true, fixtures: [fixture], opened: [], inProgress: [], highlighted: [],
+            translation: .immediate,
             now: nil, notificationPermission: nil)
     }
 
