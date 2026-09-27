@@ -235,6 +235,24 @@ final class ReaderSettingsTests: UITestCase {
         window.waitUntil(\.verticalSizeClass, equals: .compact)
     }
 
+    func testRotationLockPersistsAcrossRelaunch() throws {
+        var app = try launchWithRotationLock()
+        HomeScreen(app: app).waitUntilShown().openHeroBook().openSettings().setLockRotation(true)
+        app.terminate()
+
+        app = relaunch()
+        let reader = HomeScreen(app: app).waitUntilShown().openHeroBook()
+        let window = app.windows.firstMatch
+        XCUIDevice.shared.orientation = .landscapeLeft
+        let sheet = reader.openSettings()
+        XCTAssertEqual(sheet.lockRotation.stringValue, "1")
+        XCTAssertEqual(window.verticalSizeClass, .regular)
+        sheet.closeByTappingPage(reader)
+        reader.backToHome()
+
+        window.waitUntil(\.verticalSizeClass, equals: .compact)
+    }
+
     func testDarkAppearanceShowsNightForPaperAndPickedPaperStaysUntilAppearanceChanges() throws {
         let original = XCUIDevice.shared.appearance
         addTeardownBlock { @MainActor in
@@ -276,6 +294,14 @@ final class ReaderSettingsTests: UITestCase {
 
         reader.appearance.waitUntil(\.label, equals: try style(theme: "paper"))
         sheet.theme("paper").waitUntil(\.isSelected, equals: true)
+    }
+
+    func testNightAfterPreviewingPaperInDarkKeepsPaperByDay() throws {
+        try assertNightAfterPreviewKeepsDayTheme("paper")
+    }
+
+    func testNightAfterPreviewingSepiaInDarkKeepsSepiaByDay() throws {
+        try assertNightAfterPreviewKeepsDayTheme("sepia")
     }
 
     func testTapOnPageClosesSheetAndKeepsChrome() {
@@ -326,6 +352,14 @@ final class ReaderSettingsTests: UITestCase {
         assertSnapshot(of: openSettingsWithLockedRotation(appearance: .dark), named: "Reader-Menu-Settings")
     }
 
+    func testReaderBubbleSnapshotLight() throws {
+        assertSnapshot(of: try openPageWithBubble(appearance: .light), named: "Reader-Bubble")
+    }
+
+    func testReaderBubbleSnapshotDark() throws {
+        assertSnapshot(of: try openPageWithBubble(appearance: .dark), named: "Reader-Bubble")
+    }
+
     func testReaderBlackSnapshotLight() throws {
         assertSnapshot(of: try openBlackPageWithBubble(appearance: .light), named: "Reader-Black")
     }
@@ -341,17 +375,43 @@ final class ReaderSettingsTests: UITestCase {
         return sheet
     }
 
+    private func openPageWithBubble(appearance: XCUIDevice.Appearance) throws -> ReaderScreen {
+        try showBubble(
+            in: HomeScreen(app: launch(germanBook, appearance: appearance)).waitUntilShown().openHeroBook())
+    }
+
     private func openBlackPageWithBubble(appearance: XCUIDevice.Appearance) throws -> ReaderScreen {
         let reader = HomeScreen(app: launch(germanBook, appearance: appearance)).waitUntilShown().openHeroBook()
         let sheet = reader.openSettings()
         sheet.choose(sheet.theme("black"))
         sheet.closeByTappingPage(reader)
         reader.hideChrome()
+        return try showBubble(in: reader)
+    }
+
+    private func showBubble(in reader: ReaderScreen) throws -> ReaderScreen {
         try reader.tapWord(onLine: 3, x: 3)
         reader.bubbleWord.waitUntil(\.label, equals: "Ungeziefer")
         reader.bubbleTranslation.waitUntilExists()
         reader.paintedWordTints.waitUntil(\.label, equals: "1")
         return reader
+    }
+
+    private func assertNightAfterPreviewKeepsDayTheme(_ dayTheme: String) throws {
+        let reader = HomeScreen(app: launch(germanBook, appearance: .light)).waitUntilShown().openHeroBook()
+        let sheet = reader.openSettings()
+        sheet.choose(sheet.theme(dayTheme))
+        XCUIDevice.shared.appearance = .dark
+        reader.appearance.waitUntil(\.label, equals: try style(theme: "night"))
+
+        sheet.choose(sheet.theme(dayTheme))
+        reader.appearance.waitUntil(\.label, equals: try style(theme: dayTheme))
+        sheet.choose(sheet.theme("night"))
+        reader.appearance.waitUntil(\.label, equals: try style(theme: "night"))
+        XCUIDevice.shared.appearance = .light
+
+        reader.appearance.waitUntil(\.label, equals: try style(theme: dayTheme))
+        sheet.theme(dayTheme).waitUntil(\.isSelected, equals: true)
     }
 
     private func launchWithRotationLock() throws -> XCUIApplication {

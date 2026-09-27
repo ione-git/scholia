@@ -160,7 +160,9 @@ struct ReadingView: View {
         }
         transition.begin(in: window.window)
         pickedTheme = picked.shown(in: colorScheme) == picked ? nil : picked
-        settings.update(\.readerTheme, to: picked, in: modelContext)
+        if picked != settings.readerTheme.shown(in: colorScheme) {
+            settings.update(\.readerTheme, to: picked, in: modelContext)
+        }
     }
 
     private func lockRotation() {
