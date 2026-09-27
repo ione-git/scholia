@@ -143,6 +143,20 @@ final class ReaderTests: UITestCase {
         reader.backToLibrary()
     }
 
+    func testProtectedBookShowsFailure() {
+        let app = launch(
+            LaunchConfiguration(
+                resetsState: true, fixtures: [.german, .drm], opened: [], inProgress: [], highlighted: [],
+                translation: .immediate, now: nil,
+                notificationPermission: nil))
+        let library = HomeScreen(app: app).waitUntilShown().openLibrary()
+
+        let reader = library.openBook("Encrypted")
+
+        XCTAssertEqual(reader.failure.waitUntilExists().label, "This book can’t be opened.")
+        XCTAssertFalse(reader.pageCounter.exists)
+    }
+
     func testReaderSnapshotLight() {
         assertSnapshot(of: openGermanBook(appearance: .light), named: "Reader")
     }

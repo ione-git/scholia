@@ -205,11 +205,17 @@
                     location: nil,
                     appearance: appearance,
                     typefaces: ReaderFont.allCases.map(\.typeface),
-                    highlightColor: theme.highlightColor,
-                    highlightTitle: String(localized: "Highlight")
+                    highlightColor: theme.highlightColor(settings.highlightColor)
                 )
                 let isChromeShown = $isChromeShown
                 controller.onPageTap = { isChromeShown.wrappedValue.toggle() }
+                controller.onHighlight = { [weak controller] range in
+                    guard let controller else {
+                        return
+                    }
+                    controller.highlights.append(
+                        ReaderHighlight(id: UUID().uuidString, range: range, color: controller.highlightColor))
+                }
                 self.controller = controller
             } catch {
                 cannotOpen = true
@@ -220,10 +226,10 @@
             guard let controller else {
                 return
             }
-            controller.highlightColor = theme.highlightColor
+            controller.highlightColor = theme.highlightColor(settings.highlightColor)
             controller.highlights = controller.highlights.map { highlight in
                 var highlight = highlight
-                highlight.color = theme.highlightColor
+                highlight.color = controller.highlightColor
                 return highlight
             }
         }

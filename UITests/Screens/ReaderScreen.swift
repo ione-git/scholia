@@ -24,6 +24,7 @@ struct ReaderScreen: Screen {
     var highlights: XCUIElement { app.descendants(matching: .any)["debug.highlights"] }
     var paintedHighlights: XCUIElement { app.descendants(matching: .any)["debug.paintedHighlights"] }
     var paintedWordTints: XCUIElement { app.descendants(matching: .any)["debug.paintedWordTints"] }
+    var systemEditMenu: XCUIElement { app.menuItems.firstMatch }
     var bubble: XCUIElement { app.otherElements["reader.bubble"] }
     var bubbleWord: XCUIElement { app.staticTexts["reader.bubble.word"] }
     var bubbleIPA: XCUIElement { app.staticTexts["reader.bubble.ipa"] }
@@ -33,7 +34,6 @@ struct ReaderScreen: Screen {
     var bubbleFailure: XCUIElement { app.staticTexts["reader.bubble.failure"] }
     var germanParagraph: XCUIElement { paragraph(startingWith: germanFirstParagraph) }
     var germanHeading: XCUIElement { paragraph(startingWith: germanFirstHeading) }
-    var highlightMenuItem: XCUIElement { app.menuItems["Highlight"] }
     var appearance: XCUIElement { app.descendants(matching: .any)["debug.readerAppearance"] }
 
     func theme(_ name: String) -> XCUIElement { app.buttons["reader.theme.\(name)"] }
@@ -52,6 +52,11 @@ struct ReaderScreen: Screen {
 
     func tapWord(onLine index: Int, x: CGFloat) throws {
         try wordPoint(onLine: index, x: x).tap()
+    }
+
+    func selectWord(onLine index: Int, x: CGFloat) throws -> SelectionMenuScreen {
+        try wordPoint(onLine: index, x: x).press(forDuration: 1)
+        return SelectionMenuScreen(app: app).waitUntilShown()
     }
 
     @discardableResult

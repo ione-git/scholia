@@ -137,25 +137,6 @@ final class ReaderPrototypeTests: UITestCase {
         }
     }
 
-    func testLongPressSelectsWordAndMenuHighlightsIt() throws {
-        let reader = openReader()
-        let line = try readingLineHeight()
-        let paragraph = reader.paragraph(startingWith: "Als Gregor Samsa").waitUntilExists()
-
-        paragraph.coordinate(withNormalizedOffset: .zero).withOffset(CGVector(dx: 20, dy: line * 2 + line / 2))
-            .press(forDuration: 1)
-        reader.highlightMenuItem.waitUntil(\.isHittable, equals: true)
-        attachScreenshot("Reader-Select")
-        reader.highlightMenuItem.tap()
-
-        reader.highlights.waitUntil(\.label, equals: "seinem")
-        reader.highlightMenuItem.waitUntilGone()
-        reader.paintedHighlights.waitUntil(\.label, equals: "1")
-        let seinem = try highlightColor(in: middle(ofLine: 2, from: 4, to: 36, in: paragraph), reader: reader)
-        XCTAssertLessThanOrEqual(seinem.found.distance(to: seinem.expected), 6, "\(seinem)")
-        attachScreenshot("Reader-Highlighted")
-    }
-
     func testLongPressAndDragPaintsHighlightWithoutMenu() throws {
         let reader = openReader()
         let line = try readingLineHeight()
@@ -167,7 +148,7 @@ final class ReaderPrototypeTests: UITestCase {
 
         reader.paintedHighlights.waitUntil(\.label, equals: "1")
         XCTAssertTrue(reader.highlights.label.hasPrefix("Kopf ein wenig hob, seinen"), reader.highlights.label)
-        XCTAssertFalse(reader.highlightMenuItem.exists)
+        XCTAssertFalse(reader.systemEditMenu.exists)
         let paint = try highlightColor(in: middle(ofLine: 5, from: 60, to: 200, in: paragraph), reader: reader)
         XCTAssertLessThanOrEqual(paint.found.distance(to: paint.expected), 6, "\(paint)")
     }

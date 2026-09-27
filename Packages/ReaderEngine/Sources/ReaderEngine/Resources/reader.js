@@ -136,6 +136,65 @@
     return before.toString().length;
   }
 
+  function quote(selected) {
+    const prefix = document.createRange();
+    prefix.setStart(document.body, 0);
+    prefix.setEnd(selected.startContainer, selected.startOffset);
+    const start = prefix.toString().length;
+    const text = selected.toString();
+    const end = start + text.length;
+    const body = document.body.textContent;
+    return {
+      text,
+      start,
+      end,
+      before: body.slice(Math.max(0, start - contextLength), start),
+      after: body.slice(end, end + contextLength),
+    };
+  }
+
+  function selectedRange() {
+    const selection = window.getSelection();
+    if (!selection || selection.isCollapsed || selection.rangeCount === 0) {
+      return null;
+    }
+    const selected = selection.getRangeAt(0);
+    return selected.toString().trim() === "" ? null : selected;
+  }
+
+  function sentenceOf(quoted, language) {
+    const selected = quoted.text.replace(softHyphen, "");
+    const word = selected.trim();
+    const nodes = textNodes();
+    const first = nodes.find(({ node, start }) => quoted.start < start + node.data.length);
+    const last = nodes.findLast(({ start }) => start < quoted.end);
+    if (!first || !last || blockOf(first.node) !== blockOf(last.node)) {
+      return { word, sentence: word, offsetInSentence: 0 };
+    }
+    const textIndex = index(blockOf(first.node));
+    const blockStart = (entry) => textIndex.nodes.find((candidate) => candidate.node === entry.node).start;
+    const from = blockStart(first) + quoted.start - first.start;
+    const to = blockStart(last) + quoted.end - last.start;
+    const sentences = new Intl.Segmenter(canonicalLocale(language), { granularity: "sentence" }).segment(
+      textIndex.text
+    );
+    const opening = sentences.containing(from);
+    const closing = sentences.containing(Math.max(from, to - 1));
+    if (!opening || !closing) {
+      return { word, sentence: word, offsetInSentence: 0 };
+    }
+    const leading = selected.slice(0, selected.length - selected.trimStart().length);
+    const prefix = textIndex.text.slice(opening.index, from).replace(softHyphen, "") + leading;
+    return {
+      word,
+      sentence: textIndex.text
+        .slice(opening.index, closing.index + closing.segment.length)
+        .replace(softHyphen, "")
+        .trim(),
+      offsetInSentence: prefix.trimStart().length,
+    };
+  }
+
   window.scholia = {
     offsetOfPage(page) {
       if (page <= 0) {
@@ -268,9 +327,8 @@
           continue;
         }
         const end = word.index + word.segment.length;
-        const rect = Array.from(range(textIndex, word.index, end).getClientRects()).find((candidate) =>
-          contains(candidate, x, y)
-        );
+        const wordRange = range(textIndex, word.index, end);
+        const rect = Array.from(wordRange.getClientRects()).find((candidate) => contains(candidate, x, y));
         if (!rect) {
           continue;
         }
@@ -285,31 +343,27 @@
           y: rect.top,
           width: rect.width,
           height: rect.height,
-          before: textIndex.text.slice(Math.max(0, word.index - contextLength), word.index),
-          after: textIndex.text.slice(end, end + contextLength),
+          range: quote(wordRange),
         };
       }
       return null;
     },
 
-    takeSelection() {
-      const selection = window.getSelection();
-      if (!selection || selection.isCollapsed) {
+    takeSelection(language) {
+      const selected = selectedRange();
+      window.getSelection()?.removeAllRanges();
+      if (!selected) {
         return null;
       }
-      const selected = selection.getRangeAt(0);
-      const before = document.createRange();
-      before.setStart(document.body, 0);
-      before.setEnd(selected.startContainer, selected.startOffset);
-      const after = document.createRange();
-      after.setStart(selected.endContainer, selected.endOffset);
-      after.setEnd(document.body, document.body.childNodes.length);
-      const text = selected.toString();
-      selection.removeAllRanges();
+      const rect = selected.getBoundingClientRect();
+      const quoted = quote(selected);
       return {
-        text: text,
-        before: before.toString().slice(-contextLength),
-        after: after.toString().slice(0, contextLength),
+        ...sentenceOf(quoted, language),
+        range: quoted,
+        x: rect.left,
+        y: rect.top,
+        width: rect.width,
+        height: rect.height,
       };
     },
   };
@@ -325,4 +379,30 @@
       }
     }
   }).observe(document.body, { childList: true, subtree: true });
+
+  let selectionFrame = 0;
+  let hasPostedSelection = false;
+  document.addEventListener("selectionchange", () => {
+    if (selectionFrame) {
+      return;
+    }
+    selectionFrame = requestAnimationFrame(() => {
+      selectionFrame = 0;
+      const selected = selectedRange();
+      if (!selected && !hasPostedSelection) {
+        return;
+      }
+      hasPostedSelection = selected !== null;
+      const rect = selected?.getBoundingClientRect();
+      webkit.messageHandlers.scholiaSelection.postMessage(
+        selected && {
+          text: selected.toString().replace(softHyphen, ""),
+          x: rect.left,
+          y: rect.top,
+          width: rect.width,
+          height: rect.height,
+        }
+      );
+    });
+  });
 })();

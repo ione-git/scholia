@@ -8,6 +8,7 @@ public final class ReaderController {
     public internal(set) var location: ReaderLocation?
     public internal(set) var pageSpan: ReaderPageSpan?
     public internal(set) var word: ReaderWord?
+    public internal(set) var selection: ReaderSelection?
     public private(set) var appearance: ReaderAppearance
     public var highlights: [ReaderHighlight] {
         didSet { viewController.apply(highlights) }
@@ -19,12 +20,13 @@ public final class ReaderController {
         public internal(set) var renderedStyle: ReaderRenderedStyle?
     #endif
     @ObservationIgnored public var onPageTap: (() -> Void)?
+    @ObservationIgnored public var onHighlight: ((ReaderTextRange) -> Void)?
     @ObservationIgnored public var looksUpWords: Bool
     @ObservationIgnored let viewController: ReaderViewController
 
     public init(
         book: ReaderBook, language: String?, location: ReaderLocation?, appearance: ReaderAppearance,
-        typefaces: [ReaderTypeface], highlightColor: UIColor, highlightTitle: String
+        typefaces: [ReaderTypeface], highlightColor: UIColor
     ) {
         self.book = book
         self.location = location
@@ -35,8 +37,7 @@ public final class ReaderController {
         paintedWordTints = 0
         looksUpWords = true
         viewController = ReaderViewController(
-            book: book, language: language, location: location, appearance: appearance, typefaces: typefaces,
-            highlightTitle: highlightTitle)
+            book: book, language: language, location: location, appearance: appearance, typefaces: typefaces)
         viewController.controller = self
     }
 
@@ -47,6 +48,22 @@ public final class ReaderController {
     public func apply(_ appearance: ReaderAppearance) async {
         await viewController.apply(appearance)
         self.appearance = viewController.appearance
+    }
+
+    public func highlightSelection() {
+        viewController.highlightSelection()
+    }
+
+    public func translateSelection() {
+        viewController.translateSelection()
+    }
+
+    public func copySelection() {
+        viewController.copySelection()
+    }
+
+    public func clearSelection() {
+        viewController.clearSelection()
     }
 }
 

@@ -128,8 +128,16 @@ extension ReaderTheme {
         )
     }
 
-    var highlightColor: UIColor {
-        UIColor(isDark ? ColorToken.highlightYellow.dark : ColorToken.highlightYellow.light)
+    func highlightColor(_ color: HighlightColor) -> UIColor {
+        let token: ColorToken =
+            switch color {
+            case .yellow: .highlightYellow
+            case .green: .highlightGreen
+            case .blue: .highlightBlue
+            case .pink: .highlightPink
+            case .purple: .highlightPurple
+            }
+        return UIColor(isDark ? token.dark : token.light)
     }
 
     func shown(in colorScheme: ColorScheme) -> ReaderTheme {
