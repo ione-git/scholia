@@ -62,7 +62,8 @@ final class LibraryTests: UITestCase {
                 resetsState: true, fixtures: [.german, .minimalMetadata, .corrupted], opened: [], inProgress: [],
                 highlighted: [],
                 translation: .immediate,
-                now: try Date("2026-03-01T10:00:00Z", strategy: .iso8601), notificationPermission: nil, unreadableStore: false))
+                now: try Date("2026-03-01T10:00:00Z", strategy: .iso8601), notificationPermission: nil,
+                unreadableStore: false))
         HomeScreen(app: earlier).waitUntilShown()
         earlier.terminate()
         let app = launch(

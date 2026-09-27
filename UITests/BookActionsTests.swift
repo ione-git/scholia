@@ -196,7 +196,8 @@ final class BookActionsTests: UITestCase {
         let app = launch(
             LaunchConfiguration(
                 resetsState: true, fixtures: [.german, .frenchNoCover], opened: [], inProgress: [],
-                highlighted: [.german], translation: .immediate, now: nil, notificationPermission: nil, unreadableStore: false))
+                highlighted: [.german], translation: .immediate, now: nil, notificationPermission: nil,
+                unreadableStore: false))
         let library = HomeScreen(app: app).waitUntilShown().openLibrary()
         library.storedLibrary.waitUntil(\.stringValue, equals: "french-no-cover.epub\ngerman.epub")
         XCTAssertEqual(library.storedHighlights.label, "7")
