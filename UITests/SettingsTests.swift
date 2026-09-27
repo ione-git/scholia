@@ -52,7 +52,7 @@ final class SettingsTests: UITestCase {
             LaunchConfiguration(
                 resetsState: true, fixtures: [.german, .frenchNoCover, .minimalMetadata], opened: [.frenchNoCover],
                 inProgress: [], highlighted: [],
-                translation: .immediate, now: nil, notificationPermission: nil))
+                translation: .immediate, now: nil, notificationPermission: nil, unreadableStore: false))
         let settings = openSettings(app)
 
         settings.chooseSortOrder("title")

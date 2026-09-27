@@ -265,7 +265,7 @@ final class ComponentGalleryTests: UITestCase {
             LaunchConfiguration(
                 resetsState: true, fixtures: [], opened: [], inProgress: [], highlighted: [], translation: .immediate,
                 now: nil,
-                notificationPermission: nil))
+                notificationPermission: nil, unreadableStore: false))
         return HomeScreen(app: app).waitUntilShown().openComponentGallery()
     }
 

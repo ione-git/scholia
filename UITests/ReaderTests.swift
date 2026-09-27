@@ -60,7 +60,7 @@ final class ReaderTests: UITestCase {
             LaunchConfiguration(
                 resetsState: false, fixtures: [], opened: [], inProgress: [], highlighted: [], translation: .immediate,
                 now: nil,
-                notificationPermission: nil))
+                notificationPermission: nil, unreadableStore: false))
         let relaunchedHome = HomeScreen(app: relaunched).waitUntilShown()
         relaunchedHome.heroProgress.waitUntil(\.stringValue, equals: percent(4, of: bookPages))
         relaunchedHome.openHeroBook().pageCounter.waitUntil(\.label, equals: "4 of \(bookPages)")
@@ -83,7 +83,7 @@ final class ReaderTests: UITestCase {
             LaunchConfiguration(
                 resetsState: true, fixtures: [.arabic], opened: [], inProgress: [], highlighted: [],
                 translation: .immediate, now: nil,
-                notificationPermission: nil))
+                notificationPermission: nil, unreadableStore: false))
         let reader = HomeScreen(app: app).waitUntilShown().openHeroBook()
         reader.pageCounter.waitUntil(\.label, equals: "1 of \(arabicBookPages)")
         reader.paragraph(startingWith: "في الصباح تستيقظ المدينة").waitUntilExists()
@@ -104,7 +104,7 @@ final class ReaderTests: UITestCase {
             LaunchConfiguration(
                 resetsState: true, fixtures: [.german, .frenchNoCover], opened: [.german], inProgress: [],
                 highlighted: [], translation: .immediate,
-                now: nil, notificationPermission: nil))
+                now: nil, notificationPermission: nil, unreadableStore: false))
         let library = HomeScreen(app: app).waitUntilShown().openLibrary()
 
         let reader = library.openBook("Un matin en ville").waitUntilOpened()
@@ -131,7 +131,7 @@ final class ReaderTests: UITestCase {
             LaunchConfiguration(
                 resetsState: true, fixtures: [.german, .corrupted], opened: [], inProgress: [], highlighted: [],
                 translation: .immediate, now: nil,
-                notificationPermission: nil))
+                notificationPermission: nil, unreadableStore: false))
         let library = HomeScreen(app: app).waitUntilShown().openLibrary()
 
         let reader = library.openBook("Corrupted")
@@ -146,7 +146,7 @@ final class ReaderTests: UITestCase {
             LaunchConfiguration(
                 resetsState: true, fixtures: [.german], opened: [], inProgress: [], highlighted: [],
                 translation: .immediate, now: nil,
-                notificationPermission: nil))
+                notificationPermission: nil, unreadableStore: false))
     }
 
     private func percent(_ page: Int, of pages: Int) -> String {

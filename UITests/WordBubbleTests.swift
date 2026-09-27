@@ -140,7 +140,7 @@ final class WordBubbleTests: UITestCase {
             LaunchConfiguration(
                 resetsState: true, fixtures: [.german], opened: [], inProgress: [], highlighted: [],
                 translation: .immediate, now: nil,
-                notificationPermission: nil))
+                notificationPermission: nil, unreadableStore: false))
         let settings = HomeScreen(app: app).waitUntilShown().openSettings()
         settings.chooseTranslationLanguage("de")
         let reader = settings.goBack().openHeroBook()
@@ -158,7 +158,7 @@ final class WordBubbleTests: UITestCase {
             LaunchConfiguration(
                 resetsState: true, fixtures: [.german], opened: [], inProgress: [], highlighted: [],
                 translation: translation, now: nil,
-                notificationPermission: nil))
+                notificationPermission: nil, unreadableStore: false))
         let reader = HomeScreen(app: app).waitUntilShown().openHeroBook()
         reader.germanParagraph.waitUntilExists()
         return reader

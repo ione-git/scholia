@@ -48,7 +48,7 @@ A flow never checks layout and a snapshot test never checks behaviour.
 ## Launch configuration
 
 ```swift
-let app = launch(LaunchConfiguration(resetsState: true, fixtures: [.german], opened: [], inProgress: [], highlighted: [], translation: .immediate, now: nil, notificationPermission: nil))
+let app = launch(LaunchConfiguration(resetsState: true, fixtures: [.german], opened: [], inProgress: [], highlighted: [], translation: .immediate, now: nil, notificationPermission: nil, unreadableStore: false))
 let dark = launch(configuration, appearance: .dark)
 ```
 
@@ -62,6 +62,7 @@ let dark = launch(configuration, appearance: .dark)
 | `translation` | `SCHOLIA_TRANSLATION=mock` or `held` | translation provider is the mock: `.immediate` answers at once; `.held` records the request, then waits until it is cancelled, so the loading state stays on screen |
 | `now` | `SCHOLIA_NOW=<ISO 8601>` | the app's current date and time |
 | `notificationPermission` | `SCHOLIA_NOTIFICATIONS=authorized`, `declined` or `denied` | turning the reminder on gets this answer without asking the system: `authorized` as if Allow was tapped; scheduling still goes through the real notification center, so `debug.readingReminder` is not deterministic; `declined` as if "Don't Allow" was tapped on the prompt, `denied` as if notifications were already off |
+| `unreadableStore` | `SCHOLIA_UNREADABLE_STORE=1` | before anything else, the store file is overwritten with bytes that are not a database, like a store left by another branch's schema; only for testing that `resetsState` recovers (`DataModelTests`), `false` everywhere else |
 
 - `LaunchConfiguration.withoutBooks` (test target) is a reset launch with no books and the translation mock; copy it and change the fields a test needs (`resetsState`, `notificationPermission`).
 - The app reads `LaunchConfiguration.current` where it builds a dependency (storage, translation provider, clock). A missing key means off, so a plain launch is a normal launch. Parsing exists only in Debug; Release always gets everything off.

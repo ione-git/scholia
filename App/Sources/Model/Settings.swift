@@ -45,45 +45,49 @@ nonisolated struct TimeOfDay: Codable, Hashable {
     var minute: Int
 }
 
-@Model
-final class Settings {
-    var translationLanguage: String
-    var wordTapStyle: WordTapStyle
-    var dailyGoalMinutes: Int
-    var remindsDaily: Bool
-    var reminderTime: TimeOfDay
-    var appTheme: AppTheme
-    var librarySort: LibrarySort
-    var readerTheme: ReaderTheme
-    var readerFont: ReaderFont
-    var textSizeStep: Int
-    var lineSpacing: LineSpacing
-    var pageTurn: PageTurn
-    var locksRotation: Bool
-    var highlightColor: HighlightColor
+extension SchemaV1 {
+    @Model
+    final class Settings {
+        var translationLanguage: String
+        var wordTapStyle: WordTapStyle
+        var dailyGoalMinutes: Int
+        var remindsDaily: Bool
+        var reminderTime: TimeOfDay
+        var appTheme: AppTheme
+        var librarySort: LibrarySort
+        var readerTheme: ReaderTheme
+        var readerFont: ReaderFont
+        var textSizeStep: Int
+        var lineSpacing: LineSpacing
+        var pageTurn: PageTurn
+        var locksRotation: Bool
+        var highlightColor: HighlightColor
 
-    init(
-        translationLanguage: String, wordTapStyle: WordTapStyle, dailyGoalMinutes: Int, remindsDaily: Bool,
-        reminderTime: TimeOfDay, appTheme: AppTheme, librarySort: LibrarySort, readerTheme: ReaderTheme,
-        readerFont: ReaderFont, textSizeStep: Int, lineSpacing: LineSpacing, pageTurn: PageTurn, locksRotation: Bool,
-        highlightColor: HighlightColor
-    ) {
-        self.translationLanguage = translationLanguage
-        self.wordTapStyle = wordTapStyle
-        self.dailyGoalMinutes = dailyGoalMinutes
-        self.remindsDaily = remindsDaily
-        self.reminderTime = reminderTime
-        self.appTheme = appTheme
-        self.librarySort = librarySort
-        self.readerTheme = readerTheme
-        self.readerFont = readerFont
-        self.textSizeStep = textSizeStep
-        self.lineSpacing = lineSpacing
-        self.pageTurn = pageTurn
-        self.locksRotation = locksRotation
-        self.highlightColor = highlightColor
+        init(
+            translationLanguage: String, wordTapStyle: WordTapStyle, dailyGoalMinutes: Int, remindsDaily: Bool,
+            reminderTime: TimeOfDay, appTheme: AppTheme, librarySort: LibrarySort, readerTheme: ReaderTheme,
+            readerFont: ReaderFont, textSizeStep: Int, lineSpacing: LineSpacing, pageTurn: PageTurn,
+            locksRotation: Bool, highlightColor: HighlightColor
+        ) {
+            self.translationLanguage = translationLanguage
+            self.wordTapStyle = wordTapStyle
+            self.dailyGoalMinutes = dailyGoalMinutes
+            self.remindsDaily = remindsDaily
+            self.reminderTime = reminderTime
+            self.appTheme = appTheme
+            self.librarySort = librarySort
+            self.readerTheme = readerTheme
+            self.readerFont = readerFont
+            self.textSizeStep = textSizeStep
+            self.lineSpacing = lineSpacing
+            self.pageTurn = pageTurn
+            self.locksRotation = locksRotation
+            self.highlightColor = highlightColor
+        }
     }
+}
 
+extension Settings {
     static func makeDefault() -> Settings {
         Settings(
             translationLanguage: TargetLanguage.device, wordTapStyle: .bubble, dailyGoalMinutes: 20,

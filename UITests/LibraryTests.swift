@@ -8,7 +8,7 @@ final class LibraryTests: UITestCase {
             LaunchConfiguration(
                 resetsState: true, fixtures: allFixtures, opened: [], inProgress: [], highlighted: [],
                 translation: .immediate, now: nil,
-                notificationPermission: nil))
+                notificationPermission: nil, unreadableStore: false))
         let library = HomeScreen(app: app).waitUntilShown().openLibrary()
 
         XCTAssertEqual(
@@ -35,7 +35,7 @@ final class LibraryTests: UITestCase {
             LaunchConfiguration(
                 resetsState: true, fixtures: allFixtures, opened: [], inProgress: [], highlighted: [],
                 translation: .immediate, now: nil,
-                notificationPermission: nil))
+                notificationPermission: nil, unreadableStore: false))
         let library = HomeScreen(app: app).waitUntilShown().openLibrary()
 
         library.search("kafka")
@@ -62,7 +62,8 @@ final class LibraryTests: UITestCase {
                 resetsState: true, fixtures: [.german, .minimalMetadata, .corrupted], opened: [], inProgress: [],
                 highlighted: [],
                 translation: .immediate,
-                now: try Date("2026-03-01T10:00:00Z", strategy: .iso8601), notificationPermission: nil))
+                now: try Date("2026-03-01T10:00:00Z", strategy: .iso8601), notificationPermission: nil,
+                unreadableStore: false))
         HomeScreen(app: earlier).waitUntilShown()
         earlier.terminate()
         let app = launch(
@@ -70,7 +71,7 @@ final class LibraryTests: UITestCase {
                 resetsState: false, fixtures: [.frenchNoCover], opened: [.minimalMetadata, .german], inProgress: [],
                 highlighted: [],
                 translation: .immediate, now: try Date("2026-03-02T10:00:00Z", strategy: .iso8601),
-                notificationPermission: nil))
+                notificationPermission: nil, unreadableStore: false))
         let library = HomeScreen(app: app).waitUntilShown().openLibrary()
 
         XCTAssertEqual(library.shownTitles, ["Minimal", "Die Verwandlung", "Un matin en ville", "Corrupted"])
@@ -93,7 +94,7 @@ final class LibraryTests: UITestCase {
             LaunchConfiguration(
                 resetsState: true, fixtures: [.german, .frenchNoCover, .minimalMetadata], opened: [.frenchNoCover],
                 inProgress: [], highlighted: [],
-                translation: .immediate, now: nil, notificationPermission: nil))
+                translation: .immediate, now: nil, notificationPermission: nil, unreadableStore: false))
         let library = HomeScreen(app: first).waitUntilShown().openLibrary()
         XCTAssertEqual(library.shownTitles, ["Un matin en ville", "Die Verwandlung", "Minimal"])
         library.sort(by: "title")
@@ -104,7 +105,7 @@ final class LibraryTests: UITestCase {
             LaunchConfiguration(
                 resetsState: false, fixtures: [], opened: [], inProgress: [], highlighted: [], translation: .immediate,
                 now: nil,
-                notificationPermission: nil))
+                notificationPermission: nil, unreadableStore: false))
         let reopened = HomeScreen(app: relaunched).waitUntilShown().openLibrary()
 
         XCTAssertEqual(reopened.shownTitles, ["Die Verwandlung", "Minimal", "Un matin en ville"])
@@ -116,7 +117,7 @@ final class LibraryTests: UITestCase {
             LaunchConfiguration(
                 resetsState: true, fixtures: allFixtures, opened: [], inProgress: [], highlighted: [],
                 translation: .immediate, now: nil,
-                notificationPermission: nil))
+                notificationPermission: nil, unreadableStore: false))
         let library = HomeScreen(app: app).waitUntilShown().openLibrary()
 
         let menu = library.openMenu()

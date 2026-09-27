@@ -6,7 +6,7 @@ final class HomeEmptyTests: UITestCase {
             LaunchConfiguration(
                 resetsState: true, fixtures: [], opened: [], inProgress: [], highlighted: [], translation: .immediate,
                 now: nil,
-                notificationPermission: nil))
+                notificationPermission: nil, unreadableStore: false))
         let home = HomeScreen(app: app).waitUntilShown()
 
         XCTAssertEqual(home.emptyCover.waitUntilExists().label, "Add a book")
@@ -31,7 +31,7 @@ final class HomeEmptyTests: UITestCase {
             LaunchConfiguration(
                 resetsState: true, fixtures: [], opened: [], inProgress: [], highlighted: [], translation: .immediate,
                 now: nil,
-                notificationPermission: nil))
+                notificationPermission: nil, unreadableStore: false))
         let home = HomeScreen(app: app).waitUntilShown()
 
         home.emptyCover.waitUntilExists()
@@ -48,7 +48,7 @@ final class HomeEmptyTests: UITestCase {
             LaunchConfiguration(
                 resetsState: true, fixtures: [], opened: [], inProgress: [], highlighted: [], translation: .immediate,
                 now: nil,
-                notificationPermission: nil))
+                notificationPermission: nil, unreadableStore: false))
         let home = HomeScreen(app: app).waitUntilShown()
         home.emptyCover.waitUntilExists()
 
@@ -66,7 +66,7 @@ final class HomeEmptyTests: UITestCase {
             LaunchConfiguration(
                 resetsState: true, fixtures: [], opened: [], inProgress: [], highlighted: [], translation: .immediate,
                 now: nil,
-                notificationPermission: nil))
+                notificationPermission: nil, unreadableStore: false))
         let home = HomeScreen(app: app).waitUntilShown()
 
         home.pickFile(tapping: home.emptyCover).cancel()
@@ -80,7 +80,7 @@ final class HomeEmptyTests: UITestCase {
             LaunchConfiguration(
                 resetsState: true, fixtures: [], opened: [], inProgress: [], highlighted: [], translation: .immediate,
                 now: nil,
-                notificationPermission: nil))
+                notificationPermission: nil, unreadableStore: false))
         let home = HomeScreen(app: app).waitUntilShown()
 
         home.pickFile(tapping: home.emptyAddBookButton).cancel()

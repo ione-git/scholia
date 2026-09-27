@@ -13,7 +13,7 @@ final class DataModelTests: UITestCase {
             LaunchConfiguration(
                 resetsState: true, fixtures: [.german, .frenchNoCover, .minimalMetadata, .corrupted, .drm], opened: [],
                 inProgress: [], highlighted: [],
-                translation: .immediate, now: nil, notificationPermission: nil))
+                translation: .immediate, now: nil, notificationPermission: nil, unreadableStore: false))
         HomeScreen(app: seeded).waitUntilShown().storedLibrary.waitUntil(\.label, equals: library)
         seeded.terminate()
 
@@ -21,7 +21,7 @@ final class DataModelTests: UITestCase {
             LaunchConfiguration(
                 resetsState: false, fixtures: [], opened: [], inProgress: [], highlighted: [], translation: .immediate,
                 now: nil,
-                notificationPermission: nil))
+                notificationPermission: nil, unreadableStore: false))
         HomeScreen(app: relaunched).waitUntilShown().storedLibrary.waitUntil(\.label, equals: library)
     }
 
@@ -30,7 +30,7 @@ final class DataModelTests: UITestCase {
             LaunchConfiguration(
                 resetsState: true, fixtures: [.german, .frenchNoCover], opened: [], inProgress: [], highlighted: [],
                 translation: .immediate, now: nil,
-                notificationPermission: nil))
+                notificationPermission: nil, unreadableStore: false))
         HomeScreen(app: first).waitUntilShown().storedLibrary.waitUntil(
             \.label,
             equals: """
@@ -43,7 +43,7 @@ final class DataModelTests: UITestCase {
             LaunchConfiguration(
                 resetsState: true, fixtures: [.german], opened: [], inProgress: [], highlighted: [],
                 translation: .immediate, now: nil,
-                notificationPermission: nil))
+                notificationPermission: nil, unreadableStore: false))
         let home = HomeScreen(app: reset).waitUntilShown()
         home.storedLibrary.waitUntil(\.label, equals: "Die Verwandlung · Franz Kafka · de · german.epub")
         XCTAssertEqual(home.storedLibrary.stringValue, "german.epub")
@@ -54,7 +54,7 @@ final class DataModelTests: UITestCase {
             LaunchConfiguration(
                 resetsState: true, fixtures: [.german], opened: [], inProgress: [], highlighted: [],
                 translation: .immediate, now: nil,
-                notificationPermission: nil))
+                notificationPermission: nil, unreadableStore: false))
         HomeScreen(app: first).waitUntilShown().storedLibrary.waitUntil(
             \.label, equals: "Die Verwandlung · Franz Kafka · de · german.epub")
         first.terminate()
@@ -63,12 +63,22 @@ final class DataModelTests: UITestCase {
             LaunchConfiguration(
                 resetsState: false, fixtures: [.german, .frenchNoCover], opened: [], inProgress: [], highlighted: [],
                 translation: .immediate, now: nil,
-                notificationPermission: nil))
+                notificationPermission: nil, unreadableStore: false))
         HomeScreen(app: again).waitUntilShown().storedLibrary.waitUntil(
             \.label,
             equals: """
                 Die Verwandlung · Franz Kafka · de · german.epub
                 Un matin en ville · Scholia · fr · french-no-cover.epub
                 """)
+    }
+
+    func testResetRecoversFromUnreadableStore() {
+        let app = launch(
+            LaunchConfiguration(
+                resetsState: true, fixtures: [.german], opened: [], inProgress: [], highlighted: [],
+                translation: .immediate, now: nil,
+                notificationPermission: nil, unreadableStore: true))
+        HomeScreen(app: app).waitUntilShown().storedLibrary.waitUntil(
+            \.label, equals: "Die Verwandlung · Franz Kafka · de · german.epub")
     }
 }

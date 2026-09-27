@@ -6,7 +6,7 @@ final class CollectionsTests: UITestCase {
             LaunchConfiguration(
                 resetsState: true, fixtures: [.german, .frenchNoCover], opened: [], inProgress: [], highlighted: [],
                 translation: .immediate, now: nil,
-                notificationPermission: nil))
+                notificationPermission: nil, unreadableStore: false))
         let library = HomeScreen(app: app).waitUntilShown().openLibrary()
         library.book("Die Verwandlung").waitUntilExists()
         XCTAssertFalse(library.collectionRow.exists)
@@ -32,7 +32,7 @@ final class CollectionsTests: UITestCase {
             LaunchConfiguration(
                 resetsState: true, fixtures: [.german], opened: [], inProgress: [], highlighted: [],
                 translation: .immediate, now: nil,
-                notificationPermission: nil))
+                notificationPermission: nil, unreadableStore: false))
         let library = HomeScreen(app: app).waitUntilShown().openLibrary()
         library.openMenu().openNewCollection().type("Science Fiction").create(returningTo: library)
 
@@ -62,7 +62,7 @@ final class CollectionsTests: UITestCase {
                 resetsState: true, fixtures: [.minimalMetadata], opened: [], inProgress: [], highlighted: [],
                 translation: .immediate,
                 now: nil,
-                notificationPermission: nil))
+                notificationPermission: nil, unreadableStore: false))
         let addBook = try HomeScreen(app: app).waitUntilShown().openFromOtherApp(.german)
         addBook.collectionButton.waitUntil(\.label, equals: "Collection, None")
 
@@ -101,7 +101,7 @@ final class CollectionsTests: UITestCase {
             LaunchConfiguration(
                 resetsState: true, fixtures: [], opened: [], inProgress: [], highlighted: [], translation: .immediate,
                 now: nil,
-                notificationPermission: nil))
+                notificationPermission: nil, unreadableStore: false))
         let addBook = try HomeScreen(app: app).waitUntilShown().openFromOtherApp(.german)
         addBook.authorField.waitUntil(\.stringValue, equals: "Franz Kafka")
 
@@ -118,7 +118,7 @@ final class CollectionsTests: UITestCase {
                 resetsState: true, fixtures: [.minimalMetadata], opened: [], inProgress: [], highlighted: [],
                 translation: .immediate,
                 now: nil,
-                notificationPermission: nil))
+                notificationPermission: nil, unreadableStore: false))
         let german = try HomeScreen(app: first).waitUntilShown().openFromOtherApp(.german).chooseCollections()
         german.newCollection().type("Classics").create(returningTo: german)
         german.newCollection().type("German").create(returningTo: german)
@@ -127,7 +127,7 @@ final class CollectionsTests: UITestCase {
             LaunchConfiguration(
                 resetsState: false, fixtures: [], opened: [], inProgress: [], highlighted: [], translation: .immediate,
                 now: nil,
-                notificationPermission: nil))
+                notificationPermission: nil, unreadableStore: false))
         let french = try HomeScreen(app: app).waitUntilShown().openFromOtherApp(.frenchNoCover).chooseCollections()
         french.collection("Classics").waitUntil(\.isSelected, equals: false)
         let home = french.toggle("Classics").done().add()

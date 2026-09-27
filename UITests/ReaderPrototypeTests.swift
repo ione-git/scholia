@@ -185,7 +185,7 @@ final class ReaderPrototypeTests: UITestCase {
             LaunchConfiguration(
                 resetsState: true, fixtures: [], opened: [], inProgress: [], highlighted: [], translation: .immediate,
                 now: nil,
-                notificationPermission: nil))
+                notificationPermission: nil, unreadableStore: false))
 
         let picker = HomeScreen(app: app).waitUntilShown().openEPUB()
 
@@ -198,7 +198,7 @@ final class ReaderPrototypeTests: UITestCase {
             LaunchConfiguration(
                 resetsState: true, fixtures: [], opened: [], inProgress: [], highlighted: [], translation: .immediate,
                 now: nil,
-                notificationPermission: nil))
+                notificationPermission: nil, unreadableStore: false))
         return HomeScreen(app: app).waitUntilShown().openReaderPrototype()
     }
 

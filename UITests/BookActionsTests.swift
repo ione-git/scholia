@@ -5,7 +5,7 @@ final class BookActionsTests: UITestCase {
         let app = launch(
             LaunchConfiguration(
                 resetsState: true, fixtures: [.german, .frenchNoCover], opened: [], inProgress: [], highlighted: [],
-                translation: .immediate, now: nil, notificationPermission: nil))
+                translation: .immediate, now: nil, notificationPermission: nil, unreadableStore: false))
         let library = HomeScreen(app: app).waitUntilShown().openLibrary()
 
         let menu = library.openBookMenu("Die Verwandlung")
@@ -23,7 +23,7 @@ final class BookActionsTests: UITestCase {
         let first = launch(
             LaunchConfiguration(
                 resetsState: true, fixtures: [.german, .frenchNoCover], opened: [], inProgress: [], highlighted: [],
-                translation: .immediate, now: nil, notificationPermission: nil))
+                translation: .immediate, now: nil, notificationPermission: nil, unreadableStore: false))
         let library = HomeScreen(app: first).waitUntilShown().openLibrary()
         XCTAssertEqual(library.book("Die Verwandlung").stringValue, "")
 
@@ -36,7 +36,7 @@ final class BookActionsTests: UITestCase {
         let app = launch(
             LaunchConfiguration(
                 resetsState: false, fixtures: [], opened: [], inProgress: [], highlighted: [], translation: .immediate,
-                now: nil, notificationPermission: nil))
+                now: nil, notificationPermission: nil, unreadableStore: false))
         let reopened = HomeScreen(app: app).waitUntilShown().openLibrary()
         reopened.book("Die Verwandlung").waitUntil(\.stringValue, equals: "Finished")
         let menu = reopened.openBookMenu("Die Verwandlung")
@@ -50,7 +50,7 @@ final class BookActionsTests: UITestCase {
         let app = launch(
             LaunchConfiguration(
                 resetsState: true, fixtures: [.german, .frenchNoCover], opened: [], inProgress: [], highlighted: [],
-                translation: .immediate, now: nil, notificationPermission: nil))
+                translation: .immediate, now: nil, notificationPermission: nil, unreadableStore: false))
         let library = HomeScreen(app: app).waitUntilShown().openLibrary()
         library.openMenu().openNewCollection().type("Classics").create(returningTo: library)
         library.collectionChip("Classics").waitUntil(\.label, equals: "Classics, 0")
@@ -85,7 +85,7 @@ final class BookActionsTests: UITestCase {
         let app = launch(
             LaunchConfiguration(
                 resetsState: true, fixtures: [.german], opened: [], inProgress: [], highlighted: [.german],
-                translation: .immediate, now: added, notificationPermission: nil))
+                translation: .immediate, now: added, notificationPermission: nil, unreadableStore: false))
         let library = HomeScreen(app: app).waitUntilShown().openLibrary()
 
         let info = library.openBookMenu("Die Verwandlung").openInfo()
@@ -114,7 +114,7 @@ final class BookActionsTests: UITestCase {
             LaunchConfiguration(
                 resetsState: true, fixtures: [.german], opened: [], inProgress: [.german], highlighted: [],
                 translation: .immediate,
-                now: nil, notificationPermission: nil))
+                now: nil, notificationPermission: nil, unreadableStore: false))
         let library = HomeScreen(app: app).waitUntilShown().openLibrary()
 
         let info = library.openBookMenu("Die Verwandlung").openInfo()
@@ -139,7 +139,7 @@ final class BookActionsTests: UITestCase {
         let app = launch(
             LaunchConfiguration(
                 resetsState: true, fixtures: [.german, .frenchNoCover], opened: [], inProgress: [], highlighted: [],
-                translation: .immediate, now: nil, notificationPermission: nil))
+                translation: .immediate, now: nil, notificationPermission: nil, unreadableStore: false))
         let library = HomeScreen(app: app).waitUntilShown().openLibrary()
         library.openMenu().openNewCollection().type("Classics").create(returningTo: library)
 
@@ -173,7 +173,7 @@ final class BookActionsTests: UITestCase {
         let app = launch(
             LaunchConfiguration(
                 resetsState: true, fixtures: [.german], opened: [], inProgress: [], highlighted: [],
-                translation: .immediate, now: nil, notificationPermission: nil))
+                translation: .immediate, now: nil, notificationPermission: nil, unreadableStore: false))
         let library = HomeScreen(app: app).waitUntilShown().openLibrary()
 
         let info = library.openBookMenu("Die Verwandlung").openInfo()
@@ -196,7 +196,8 @@ final class BookActionsTests: UITestCase {
         let app = launch(
             LaunchConfiguration(
                 resetsState: true, fixtures: [.german, .frenchNoCover], opened: [], inProgress: [],
-                highlighted: [.german], translation: .immediate, now: nil, notificationPermission: nil))
+                highlighted: [.german], translation: .immediate, now: nil, notificationPermission: nil,
+                unreadableStore: false))
         let library = HomeScreen(app: app).waitUntilShown().openLibrary()
         library.storedLibrary.waitUntil(\.stringValue, equals: "french-no-cover.epub\ngerman.epub")
         XCTAssertEqual(library.storedHighlights.label, "7")

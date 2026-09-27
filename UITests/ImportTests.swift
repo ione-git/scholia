@@ -8,7 +8,7 @@ final class ImportTests: UITestCase {
             LaunchConfiguration(
                 resetsState: true, fixtures: [.german], opened: [], inProgress: [], highlighted: [],
                 translation: .immediate, now: nil,
-                notificationPermission: nil))
+                notificationPermission: nil, unreadableStore: false))
         let picker = HomeScreen(app: app).waitUntilShown().pickFile()
         attachScreenshot("FilePicker")
 
@@ -23,7 +23,7 @@ final class ImportTests: UITestCase {
             LaunchConfiguration(
                 resetsState: true, fixtures: [], opened: [], inProgress: [], highlighted: [], translation: .immediate,
                 now: nil,
-                notificationPermission: nil))
+                notificationPermission: nil, unreadableStore: false))
         let addBook = try HomeScreen(app: app).waitUntilShown().openFromOtherApp(.german)
 
         addBook.titleField.waitUntil(\.stringValue, equals: "Die Verwandlung")
@@ -69,7 +69,7 @@ final class ImportTests: UITestCase {
             LaunchConfiguration(
                 resetsState: true, fixtures: [], opened: [], inProgress: [], highlighted: [], translation: .immediate,
                 now: nil,
-                notificationPermission: nil))
+                notificationPermission: nil, unreadableStore: false))
         let addBook = try HomeScreen(app: app).waitUntilShown().openFromOtherApp(.german)
         let picker = addBook.chooseLanguage()
         picker.language("de").waitUntil(\.isSelected, equals: true)
@@ -90,7 +90,7 @@ final class ImportTests: UITestCase {
             LaunchConfiguration(
                 resetsState: true, fixtures: [], opened: [], inProgress: [], highlighted: [], translation: .immediate,
                 now: nil,
-                notificationPermission: nil))
+                notificationPermission: nil, unreadableStore: false))
         let addBook = try HomeScreen(app: app).waitUntilShown().openFromOtherApp(.german)
         addBook.titleField.waitUntil(\.stringValue, equals: "Die Verwandlung")
 
@@ -112,7 +112,7 @@ final class ImportTests: UITestCase {
             LaunchConfiguration(
                 resetsState: true, fixtures: [], opened: [], inProgress: [], highlighted: [], translation: .immediate,
                 now: nil,
-                notificationPermission: nil))
+                notificationPermission: nil, unreadableStore: false))
         let addBook = try HomeScreen(app: app).waitUntilShown().openFromOtherApp(.german)
         addBook.titleField.waitUntil(\.stringValue, equals: "Die Verwandlung")
         try addBook.replaceAuthor(with: "F. Kafka")
@@ -136,7 +136,7 @@ final class ImportTests: UITestCase {
             LaunchConfiguration(
                 resetsState: true, fixtures: [], opened: [], inProgress: [], highlighted: [], translation: .immediate,
                 now: nil,
-                notificationPermission: nil))
+                notificationPermission: nil, unreadableStore: false))
         let addBook = try HomeScreen(app: app).waitUntilShown().openFromOtherApp(.frenchNoCover)
         addBook.authorField.waitUntil(\.stringValue, equals: "Scholia")
 
@@ -154,7 +154,7 @@ final class ImportTests: UITestCase {
             LaunchConfiguration(
                 resetsState: true, fixtures: [.german], opened: [], inProgress: [], highlighted: [],
                 translation: .immediate, now: nil,
-                notificationPermission: nil))
+                notificationPermission: nil, unreadableStore: false))
         let addBook = try HomeScreen(app: app).waitUntilShown().openFromOtherApp(.minimalMetadata)
 
         addBook.titleField.waitUntil(\.stringValue, equals: "Minimal")
@@ -175,7 +175,7 @@ final class ImportTests: UITestCase {
             LaunchConfiguration(
                 resetsState: true, fixtures: [], opened: [], inProgress: [], highlighted: [], translation: .immediate,
                 now: nil,
-                notificationPermission: nil))
+                notificationPermission: nil, unreadableStore: false))
         let addBook = try HomeScreen(app: app).waitUntilShown().openFromOtherApp(.frenchNoCover)
         addBook.addButton.waitUntil(\.isEnabled, equals: true)
 
@@ -191,7 +191,7 @@ final class ImportTests: UITestCase {
             LaunchConfiguration(
                 resetsState: true, fixtures: [.german], opened: [], inProgress: [], highlighted: [],
                 translation: .immediate, now: nil,
-                notificationPermission: nil))
+                notificationPermission: nil, unreadableStore: false))
         let addBook = try HomeScreen(app: app).waitUntilShown().openFromOtherApp(.frenchNoCover)
         addBook.titleField.waitUntil(\.stringValue, equals: "Un matin en ville")
 
@@ -206,7 +206,7 @@ final class ImportTests: UITestCase {
             LaunchConfiguration(
                 resetsState: true, fixtures: [], opened: [], inProgress: [], highlighted: [], translation: .immediate,
                 now: nil,
-                notificationPermission: nil))
+                notificationPermission: nil, unreadableStore: false))
         let alert = try HomeScreen(app: app).waitUntilShown().openUnreadableFromOtherApp(.corrupted)
 
         XCTAssertEqual(alert.root.label, "Can’t Add Book")
@@ -223,7 +223,7 @@ final class ImportTests: UITestCase {
             LaunchConfiguration(
                 resetsState: true, fixtures: [], opened: [], inProgress: [], highlighted: [], translation: .immediate,
                 now: nil,
-                notificationPermission: nil))
+                notificationPermission: nil, unreadableStore: false))
         let alert = try HomeScreen(app: app).waitUntilShown().openUnreadableFromOtherApp(.drm)
 
         XCTAssertEqual(alert.root.label, "Can’t Add Book")

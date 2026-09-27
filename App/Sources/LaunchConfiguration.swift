@@ -33,6 +33,7 @@ struct LaunchConfiguration {
     var translation: TranslationMock?
     var now: Date?
     var notificationPermission: NotificationPermission?
+    var unreadableStore: Bool
 
     static let current = LaunchConfiguration(environment: ProcessInfo.processInfo.environment)
 }
@@ -47,6 +48,7 @@ extension LaunchConfiguration {
         static let translation = "SCHOLIA_TRANSLATION"
         static let now = "SCHOLIA_NOW"
         static let notificationPermission = "SCHOLIA_NOTIFICATIONS"
+        static let unreadableStore = "SCHOLIA_UNREADABLE_STORE"
     }
 
     init(environment: [String: String]) {
@@ -59,13 +61,14 @@ extension LaunchConfiguration {
                 highlighted: Self.fixtures(environment[Key.highlighted]),
                 translation: environment[Key.translation].flatMap(TranslationMock.init),
                 now: environment[Key.now].flatMap { try? Date($0, strategy: .iso8601) },
-                notificationPermission: environment[Key.notificationPermission].flatMap(NotificationPermission.init)
+                notificationPermission: environment[Key.notificationPermission].flatMap(NotificationPermission.init),
+                unreadableStore: environment[Key.unreadableStore] == "1"
             )
         #else
             self.init(
                 resetsState: false, fixtures: [], opened: [], inProgress: [], highlighted: [], translation: nil,
                 now: nil,
-                notificationPermission: nil)
+                notificationPermission: nil, unreadableStore: false)
         #endif
     }
 
@@ -98,6 +101,9 @@ extension LaunchConfiguration {
         }
         if let notificationPermission {
             environment[Key.notificationPermission] = notificationPermission.rawValue
+        }
+        if unreadableStore {
+            environment[Key.unreadableStore] = "1"
         }
         return environment
     }

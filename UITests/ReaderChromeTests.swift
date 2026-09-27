@@ -41,7 +41,7 @@ final class ReaderChromeTests: UITestCase {
         let app = launch(
             LaunchConfiguration(
                 resetsState: true, fixtures: [.arabic], opened: [], inProgress: [], highlighted: [],
-                translation: .immediate, now: nil, notificationPermission: nil))
+                translation: .immediate, now: nil, notificationPermission: nil, unreadableStore: false))
         let reader = HomeScreen(app: app).waitUntilShown().openHeroBook()
         reader.showChrome()
         reader.subtitle.waitUntil(\.label, equals: "Scholia · \(isolated("الفصل الأول"))")
@@ -59,7 +59,7 @@ final class ReaderChromeTests: UITestCase {
         let app = launch(
             LaunchConfiguration(
                 resetsState: true, fixtures: [.minimalMetadata], opened: [], inProgress: [], highlighted: [],
-                translation: .immediate, now: nil, notificationPermission: nil))
+                translation: .immediate, now: nil, notificationPermission: nil, unreadableStore: false))
         let reader = HomeScreen(app: app).waitUntilShown().openHeroBook()
 
         reader.showChrome()
@@ -72,7 +72,7 @@ final class ReaderChromeTests: UITestCase {
         let app = launch(
             LaunchConfiguration(
                 resetsState: true, fixtures: [.frenchNoCover], opened: [], inProgress: [], highlighted: [],
-                translation: .immediate, now: nil, notificationPermission: nil))
+                translation: .immediate, now: nil, notificationPermission: nil, unreadableStore: false))
         let reader = HomeScreen(app: app).waitUntilShown().openHeroBook()
         reader.showChrome()
         reader.subtitle.waitUntil(\.label, equals: "Scholia · Premier chapitre")
@@ -225,7 +225,7 @@ final class ReaderChromeTests: UITestCase {
         launch(
             LaunchConfiguration(
                 resetsState: true, fixtures: [.german], opened: [], inProgress: [], highlighted: [],
-                translation: .immediate, now: nil, notificationPermission: nil))
+                translation: .immediate, now: nil, notificationPermission: nil, unreadableStore: false))
     }
 
     private func isolated(_ rightToLeft: String) -> String {
@@ -236,6 +236,6 @@ final class ReaderChromeTests: UITestCase {
         launch(
             LaunchConfiguration(
                 resetsState: false, fixtures: [], opened: [], inProgress: [], highlighted: [], translation: .immediate,
-                now: nil, notificationPermission: nil))
+                now: nil, notificationPermission: nil, unreadableStore: false))
     }
 }

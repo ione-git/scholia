@@ -43,7 +43,7 @@ final class AppIconTests: UITestCase {
             LaunchConfiguration(
                 resetsState: true, fixtures: [], opened: [], inProgress: [], highlighted: [], translation: .immediate,
                 now: nil,
-                notificationPermission: nil))
+                notificationPermission: nil, unreadableStore: false))
         HomeScreen(app: app).waitUntilShown()
         XCUIDevice.shared.press(.home)
         return SpringboardScreen().waitUntilShown()
