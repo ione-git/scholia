@@ -7,8 +7,6 @@ public struct TranslationPill: View {
         case failed(message: Text)
     }
 
-    public static let anchorGap: CGFloat = .space2
-
     private static let minWidth: CGFloat = 150
     private static let minHeight: CGFloat = 40
     private static let hitInset = (CGFloat.controlH - minHeight) / 2

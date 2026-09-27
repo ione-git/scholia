@@ -56,8 +56,8 @@ struct WordTap: ViewModifier {
         }
     }
 
-    private var gap: CGFloat {
-        settings.wordTapStyle == .minimal ? TranslationPill.anchorGap : TranslationBubble.anchorGap
+    private var gap: TranslationBubblePlacement.Gap {
+        settings.wordTapStyle == .minimal ? .pill : .bubble
     }
 
     private var card: Binding<WordCardItem?> {

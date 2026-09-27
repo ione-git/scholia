@@ -40,6 +40,9 @@ struct ComponentGalleryScreen: Screen {
         open("translationPill", as: TranslationPillGalleryScreen.init)
     }
     func openWordCards() -> WordCardGalleryScreen { open("wordCard", as: WordCardGalleryScreen.init) }
+    func openSelectionMenu() -> SelectionMenuGalleryScreen {
+        open("selectionMenu", as: SelectionMenuGalleryScreen.init)
+    }
 }
 
 protocol ComponentGalleryPage: Screen {}
@@ -148,6 +151,15 @@ struct WordCardGalleryScreen: ComponentGalleryPage {
     func part(_ part: String, of element: String) -> XCUIElement {
         app.descendants(matching: .any)["wordCardGallery.\(element).\(part)"]
     }
+}
+
+struct SelectionMenuGalleryScreen: ComponentGalleryPage {
+    let app: XCUIApplication
+
+    var root: XCUIElement { app.scrollViews["selectionMenuGallery.scrollView"] }
+    var menu: XCUIElement { app.otherElements["selectionMenuGallery.menu"] }
+
+    func item(_ element: String) -> XCUIElement { app.buttons["selectionMenuGallery.\(element)"] }
 }
 
 struct PresentationGalleryScreen: ComponentGalleryPage {
