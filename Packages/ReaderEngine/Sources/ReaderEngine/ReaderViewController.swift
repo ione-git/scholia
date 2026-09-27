@@ -9,7 +9,6 @@ final class ReaderViewController: UIViewController {
     private let language: String?
     private let style: ReaderStyle
     private let initialLocation: ReaderLocation?
-    private let highlightTitle: String
     private let navigator: EPUBNavigatorViewController
     private let backdrop = UIView()
     private let curtain = UIView()
@@ -17,11 +16,14 @@ final class ReaderViewController: UIViewController {
     private var pageTurn: ReaderPageTurn
     private var swipes: [UISwipeGestureRecognizer] = []
     private var pressOrigin: CGPoint?
+    private var isPressing = false
     private var isPainting = false
     private var isCurling = false
     private var isShowing = false
     private var isShown = false
     private weak var pager: UIScrollView?
+    private weak var selectionWebView: WKWebView?
+    private var pageSelection: ReaderSelection?
     private var observations: [ScrollObservation] = []
     private var shownPage: ChapterPage?
     private var laidOutSize: CGSize?
@@ -31,6 +33,7 @@ final class ReaderViewController: UIViewController {
     private var pageCounter: PageCounter?
     private var countTask: Task<Void, Never>?
     private var locateTask: Task<Void, Never>?
+    private var selectionTask: Task<Void, Never>?
     private var voiceOverTask: Task<Void, Never>?
 
     private static let highlightGroup = "highlights"
@@ -41,19 +44,18 @@ final class ReaderViewController: UIViewController {
 
     init(
         book: ReaderBook, language: String?, location: ReaderLocation?, style: ReaderStyle, colors: ReaderColors,
-        pageTurn: ReaderPageTurn, highlightTitle: String
+        pageTurn: ReaderPageTurn
     ) {
         self.book = book
         self.language = language
         self.style = style
         self.colors = colors
         self.pageTurn = pageTurn
-        self.highlightTitle = highlightTitle
         initialLocation = location
         navigator = try! EPUBNavigatorViewController(
             publication: book.publication,
             initialLocation: Self.locator(for: location, in: book.publication),
-            config: Self.configuration(style: style, colors: colors, highlightTitle: highlightTitle)
+            config: Self.configuration(style: style, colors: colors)
         )
         super.init(nibName: nil, bundle: nil)
         navigator.delegate = self
@@ -62,6 +64,7 @@ final class ReaderViewController: UIViewController {
     isolated deinit {
         countTask?.cancel()
         locateTask?.cancel()
+        selectionTask?.cancel()
         voiceOverTask?.cancel()
     }
 
@@ -115,6 +118,7 @@ final class ReaderViewController: UIViewController {
         if view.bounds.size != laidOutSize {
             laidOutSize = view.bounds.size
             clearWord()
+            clearSelection()
         }
         countPages()
     }
@@ -140,6 +144,103 @@ final class ReaderViewController: UIViewController {
     private func show(_ word: ReaderWord) {
         controller?.word = word
         paintWord()
+    }
+
+    func highlightSelection() {
+        guard let webView = withdrawSelection() else {
+            return
+        }
+        selectionTask?.cancel()
+        selectionTask = Task { [weak self] in
+            guard let range = await self?.takeSelection(in: webView)?.range else {
+                return
+            }
+            self?.controller?.onHighlight?(range)
+        }
+    }
+
+    func translateSelection() {
+        guard let webView = withdrawSelection() else {
+            return
+        }
+        tapGeneration += 1
+        let generation = tapGeneration
+        selectionTask?.cancel()
+        selectionTask = Task { [weak self] in
+            guard let word = await self?.takeSelection(in: webView), let self, generation == tapGeneration else {
+                return
+            }
+            show(word)
+        }
+    }
+
+    func copySelection() {
+        guard let selection = controller?.selection else {
+            return
+        }
+        UIPasteboard.general.string = selection.text
+        clearSelection()
+    }
+
+    func clearSelection() {
+        pageSelection = nil
+        publishSelection()
+        navigator.clearSelection()
+    }
+
+    private func withdrawSelection() -> WKWebView? {
+        guard controller?.selection != nil, let webView = selectionWebView else {
+            return nil
+        }
+        pageSelection = nil
+        publishSelection()
+        return webView
+    }
+
+    private func publishSelection() {
+        let shown = isPressing || isPainting ? nil : pageSelection
+        guard shown != controller?.selection else {
+            return
+        }
+        if shown != nil {
+            clearWord()
+        }
+        controller?.selection = shown
+    }
+
+    fileprivate func selectionChanged(_ body: Any, in webView: WKWebView?) {
+        guard let webView else {
+            return
+        }
+        guard let found = body as? [String: Any] else {
+            if webView === selectionWebView {
+                pageSelection = nil
+                publishSelection()
+            }
+            return
+        }
+        guard let text = found["text"] as? String, let rect = rect(found, in: webView) else {
+            return
+        }
+        selectionWebView = webView
+        pageSelection = ReaderSelection(text: text, rect: rect)
+        publishSelection()
+    }
+
+    private func takeSelection(in webView: WKWebView) async -> ReaderWord? {
+        guard
+            let found = try? await webView.callAsyncJavaScript(
+                "return scholia.takeSelection(language)", arguments: ["language": language ?? NSNull()],
+                contentWorld: .page) as? [String: Any],
+            let text = found["word"] as? String,
+            let sentence = found["sentence"] as? String,
+            let offsetInSentence = found["offsetInSentence"] as? Int,
+            let rect = rect(found, in: webView),
+            let range = textRange(found["range"], in: webView)
+        else {
+            return nil
+        }
+        return ReaderWord(text: text, sentence: sentence, offsetInSentence: offsetInSentence, rect: rect, range: range)
     }
 
     private func paintWord() {
@@ -261,6 +362,9 @@ final class ReaderViewController: UIViewController {
 
     private func pageMoved() {
         clearWord()
+        if !isPainting, pageSelection != nil {
+            clearSelection()
+        }
         trackPage()
     }
 
@@ -273,6 +377,45 @@ final class ReaderViewController: UIViewController {
             .filter { abs(self.distanceFromStart(of: $0.frame, in: pager) - distance) < 1 }
             .compactMap { $0.descendants(of: WKWebView.self).first }
             .first
+    }
+
+    private func chapter(of webView: WKWebView) -> Int? {
+        guard
+            let pager, pager.bounds.width > 0,
+            let spread = pager.subviews.first(where: { webView.isDescendant(of: $0) })
+        else {
+            return nil
+        }
+        return Int((distanceFromStart(of: spread.frame, in: pager) / pager.bounds.width).rounded())
+    }
+
+    private func textRange(_ found: Any?, in webView: WKWebView) -> ReaderTextRange? {
+        guard
+            let found = found as? [String: Any],
+            let chapter = chapter(of: webView),
+            let start = found["start"] as? Int,
+            let end = found["end"] as? Int,
+            let text = found["text"] as? String,
+            let before = found["before"] as? String,
+            let after = found["after"] as? String
+        else {
+            return nil
+        }
+        return ReaderTextRange(
+            start: ReaderLocation(chapter: chapter, offset: start), end: ReaderLocation(chapter: chapter, offset: end),
+            text: text, before: before, after: after)
+    }
+
+    private func rect(_ found: [String: Any], in webView: WKWebView) -> CGRect? {
+        guard
+            let x = found["x"] as? CGFloat,
+            let y = found["y"] as? CGFloat,
+            let width = found["width"] as? CGFloat,
+            let height = found["height"] as? CGFloat
+        else {
+            return nil
+        }
+        return webView.convert(CGRect(x: x, y: y, width: width, height: height), to: view)
     }
 
     private func publishPage() {
@@ -339,7 +482,7 @@ final class ReaderViewController: UIViewController {
             return
         }
         let counter = PageCounter(
-            book: book, configuration: Self.configuration(style: style, colors: colors, highlightTitle: highlightTitle),
+            book: book, configuration: Self.configuration(style: style, colors: colors),
             contentInset: { [weak self] in self?.contentInset ?? .zero })
         counter.navigator.view.isUserInteractionEnabled = false
         counter.navigator.view.accessibilityElementsHidden = true
@@ -398,10 +541,7 @@ final class ReaderViewController: UIViewController {
     }
 
     private func word(at point: CGPoint) async -> ReaderWord? {
-        guard
-            let chapter = navigator.currentLocation?.href.string,
-            let webView = webView(at: point)
-        else {
+        guard let webView = webView(at: point) else {
             return nil
         }
         let local = navigator.view.convert(point, to: webView)
@@ -413,22 +553,12 @@ final class ReaderViewController: UIViewController {
             let text = found["text"] as? String,
             let sentence = found["sentence"] as? String,
             let offsetInSentence = found["offsetInSentence"] as? Int,
-            let x = found["x"] as? CGFloat,
-            let y = found["y"] as? CGFloat,
-            let width = found["width"] as? CGFloat,
-            let height = found["height"] as? CGFloat,
-            let before = found["before"] as? String,
-            let after = found["after"] as? String
+            let rect = rect(found, in: webView),
+            let range = textRange(found["range"], in: webView)
         else {
             return nil
         }
-        return ReaderWord(
-            text: text,
-            sentence: sentence,
-            offsetInSentence: offsetInSentence,
-            rect: webView.convert(CGRect(x: x, y: y, width: width, height: height), to: view),
-            range: ReaderTextRange(chapter: chapter, text: text, before: before, after: after)
-        )
+        return ReaderWord(text: text, sentence: sentence, offsetInSentence: offsetInSentence, rect: rect, range: range)
     }
 
     private func webView(at point: CGPoint) -> WKWebView? {
@@ -439,36 +569,13 @@ final class ReaderViewController: UIViewController {
         return candidate as? WKWebView
     }
 
-    @objc private func highlightSelection() {
-        Task { await takeSelection() }
-    }
-
-    private func takeSelection() async {
-        guard
-            let controller,
-            let chapter = navigator.currentLocation?.href.string,
-            case .success(let value) = await navigator.evaluateJavaScript("scholia.takeSelection()"),
-            let found = value as? [String: Any],
-            let text = found["text"] as? String,
-            let before = found["before"] as? String,
-            let after = found["after"] as? String
-        else {
-            return
-        }
-        controller.highlights.append(
-            ReaderHighlight(
-                id: UUID().uuidString,
-                range: ReaderTextRange(chapter: chapter, text: text, before: before, after: after),
-                color: controller.highlightColor
-            )
-        )
-    }
-
     @objc private func pressed(_ press: UILongPressGestureRecognizer) {
         let location = press.location(in: view)
         switch press.state {
         case .began:
             pressOrigin = location
+            isPressing = true
+            publishSelection()
         case .changed:
             guard
                 !isPainting,
@@ -480,12 +587,31 @@ final class ReaderViewController: UIViewController {
             isPainting = true
             view.tintColor = controller?.highlightColor.withAlphaComponent(1)
         case .ended where isPainting:
-            Task {
-                await takeSelection()
-                stopPainting()
-            }
+            isPressing = false
+            paintSelection()
         default:
+            isPressing = false
             stopPainting()
+            publishSelection()
+        }
+    }
+
+    private func paintSelection() {
+        pageSelection = nil
+        guard let webView = selectionWebView ?? pressOrigin.flatMap(webView(at:)) else {
+            stopPainting()
+            return
+        }
+        selectionTask?.cancel()
+        selectionTask = Task { [weak self] in
+            let range = await self?.takeSelection(in: webView)?.range
+            guard let self else {
+                return
+            }
+            stopPainting()
+            if let range {
+                controller?.onHighlight?(range)
+            }
         }
     }
 
@@ -504,6 +630,7 @@ final class ReaderViewController: UIViewController {
             return
         }
         clearWord()
+        clearSelection()
         guard let current = await pageSnapshot() else {
             return
         }
@@ -553,12 +680,10 @@ final class ReaderViewController: UIViewController {
     }
 
     private func locator(for range: ReaderTextRange) -> Locator? {
-        guard
-            let href = AnyURL(string: range.chapter),
-            let link = book.publication.linkWithHREF(href)
-        else {
+        guard book.publication.readingOrder.indices.contains(range.start.chapter) else {
             return nil
         }
+        let link = book.publication.readingOrder[range.start.chapter]
         return Locator(
             href: link.url(),
             mediaType: link.mediaType ?? .xhtml,
@@ -575,12 +700,12 @@ final class ReaderViewController: UIViewController {
             href: link.url(), mediaType: link.mediaType ?? .xhtml, locations: Locator.Locations(progression: 0))
     }
 
-    private static func configuration(style: ReaderStyle, colors: ReaderColors, highlightTitle: String)
+    private static func configuration(style: ReaderStyle, colors: ReaderColors)
         -> EPUBNavigatorViewController.Configuration
     {
         EPUBNavigatorViewController.Configuration(
             preferences: preferences(style: style, colors: colors),
-            editingActions: [EditingAction(title: highlightTitle, action: #selector(highlightSelection)), .copy],
+            editingActions: [],
             decorationTemplates: [
                 .highlight: tintTemplate(className: "scholia-highlight", radius: style.highlightRadius),
                 .wordTap: tintTemplate(className: "scholia-word-tap", radius: style.highlightRadius),
@@ -656,10 +781,11 @@ extension ReaderViewController: EPUBNavigatorDelegate {
             PaintedCount(controller: controller, count: \.paintedHighlights), name: "paintedHighlights")
         userContentController.add(
             PaintedCount(controller: controller, count: \.paintedWordTints), name: "paintedWordTints")
+        userContentController.add(SelectionMessages(viewController: self), name: "scholiaSelection")
     }
 
     func navigator(_ navigator: any SelectableNavigator, shouldShowMenuForSelection selection: Selection) -> Bool {
-        !isPainting
+        false
     }
 
     private static let script = try! String(
@@ -679,6 +805,18 @@ private final class PaintedCount: NSObject, WKScriptMessageHandler {
         if let value = message.body as? Int {
             controller?[keyPath: count] = value
         }
+    }
+}
+
+private final class SelectionMessages: NSObject, WKScriptMessageHandler {
+    private weak var viewController: ReaderViewController?
+
+    init(viewController: ReaderViewController) {
+        self.viewController = viewController
+    }
+
+    func userContentController(_ userContentController: WKUserContentController, didReceive message: WKScriptMessage) {
+        viewController?.selectionChanged(message.body, in: message.webView)
     }
 }
 

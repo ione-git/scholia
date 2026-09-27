@@ -14,12 +14,19 @@ final class Highlight {
     var end: ReadingPosition
     var color: HighlightColor
     var text: String
+    var before: String = ""
+    var after: String = ""
     var book: Book?
 
-    init(start: ReadingPosition, end: ReadingPosition, color: HighlightColor, text: String) {
+    init(
+        start: ReadingPosition, end: ReadingPosition, color: HighlightColor, text: String, before: String,
+        after: String
+    ) {
         self.start = start
         self.end = end
         self.color = color
         self.text = text
+        self.before = before
+        self.after = after
     }
 }

@@ -219,6 +219,31 @@ final class ImportTests: UITestCase {
         XCTAssertEqual(home.storedLibrary.label, "")
     }
 
+    func testZip64BookOpensAddBook() throws {
+        let app = launch(
+            LaunchConfiguration(
+                resetsState: true, fixtures: [], opened: [], inProgress: [], highlighted: [], translation: .immediate,
+                now: nil,
+                notificationPermission: nil))
+
+        let addBook = try HomeScreen(app: app).waitUntilShown().openFromOtherApp(.zip64)
+
+        addBook.titleField.waitUntil(\.stringValue, equals: "ZIP64")
+        XCTAssertEqual(addBook.authorField.stringValue, "Franz Kafka")
+    }
+
+    func testFontObfuscatedBookIsNotTreatedAsProtected() throws {
+        let app = launch(
+            LaunchConfiguration(
+                resetsState: true, fixtures: [], opened: [], inProgress: [], highlighted: [], translation: .immediate,
+                now: nil,
+                notificationPermission: nil))
+
+        let addBook = try HomeScreen(app: app).waitUntilShown().openFromOtherApp(.fontObfuscation)
+
+        addBook.titleField.waitUntil(\.stringValue, equals: "Obfuscated Font")
+    }
+
     func testImportSnapshotLight() throws {
         assertSnapshot(of: try openGerman(appearance: .light), named: "Import")
     }
