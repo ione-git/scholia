@@ -109,6 +109,22 @@ final class ComponentGalleryTests: UITestCase {
         assertSnapshot(of: openGallery(.dark).openGlassMenu(), named: "ComponentGallery-GlassMenu")
     }
 
+    func testComponentGalleryTranslationPillSnapshotLight() {
+        assertSnapshot(of: openGallery(.light).openTranslationPills(), named: "ComponentGallery-TranslationPill")
+    }
+
+    func testComponentGalleryTranslationPillSnapshotDark() {
+        assertSnapshot(of: openGallery(.dark).openTranslationPills(), named: "ComponentGallery-TranslationPill")
+    }
+
+    func testComponentGalleryWordCardSnapshotLight() {
+        assertSnapshot(of: openGallery(.light).openWordCards(), named: "ComponentGallery-WordCard")
+    }
+
+    func testComponentGalleryWordCardSnapshotDark() {
+        assertSnapshot(of: openGallery(.dark).openWordCards(), named: "ComponentGallery-WordCard")
+    }
+
     func testComponentGallerySelectionMenuSnapshotLight() {
         assertSnapshot(of: openGallery(.light).openSelectionMenu(), named: "ComponentGallery-SelectionMenu")
     }

@@ -21,6 +21,28 @@
         }
       }
     },
+    "%@ · %@ · %@" : {
+      "comment" : "Word card, under the word: IPA transcription, dictionary form and part of speech",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@ · %2$@ · %3$@"
+          }
+        }
+      }
+    },
+    "%@: %@" : {
+      "comment" : "VoiceOver label of the translation pill: the tapped word, then its translation",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@: %2$@"
+          }
+        }
+      }
+    },
     "%lld Selected" : {
 
     },
@@ -69,6 +91,9 @@
     },
     "All %lld" : {
 
+    },
+    "All meanings" : {
+      "comment" : "Word card: label above the numbered dictionary meanings of the word"
     },
     "Allow notifications for Scholia in Settings to get a daily reminder." : {
 
@@ -132,6 +157,9 @@
     },
     "Close" : {
 
+    },
+    "Close card" : {
+      "comment" : "Word card: VoiceOver label of the dimmed page that closes the card"
     },
     "Close menu" : {
 
@@ -226,6 +254,9 @@
     },
     "In progress" : {
 
+    },
+    "In this context" : {
+      "comment" : "Word card: label above the translation of the word in its sentence"
     },
     "Ink and control colours" : {
       "shouldTranslate" : false
@@ -323,6 +354,9 @@
     "Open Settings" : {
 
     },
+    "Opens details" : {
+      "comment" : "VoiceOver hint on the translation in the word bubble or pill: opens the word card"
+    },
     "Other colours" : {
       "shouldTranslate" : false
     },
@@ -346,6 +380,9 @@
     },
     "Progress" : {
 
+    },
+    "Pronounce" : {
+      "comment" : "Word card: VoiceOver label of the button that speaks the word aloud"
     },
     "Radius" : {
       "shouldTranslate" : false
@@ -666,11 +703,17 @@
     "Translation bubble" : {
 
     },
+    "Translation pill" : {
+      "comment" : "Component Gallery: row and title of the translation pill page"
+    },
     "Translation unavailable" : {
 
     },
     "Unread" : {
 
+    },
+    "Word card" : {
+      "comment" : "Component Gallery: row and title of the word card page"
     },
     "adjective" : {
 
@@ -719,6 +762,9 @@
     },
     "· detected" : {
 
+    },
+    "— %@" : {
+      "comment" : "Word card: usage note after a dictionary meaning, e.g. “— figurative”"
     },
     "“%@” is damaged or is not an EPUB file." : {
 

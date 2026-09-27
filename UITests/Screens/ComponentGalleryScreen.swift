@@ -27,6 +27,10 @@ struct ComponentGalleryScreen: Screen {
         open("translationBubble", as: TranslationBubbleGalleryScreen.init)
     }
     func openGlassMenu() -> GlassMenuGalleryScreen { open("glassMenu", as: GlassMenuGalleryScreen.init) }
+    func openTranslationPills() -> TranslationPillGalleryScreen {
+        open("translationPill", as: TranslationPillGalleryScreen.init)
+    }
+    func openWordCards() -> WordCardGalleryScreen { open("wordCard", as: WordCardGalleryScreen.init) }
     func openSelectionMenu() -> SelectionMenuGalleryScreen {
         open("selectionMenu", as: SelectionMenuGalleryScreen.init)
     }
@@ -90,6 +94,18 @@ struct GlassMenuGalleryScreen: Screen {
     let app: XCUIApplication
 
     var root: XCUIElement { app.scrollViews["glassMenuGallery.scrollView"] }
+}
+
+struct TranslationPillGalleryScreen: Screen {
+    let app: XCUIApplication
+
+    var root: XCUIElement { app.scrollViews["translationPillGallery.scrollView"] }
+}
+
+struct WordCardGalleryScreen: Screen {
+    let app: XCUIApplication
+
+    var root: XCUIElement { app.scrollViews["wordCardGallery.scrollView"] }
 }
 
 struct SelectionMenuGalleryScreen: Screen {

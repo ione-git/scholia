@@ -64,13 +64,14 @@ final class WordBubbleTests: UITestCase {
         XCTAssertGreaterThanOrEqual(reader.bubble.frame.minY, reader.runningHead.frame.maxY)
     }
 
-    func testTapOutsideClosesBubbleWithoutChromeAndTapOnBubbleKeepsIt() throws {
-        let reader = openGermanBook(translation: .immediate)
+    func testTapOutsideClosesBubbleWithoutChromeAndTapOnLoadingBubbleKeepsIt() throws {
+        let reader = openGermanBook(translation: .held)
         reader.pageCounter.waitUntil(\.label, equals: firstPage)
         try reader.tapWord(onLine: 4, x: 3)
-        reader.bubbleTranslation.waitUntil(\.label, equals: "vermin")
+        reader.bubbleLoading.waitUntilExists()
 
         reader.bubble.tap()
+        XCTAssertFalse(WordCardScreen(app: reader.app).root.exists)
         try reader.tapWord(onLine: 7, x: 170)
 
         reader.bubbleWord.waitUntil(\.label, equals: "auf")

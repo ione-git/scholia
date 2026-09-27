@@ -1,31 +1,30 @@
 import DesignSystem
 import SwiftUI
 
-struct WordBubble: View {
+struct WordPill: View {
     let lookup: WordLookup
-    let language: String
     let translationLanguage: String
     let open: () -> Void
 
     var body: some View {
-        TranslationBubble(
-            word: Text(verbatim: lookup.word.text),
+        TranslationPill(
             phase: phase,
-            wordLocale: Locale(identifier: language),
             translationLocale: Locale(identifier: translationLanguage),
             details: TranslationDetails(hint: .opensDetails, action: open),
-            identifier: "reader.bubble"
+            identifier: "reader.pill"
         )
     }
 
-    private var phase: TranslationBubble.Phase {
+    private var phase: TranslationPill.Phase {
         switch lookup.phase {
         case .loading:
             .loading(label: .translating(lookup.word.text))
         case .translated(let translation):
             .translated(
-                translation: Text(verbatim: translation.translation), ipa: Text(verbatim: translation.ipa),
-                grammar: translation.grammar.map { Text(verbatim: $0) })
+                translation: Text(verbatim: translation.translation),
+                label: Text(
+                    "\(lookup.word.text): \(translation.translation)",
+                    comment: "VoiceOver label of the translation pill: the tapped word, then its translation"))
         case .failed:
             .failed(message: .translationUnavailable)
         case .notNeeded:

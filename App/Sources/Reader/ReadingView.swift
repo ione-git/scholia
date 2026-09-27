@@ -57,16 +57,9 @@ struct ReadingView: View {
             if let controller {
                 SelectionMenuLayer(controller: controller)
             }
-            if let controller, let word = controller.word {
-                TranslationBubblePlacement(anchor: word.rect, topLimit: .navTop + .controlH, gap: .bubble) {
-                    WordBubble(word: word, language: book.language)
-                        .accessibilityAction(.escape) { controller.clearWord() }
-                }
-                .id(word.range)
-                .ignoresSafeArea()
-            }
         }
         .background { WindowAnchor(reference: window) }
+        .modifier(WordTap(controller: controller, language: book.language, colorScheme: shownColorScheme))
         #if DEBUG
             .background {
                 PaintedDiagnostics(identifier: "debug.paintedWordTints", count: controller?.paintedWordTints ?? 0)
