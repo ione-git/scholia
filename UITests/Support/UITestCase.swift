@@ -13,14 +13,14 @@ class UITestCase: XCTestCase {
 
     func launch(_ configuration: LaunchConfiguration, appearance: XCUIDevice.Appearance) -> XCUIApplication {
         switchAppearance(to: appearance)
-        return launch(configuration)
+        return rendered(in: appearance, launch(configuration))
     }
 
     func launchWithAnimations(_ configuration: LaunchConfiguration, appearance: XCUIDevice.Appearance)
         -> XCUIApplication
     {
         switchAppearance(to: appearance)
-        return launch(configuration, timeZone: .gmt, arguments: [], animations: nil)
+        return rendered(in: appearance, launch(configuration, timeZone: .gmt, arguments: [], animations: nil))
     }
 
     func launch(_ configuration: LaunchConfiguration, deviceLanguage: String) -> XCUIApplication {
@@ -33,7 +33,7 @@ class UITestCase: XCTestCase {
         _ configuration: LaunchConfiguration, appearance: XCUIDevice.Appearance, deviceLanguage: String
     ) -> XCUIApplication {
         switchAppearance(to: appearance)
-        return launch(configuration, deviceLanguage: deviceLanguage)
+        return rendered(in: appearance, launch(configuration, deviceLanguage: deviceLanguage))
     }
 
     func openSettings(_ app: XCUIApplication) -> SettingsScreen {
@@ -65,5 +65,11 @@ class UITestCase: XCTestCase {
             XCUIDevice.shared.appearance = original
         }
         XCUIDevice.shared.appearance = appearance
+    }
+
+    private func rendered(in appearance: XCUIDevice.Appearance, _ app: XCUIApplication) -> XCUIApplication {
+        app.descendants(matching: .any)["debug.colorScheme"].waitUntil(
+            \.label, equals: appearance == .dark ? "dark" : "light")
+        return app
     }
 }
