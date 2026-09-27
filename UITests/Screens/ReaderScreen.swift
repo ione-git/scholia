@@ -57,7 +57,8 @@ struct ReaderScreen: Screen {
     func waitUntilOpened(file: StaticString = #filePath, line: UInt = #line) -> ReaderScreen {
         waitUntilShown(file: file, line: line)
         XCTAssertTrue(
-            pageCounter.waitForExistence(timeout: bookOpenTimeout), "\(pageCounter.description) did not appear",
+            pageCounter.exists || pageCounter.waitForExistence(timeout: bookOpenTimeout),
+            "\(pageCounter.description) did not appear",
             file: file, line: line)
         return self
     }

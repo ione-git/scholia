@@ -7,13 +7,15 @@ extension XCUIElement {
 
     @discardableResult
     func waitUntilExists(file: StaticString = #filePath, line: UInt = #line) -> XCUIElement {
-        XCTAssertTrue(waitForExistence(timeout: timeout), "\(description) did not appear", file: file, line: line)
+        XCTAssertTrue(
+            exists || waitForExistence(timeout: timeout), "\(description) did not appear", file: file, line: line)
         return self
     }
 
     func waitUntilGone(file: StaticString = #filePath, line: UInt = #line) {
         XCTAssertTrue(
-            waitForNonExistence(timeout: timeout), "\(description) did not disappear", file: file, line: line)
+            !exists || waitForNonExistence(timeout: timeout), "\(description) did not disappear", file: file, line: line
+        )
     }
 
     @discardableResult
@@ -22,7 +24,7 @@ extension XCUIElement {
         line: UInt = #line
     ) -> XCUIElement {
         XCTAssertTrue(
-            wait(for: keyPath, toEqual: expected, timeout: timeout),
+            (exists && self[keyPath: keyPath] == expected) || wait(for: keyPath, toEqual: expected, timeout: timeout),
             "\(description) never had \(expected), has \(exists ? "\(self[keyPath: keyPath])" : "missing")",
             file: file, line: line)
         return self
