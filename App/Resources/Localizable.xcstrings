@@ -176,6 +176,9 @@
     "Contents" : {
 
     },
+    "Copy" : {
+      "comment" : "Selection menu item that copies the selected text"
+    },
     "Create" : {
 
     },
@@ -235,7 +238,7 @@
 
     },
     "Highlight" : {
-
+      "comment" : "Selection menu item that highlights the selected text"
     },
     "Highlights" : {
 
@@ -406,6 +409,9 @@
 
     },
     "Selection and toolbar" : {
+
+    },
+    "Selection menu" : {
 
     },
     "Sepia" : {
@@ -743,6 +749,9 @@
     },
     "Token Gallery" : {
       "shouldTranslate" : false
+    },
+    "Translate" : {
+      "comment" : "Selection menu item that translates the selected text"
     },
     "Translate to" : {
 

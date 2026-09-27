@@ -57,6 +57,9 @@
                     link(Text("Glass menu"), element: "glassMenu") {
                         GlassMenuGallery(colorScheme: appearance.colorScheme)
                     }
+                    link(Text("Selection menu"), element: "selectionMenu") {
+                        SelectionMenuGallery(colorScheme: appearance.colorScheme)
+                    }
                 }
             }
             .navigationTitle("Component Gallery")
@@ -528,6 +531,36 @@
         private func item(_ title: Text, icon: Icon, element: String) -> some View {
             GlassMenuItem(title, icon: icon) {}
                 .accessibilityIdentifier("glassMenuGallery.\(element)")
+        }
+    }
+
+    private struct SelectionMenuGallery: View {
+        let colorScheme: ColorScheme?
+
+        var body: some View {
+            GalleryPage(identifier: "selectionMenuGallery", colorScheme: colorScheme) {
+                SelectionMenu {
+                    SelectionMenuItem(
+                        Text("Highlight", comment: "Selection menu item that highlights the selected text"),
+                        isPrimary: true
+                    ) {}
+                    .accessibilityIdentifier("selectionMenuGallery.highlight")
+                    SelectionMenuItem(
+                        Text("Translate", comment: "Selection menu item that translates the selected text"),
+                        isPrimary: false
+                    ) {}
+                    .accessibilityIdentifier("selectionMenuGallery.translate")
+                    SelectionMenuItem(
+                        Text("Copy", comment: "Selection menu item that copies the selected text"), isPrimary: false
+                    ) {}
+                    .accessibilityIdentifier("selectionMenuGallery.copy")
+                }
+                .accessibilityIdentifier("selectionMenuGallery.menu")
+                .padding(.space5)
+                .frame(maxWidth: .infinity)
+                .background(.surfacePaper, in: RoundedRectangle(cornerRadius: .radiusLg))
+            }
+            .navigationTitle("Selection menu")
         }
     }
 

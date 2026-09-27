@@ -32,7 +32,8 @@
                 else { continue }
                 for offset in 0..<highlightCount {
                     let position = ReadingPosition(chapter: 1, offset: offset)
-                    let highlight = Highlight(start: position, end: position, color: .yellow, text: book.title)
+                    let highlight = Highlight(
+                        start: position, end: position, color: .yellow, text: book.title, before: "", after: "")
                     context.insert(highlight)
                     highlight.book = book
                 }

@@ -4,7 +4,7 @@
 
     struct LibraryDiagnostics: View {
         @Query(sort: \Book.title) private var books: [Book]
-        @Query private var highlights: [Highlight]
+        @Query(sort: \Highlight.text) private var highlights: [Highlight]
 
         var body: some View {
             ZStack {
@@ -17,6 +17,7 @@
                     .accessibilityElement()
                     .accessibilityIdentifier("debug.storedHighlights")
                     .accessibilityLabel(Text(verbatim: "\(highlights.count)"))
+                    .accessibilityValue(Text(verbatim: storedHighlights))
             }
         }
 
@@ -24,6 +25,10 @@
             let directory = Storage.booksDirectory.path(percentEncoded: false)
             let names = (try? FileManager.default.contentsOfDirectory(atPath: directory)) ?? []
             return names.sorted().joined(separator: "\n")
+        }
+
+        private var storedHighlights: String {
+            highlights.map { "\($0.text) · \($0.color.rawValue)" }.joined(separator: "\n")
         }
 
         private var summary: String {

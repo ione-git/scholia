@@ -13,6 +13,7 @@ public struct TranslationBubble: View {
     private static let horizontalPadding: CGFloat = 14
     private static let chevronSize: CGFloat = 16
     private static let chevronStroke: CGFloat = 2.2
+    private static let wordLineLimit = 2
 
     let word: Text
     let phase: Phase
@@ -35,6 +36,7 @@ public struct TranslationBubble: View {
                 word
                     .textStyle(TextStyle.footnote.weighted(TextStyle.title3.weight))
                     .foregroundStyle(.ink)
+                    .lineLimit(Self.wordLineLimit)
                     .accessibilityIdentifier("\(identifier).word")
                 Spacer(minLength: 0)
                 if case .translated(_, let ipa, _) = phase {
