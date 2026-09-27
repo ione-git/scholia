@@ -16,12 +16,15 @@ jobs:
     env:
       DEVELOPER_DIR: /Applications/Xcode.app/Contents/Developer
       DERIVED_DATA: ${{ github.workspace }}/../DerivedData
-      SIM: CI-${{ runner.name }}-${{ github.run_id }}-${{ github.run_attempt }}
     steps:
       - uses: actions/checkout@v7
       - run: command -v xcodegen || brew install xcodegen
       - run: make lint
-      - run: UDID=$(scripts/sim create "$SIM") && echo "UDID=$UDID" >> "$GITHUB_ENV"
+      - run: |
+          echo "SIM=$SIM" >> "$GITHUB_ENV"
+          UDID=$(scripts/sim create "$SIM") && echo "UDID=$UDID" >> "$GITHUB_ENV"
+        env:
+          SIM: CI-${{ runner.name }}-${{ github.run_id }}-${{ github.run_attempt }}
       - id: test
         run: make test DESTINATION="platform=iOS Simulator,id=$UDID" TEST_FLAGS="-retry-tests-on-failure -test-iterations 2"
         env:
@@ -33,5 +36,5 @@ jobs:
         with:
           name: xcresult
           path: build/Results-*.xcresult
-      - if: always()
+      - if: always() && env.SIM != ''
         run: scripts/sim delete "$SIM"
