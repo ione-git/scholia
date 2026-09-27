@@ -77,4 +77,16 @@ public enum ReaderPageTurn: String, CaseIterable, Sendable {
         public var fontSize: Double
         public var lineHeight: Double
     }
+
+    public struct ReaderPageCurl: Equatable, Sendable {
+        public enum State: String, Sendable {
+            case off
+            case preparing
+            case ready
+        }
+
+        public var state: State
+        public var completed: Int
+        public var cancelled: Int
+    }
 #endif

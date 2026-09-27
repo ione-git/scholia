@@ -35,9 +35,9 @@ struct ReaderScreen: Screen {
     var germanParagraph: XCUIElement { paragraph(startingWith: germanFirstParagraph) }
     var germanHeading: XCUIElement { paragraph(startingWith: germanFirstHeading) }
     var appearance: XCUIElement { app.descendants(matching: .any)["debug.readerAppearance"] }
+    var pageCurl: XCUIElement { app.descendants(matching: .any)["debug.pageCurl"] }
 
     func theme(_ name: String) -> XCUIElement { app.buttons["reader.theme.\(name)"] }
-    func pageTurn(_ name: String) -> XCUIElement { app.buttons["reader.pageTurn.\(name)"] }
 
     func paragraph(startingWith text: String) -> XCUIElement {
         app.webViews.staticTexts.matching(NSPredicate(format: "label BEGINSWITH %@", text)).firstMatch
@@ -137,13 +137,6 @@ struct ReaderScreen: Screen {
         hideControls()
     }
 
-    func choosePageTurn(_ name: String) {
-        showControls()
-        pageTurn(name).tap()
-        pageTurn(name).waitUntil(\.isSelected, equals: true)
-        hideControls()
-    }
-
     func turnForward(expecting counter: String, file: StaticString = #filePath, line: UInt = #line) {
         app.swipeLeft()
         pageCounter.waitUntil(\.label, equals: counter, file: file, line: line)
@@ -162,5 +155,53 @@ struct ReaderScreen: Screen {
     func turnBackwardRightToLeft(expecting counter: String, file: StaticString = #filePath, line: UInt = #line) {
         app.swipeLeft()
         pageCounter.waitUntil(\.label, equals: counter, file: file, line: line)
+    }
+
+    func curlForward(expecting counter: String, file: StaticString = #filePath, line: UInt = #line) {
+        curl(from: curlRightSide, to: curlLeftSide, file: file, line: line)
+        pageCounter.waitUntil(\.label, equals: counter, file: file, line: line)
+    }
+
+    func curlBackward(expecting counter: String, file: StaticString = #filePath, line: UInt = #line) {
+        curl(from: curlLeftSide, to: curlRightSide, file: file, line: line)
+        pageCounter.waitUntil(\.label, equals: counter, file: file, line: line)
+    }
+
+    func curlForwardRightToLeft(expecting counter: String, file: StaticString = #filePath, line: UInt = #line) {
+        curl(from: curlLeftSide, to: curlRightSide, file: file, line: line)
+        pageCounter.waitUntil(\.label, equals: counter, file: file, line: line)
+    }
+
+    func curlBackwardRightToLeft(expecting counter: String, file: StaticString = #filePath, line: UInt = #line) {
+        curl(from: curlRightSide, to: curlLeftSide, file: file, line: line)
+        pageCounter.waitUntil(\.label, equals: counter, file: file, line: line)
+    }
+
+    func curlBackwardDiagonally(file: StaticString = #filePath, line: UInt = #line) {
+        curl(from: CGVector(dx: 0.2, dy: 0.35), to: CGVector(dx: 0.75, dy: 0.65), file: file, line: line)
+    }
+
+    func curlAndRelease(file: StaticString = #filePath, line: UInt = #line) {
+        pageCurl.waitUntil(\.label, equals: "ready", file: file, line: line)
+        pagePoint(curlRightSide)
+            .press(
+                forDuration: curlPressDuration, thenDragTo: pagePoint(CGVector(dx: 0.65, dy: 0.5)),
+                withVelocity: .slow, thenHoldForDuration: 0.5)
+    }
+
+    private var curlRightSide: CGVector { CGVector(dx: 0.8, dy: 0.5) }
+    private var curlLeftSide: CGVector { CGVector(dx: 0.2, dy: 0.5) }
+    private var curlPressDuration: TimeInterval { 0.05 }
+
+    private func curl(from start: CGVector, to end: CGVector, file: StaticString, line: UInt) {
+        pageCurl.waitUntil(\.label, equals: "ready", file: file, line: line)
+        pagePoint(start)
+            .press(
+                forDuration: curlPressDuration, thenDragTo: pagePoint(end), withVelocity: .fast,
+                thenHoldForDuration: 0)
+    }
+
+    private func pagePoint(_ offset: CGVector) -> XCUICoordinate {
+        root.coordinate(withNormalizedOffset: offset)
     }
 }

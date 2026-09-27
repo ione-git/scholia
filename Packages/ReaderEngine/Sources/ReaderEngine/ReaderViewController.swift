@@ -15,6 +15,11 @@ final class ReaderViewController: UIViewController {
     private let curtain = UIView()
     private var cover: UIView?
     private var swipes: [UISwipeGestureRecognizer] = []
+    private var press: UILongPressGestureRecognizer?
+    private var pageCurl: PageCurl?
+    private var neighbours: NeighbourPages?
+    private var highlightDecorations: [Decoration] = []
+    private var isCommittingCurl = false
     private var pressOrigin: CGPoint?
     private var isPressing = false
     private var isPainting = false
@@ -41,14 +46,14 @@ final class ReaderViewController: UIViewController {
     private var selectionTask: Task<Void, Never>?
     private var voiceOverTask: Task<Void, Never>?
 
-    private static let highlightGroup = "highlights"
+    static let highlightGroup = "highlights"
     private static let wordGroup = "word"
     private static let wordDecoration = "word"
     private static let cssFontWeights = 1...1000
     private static let revealDuration: TimeInterval = 0.25
     private static let fadeDuration: TimeInterval = 0.2
     private static let scrollSettleDelay = Duration.milliseconds(150)
-    private static let renderTimeout = 1000
+    static let renderTimeout = 1000
 
     init(
         book: ReaderBook, language: String?, location: ReaderLocation?, appearance: ReaderAppearance,
@@ -73,6 +78,7 @@ final class ReaderViewController: UIViewController {
         turnTask?.cancel()
         selectionTask?.cancel()
         voiceOverTask?.cancel()
+        neighbours?.cancel()
     }
 
     @available(*, unavailable)
@@ -96,6 +102,7 @@ final class ReaderViewController: UIViewController {
         press.cancelsTouchesInView = false
         press.delegate = self
         view.addGestureRecognizer(press)
+        self.press = press
 
         swipes = [UISwipeGestureRecognizer.Direction.left, .right].map { direction in
             let swipe = UISwipeGestureRecognizer(target: self, action: #selector(swiped))
@@ -121,6 +128,7 @@ final class ReaderViewController: UIViewController {
             laidOutSize = view.bounds.size
             clearWord()
             clearSelection()
+            stopNeighbours()
         }
         countPages()
     }
@@ -271,6 +279,9 @@ final class ReaderViewController: UIViewController {
             }
         }
         navigator.apply(decorations: decorations, in: Self.highlightGroup)
+        highlightDecorations = decorations
+        stopNeighbours()
+        settleCurl()
     }
 
     private func render(_ target: ReaderAppearance, generation current: Int) async {
@@ -296,7 +307,9 @@ final class ReaderViewController: UIViewController {
             appearance = target
             recolor()
             navigator.submitPreferences(Self.preferences(target))
+            stopNeighbours()
             applyGestures()
+            settleCurl()
             if changesFont {
                 await reflow(to: restore)
             } else {
@@ -364,6 +377,7 @@ final class ReaderViewController: UIViewController {
         stopCounting()
         locateTask?.cancel()
         turnTask?.cancel()
+        stopNeighbours()
         isShown = false
         shownPage = nil
         pageCounts = nil
@@ -384,11 +398,167 @@ final class ReaderViewController: UIViewController {
     private func applyGestures() {
         let isScrolled = navigator.presentation.scroll
         for swipe in swipes {
-            swipe.isEnabled = !isScrolled && (appearance.pageTurn == .curl || appearance.pageTurn == .fade)
+            swipe.isEnabled = !isScrolled && appearance.pageTurn == .fade
+        }
+        let curls = !isScrolled && appearance.pageTurn == .curl
+        if curls, pageCurl == nil {
+            startCurl()
+        } else if !curls, pageCurl != nil {
+            stopCurl()
         }
         for scrollView in navigator.view.descendants(of: UIScrollView.self) {
             scrollView.panGestureRecognizer.isEnabled = isScrolled || appearance.pageTurn == .slide
         }
+    }
+
+    private func startCurl() {
+        let curl = PageCurl(isRightToLeft: navigator.presentation.readingProgression == .rtl)
+        guard let pan = curl.pan else {
+            return
+        }
+        curl.allowsCurl = { [weak self] pan in
+            self?.allowsCurl(pan) ?? false
+        }
+        curl.onBegin = { [weak self] in
+            self?.clearWord()
+            self?.publishCurl()
+        }
+        curl.onEnd = { [weak self] forward, completed in
+            self?.curlEnded(forward: forward, completed: completed)
+        }
+        addChild(curl.controller)
+        curl.controller.view.frame = view.bounds
+        curl.controller.view.autoresizingMask = [.flexibleWidth, .flexibleHeight]
+        view.insertSubview(curl.controller.view, aboveSubview: navigator.view)
+        curl.controller.didMove(toParent: self)
+        view.addGestureRecognizer(pan)
+        pageCurl = curl
+        settleCurl()
+    }
+
+    private func stopCurl() {
+        stopNeighbours()
+        guard let pageCurl else {
+            return
+        }
+        if let pan = pageCurl.pan {
+            view.removeGestureRecognizer(pan)
+        }
+        pageCurl.controller.willMove(toParent: nil)
+        pageCurl.controller.view.removeFromSuperview()
+        pageCurl.controller.removeFromParent()
+        self.pageCurl = nil
+        publishCurl()
+    }
+
+    private func settleCurl() {
+        guard let pageCurl, !pageCurl.isCurling, !isCommittingCurl, isShown, let shownPage else {
+            refreshCurl()
+            return
+        }
+        if neighbours == nil {
+            let neighbours = NeighbourPages(
+                book: book, appearance: appearance,
+                configuration: Self.configuration(appearance: appearance, typefaces: typefaces),
+                decorations: highlightDecorations, host: self,
+                contentInset: { [weak self] in self?.contentInset ?? .zero })
+            neighbours.onChange = { [weak self] in self?.refreshCurl() }
+            self.neighbours = neighbours
+        }
+        neighbours?.show(shownPage)
+        refreshCurl()
+    }
+
+    private func stopNeighbours() {
+        neighbours?.stop()
+        neighbours = nil
+        pageCurl?.unstage()
+        refreshCurl()
+    }
+
+    private func refreshCurl() {
+        if let pageCurl, let neighbours, let shownPage, isShown, neighbours.page == shownPage, neighbours.isReady,
+            !pageCurl.isCurling, !isCommittingCurl
+        {
+            pageCurl.stage(neighbours, color: appearance.colors.page)
+        }
+        publishCurl()
+    }
+
+    private func allowsCurl(_ pan: UIPanGestureRecognizer) -> Bool {
+        guard
+            let pageCurl, let neighbours, isCurlReady, !isPainting, navigator.currentSelection == nil,
+            press?.state != .began, press?.state != .changed
+        else {
+            return false
+        }
+        let translation = pan.translation(in: view).x
+        let distance = translation != 0 ? translation : pan.velocity(in: view).x
+        guard distance != 0 else {
+            return false
+        }
+        let forward = (distance < 0) != (navigator.presentation.readingProgression == .rtl)
+        guard (forward ? neighbours.next : neighbours.previous) != .end else {
+            return false
+        }
+        pageCurl.reveal()
+        return true
+    }
+
+    private func curlEnded(forward: Bool, completed: Bool) {
+        guard completed else {
+            pageCurl?.rest()
+            #if DEBUG
+                controller?.pageCurl.cancelled += 1
+            #endif
+            refreshCurl()
+            return
+        }
+        isCommittingCurl = true
+        let navigator = navigator
+        let epoch = epoch
+        turnTask = Task {
+            var isTurned = false
+            defer {
+                pageCurl?.rest()
+                isCommittingCurl = false
+                #if DEBUG
+                    if isTurned {
+                        controller?.pageCurl.completed += 1
+                    }
+                #endif
+                settleCurl()
+            }
+            let options = NavigatorGoOptions(animated: false)
+            let moved =
+                forward ? await navigator.goForward(options: options) : await navigator.goBackward(options: options)
+            guard moved, !Task.isCancelled, epoch == self.epoch else {
+                return
+            }
+            await waitUntilRendered()
+            guard !Task.isCancelled, epoch == self.epoch else {
+                return
+            }
+            trackPage()
+            isTurned = true
+        }
+    }
+
+    private var isCurlReady: Bool {
+        guard let pageCurl, let neighbours, let shownPage else {
+            return false
+        }
+        return isShown && neighbours.page == shownPage && neighbours.isReady && !pageCurl.isCurling
+            && !isCommittingCurl && pageCurl.isStaged(neighbours, color: appearance.colors.page)
+    }
+
+    private func publishCurl() {
+        #if DEBUG
+            let state: ReaderPageCurl.State = pageCurl == nil ? .off : isCurlReady ? .ready : .preparing
+            if controller?.pageCurl.state != state {
+                controller?.pageCurl.state = state
+            }
+        #endif
     }
 
     private func coverPage() {
@@ -437,13 +607,17 @@ final class ReaderViewController: UIViewController {
         guard let webView = visibleWebView() else {
             return
         }
-        let expected: [String: Any] = [
+        _ = try? await webView.callAsyncJavaScript(
+            "return await scholia.rendered(expected, timeout)",
+            arguments: ["expected": Self.renderedStyle(appearance), "timeout": Self.renderTimeout],
+            contentWorld: .page)
+    }
+
+    static func renderedStyle(_ appearance: ReaderAppearance) -> [String: Any] {
+        [
             "background": appearance.colors.page.hex, "text": appearance.colors.text.hex,
             "fontFamily": appearance.style.font.family,
         ]
-        _ = try? await webView.callAsyncJavaScript(
-            "return await scholia.rendered(expected, timeout)",
-            arguments: ["expected": expected, "timeout": Self.renderTimeout], contentWorld: .page)
     }
 
     #if DEBUG
@@ -543,6 +717,7 @@ final class ReaderViewController: UIViewController {
         controller?.pageSpan = nil
         publishPage()
         locate(page)
+        settleCurl()
     }
 
     private func currentPage() -> ChapterPage? {
@@ -888,12 +1063,8 @@ final class ReaderViewController: UIViewController {
         clearWord()
         clearSelection()
         let forward = (swipe.direction == .left) == (navigator.presentation.readingProgression != .rtl)
-        let pageTurn = appearance.pageTurn
         turnTask = Task {
-            switch pageTurn {
-            case .fade: await fade(forward: forward)
-            default: await curl(forward: forward)
-            }
+            await fade(forward: forward)
             isTurning = false
         }
     }
@@ -913,53 +1084,6 @@ final class ReaderViewController: UIViewController {
         snapshot.removeFromSuperview()
     }
 
-    private func curl(forward: Bool) async {
-        guard let current = await pageSnapshot() else {
-            return
-        }
-        let pager = UIPageViewController(
-            transitionStyle: .pageCurl, navigationOrientation: .horizontal,
-            options: [.spineLocation: UIPageViewController.SpineLocation.min.rawValue])
-        pager.isDoubleSided = true
-        pager.setViewControllers([current], direction: .forward, animated: false)
-        addChild(pager)
-        pager.view.frame = view.bounds
-        view.addSubview(pager.view)
-        pager.didMove(toParent: self)
-        let options = NavigatorGoOptions(animated: false)
-        let moved = forward ? await navigator.goForward(options: options) : await navigator.goBackward(options: options)
-        if moved, let next = await pageSnapshot() {
-            await withCheckedContinuation { continuation in
-                pager.setViewControllers([next, pageBack()], direction: forward ? .forward : .reverse, animated: true) {
-                    _ in continuation.resume()
-                }
-            }
-        }
-        pager.willMove(toParent: nil)
-        pager.view.removeFromSuperview()
-        pager.removeFromParent()
-    }
-
-    private func pageSnapshot() async -> UIViewController? {
-        guard
-            let webView = webView(at: CGPoint(x: view.bounds.midX, y: view.bounds.midY)),
-            let image = try? await webView.takeSnapshot(configuration: nil)
-        else {
-            return nil
-        }
-        let page = pageBack()
-        let imageView = UIImageView(image: image)
-        imageView.frame = webView.convert(webView.bounds, to: view)
-        page.view.addSubview(imageView)
-        return page
-    }
-
-    private func pageBack() -> UIViewController {
-        let page = UIViewController()
-        page.view.backgroundColor = appearance.colors.page
-        return page
-    }
-
     private func locator(for range: ReaderTextRange) -> Locator? {
         guard book.publication.readingOrder.indices.contains(range.start.chapter) else {
             return nil
@@ -972,7 +1096,7 @@ final class ReaderViewController: UIViewController {
         )
     }
 
-    private static func navigator(
+    static func navigator(
         book: ReaderBook, location: ReaderLocation?, configuration: EPUBNavigatorViewController.Configuration
     ) -> EPUBNavigatorViewController {
         try! EPUBNavigatorViewController(
@@ -1087,7 +1211,7 @@ extension ReaderViewController: EPUBNavigatorDelegate {
         false
     }
 
-    private static let script = try! String(
+    static let script = try! String(
         contentsOf: Bundle.module.url(forResource: "reader", withExtension: "js")!, encoding: .utf8)
 }
 
@@ -1128,7 +1252,7 @@ extension ReaderViewController: UIGestureRecognizerDelegate {
     }
 }
 
-private struct ChapterPage: Equatable {
+struct ChapterPage: Hashable {
     var chapter: Int
     var page: Int
 }
@@ -1138,7 +1262,7 @@ private struct PageLayout: Equatable {
     var isScrolled: Bool
 }
 
-private struct ScrollObservation {
+struct ScrollObservation {
     weak var scrollView: UIScrollView?
     let observation: NSKeyValueObservation
 
@@ -1160,7 +1284,7 @@ extension Decoration.Style.Id {
 }
 
 extension UIView {
-    fileprivate func descendants<T: UIView>(of type: T.Type) -> [T] {
+    func descendants<T: UIView>(of type: T.Type) -> [T] {
         subviews.flatMap { [$0].compactMap { $0 as? T } + $0.descendants(of: type) }
     }
 }

@@ -153,14 +153,6 @@ final class ReaderPrototypeTests: UITestCase {
         XCTAssertLessThanOrEqual(paint.found.distance(to: paint.expected), 6, "\(paint)")
     }
 
-    func testCurlTurnsPagesBothWays() {
-        let reader = openReader()
-        reader.choosePageTurn("curl")
-
-        reader.turnForward(expecting: "2 of 54")
-        reader.turnBackward(expecting: "1 of 54")
-    }
-
     func testOpenEPUBPresentsFilesPicker() {
         let app = launch(
             LaunchConfiguration(

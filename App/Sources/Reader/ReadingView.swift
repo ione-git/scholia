@@ -32,6 +32,7 @@ struct ReadingView: View {
                     .ignoresSafeArea()
                     #if DEBUG
                         .background { ReaderAppearanceDiagnostics(controller: controller) }
+                        .background { PageCurlDiagnostics(controller: controller) }
                     #endif
             } else if cannotOpen {
                 Text("This book can’t be opened.")
@@ -270,6 +271,19 @@ private let logger = Logger(subsystem: "com.ione.scholia", category: "reader")
                 return ""
             }
             return "\(span.chapter):\(span.start)-\(span.end)"
+        }
+    }
+
+    private struct PageCurlDiagnostics: View {
+        let controller: ReaderController
+
+        var body: some View {
+            let curl = controller.pageCurl
+            Color.clear
+                .accessibilityElement()
+                .accessibilityIdentifier("debug.pageCurl")
+                .accessibilityLabel(Text(verbatim: curl.state.rawValue))
+                .accessibilityValue(Text(verbatim: "\(curl.completed) completed, \(curl.cancelled) cancelled"))
         }
     }
 #endif
