@@ -8,6 +8,7 @@ public final class ReaderController {
     public internal(set) var location: ReaderLocation?
     public internal(set) var pageSpan: ReaderPageSpan?
     public internal(set) var word: ReaderWord?
+    public internal(set) var selection: ReaderSelection?
     public var colors: ReaderColors {
         didSet { viewController.apply(colors) }
     }
@@ -21,11 +22,12 @@ public final class ReaderController {
         didSet { viewController.apply(pageTurn) }
     }
     @ObservationIgnored public var onPageTap: (() -> Void)?
+    @ObservationIgnored public var onHighlight: ((ReaderTextRange) -> Void)?
     @ObservationIgnored let viewController: ReaderViewController
 
     public init(
         book: ReaderBook, language: String?, location: ReaderLocation?, style: ReaderStyle, colors: ReaderColors,
-        highlightColor: UIColor, pageTurn: ReaderPageTurn, highlightTitle: String
+        highlightColor: UIColor, pageTurn: ReaderPageTurn
     ) {
         self.book = book
         self.location = location
@@ -36,13 +38,28 @@ public final class ReaderController {
         paintedHighlights = 0
         paintedWordTints = 0
         viewController = ReaderViewController(
-            book: book, language: language, location: location, style: style, colors: colors, pageTurn: pageTurn,
-            highlightTitle: highlightTitle)
+            book: book, language: language, location: location, style: style, colors: colors, pageTurn: pageTurn)
         viewController.controller = self
     }
 
     public func clearWord() {
         viewController.clearWord()
+    }
+
+    public func highlightSelection() {
+        viewController.highlightSelection()
+    }
+
+    public func translateSelection() {
+        viewController.translateSelection()
+    }
+
+    public func copySelection() {
+        viewController.copySelection()
+    }
+
+    public func clearSelection() {
+        viewController.clearSelection()
     }
 }
 

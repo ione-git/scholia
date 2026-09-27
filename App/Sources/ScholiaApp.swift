@@ -47,6 +47,7 @@ struct ScholiaApp: App {
                     .background { ReminderDiagnostics(settings: settings) }
                     .background { AppearanceDiagnostics() }
                     .background { TranslationDiagnostics(provider: translationService.provider) }
+                    .background { PasteboardDiagnostics() }
                 #endif
         }
         .modelContainer(container)

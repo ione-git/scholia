@@ -36,6 +36,9 @@ struct ComponentGalleryScreen: Screen {
         open("translationBubble", as: TranslationBubbleGalleryScreen.init)
     }
     func openGlassMenu() -> GlassMenuGalleryScreen { open("glassMenu", as: GlassMenuGalleryScreen.init) }
+    func openSelectionMenu() -> SelectionMenuGalleryScreen {
+        open("selectionMenu", as: SelectionMenuGalleryScreen.init)
+    }
 }
 
 protocol ComponentGalleryPage: Screen {}
@@ -125,6 +128,15 @@ struct TranslationBubbleGalleryScreen: ComponentGalleryPage {
     func part(_ part: String, of element: String) -> XCUIElement {
         app.descendants(matching: .any)["translationBubbleGallery.\(element).\(part)"]
     }
+}
+
+struct SelectionMenuGalleryScreen: ComponentGalleryPage {
+    let app: XCUIApplication
+
+    var root: XCUIElement { app.scrollViews["selectionMenuGallery.scrollView"] }
+    var menu: XCUIElement { app.otherElements["selectionMenuGallery.menu"] }
+
+    func item(_ element: String) -> XCUIElement { app.buttons["selectionMenuGallery.\(element)"] }
 }
 
 struct PresentationGalleryScreen: ComponentGalleryPage {

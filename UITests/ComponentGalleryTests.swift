@@ -72,6 +72,15 @@ final class ComponentGalleryTests: UITestCase {
             attachScreenshot("TranslationBubble\(suffix)")
             gallery = bubbles.goBack()
 
+            let selectionMenu = gallery.openSelectionMenu()
+            XCTAssertEqual(selectionMenu.root.value as? String, appearance.rawValue)
+            selectionMenu.menu.waitUntilExists()
+            for element in ["highlight", "translate", "copy"] {
+                selectionMenu.item(element).waitUntilExists()
+            }
+            attachScreenshot("SelectionMenu\(suffix)")
+            gallery = selectionMenu.goBack()
+
             let presentations = gallery.openPresentations()
             XCTAssertEqual(presentations.root.value as? String, appearance.rawValue)
             let modal = presentations.openModalSheet()
