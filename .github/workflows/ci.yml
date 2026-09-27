@@ -9,10 +9,14 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  test:
+  shard:
     if: github.event_name == 'workflow_dispatch' || github.event.pull_request.head.repo.full_name == github.repository
     runs-on: [self-hosted, scholia]
     timeout-minutes: 120
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [0, 1, 2, 3]
     env:
       DEVELOPER_DIR: /Applications/Xcode.app/Contents/Developer
       DERIVED_DATA: ${{ github.workspace }}/../DerivedData
@@ -24,9 +28,14 @@ jobs:
           echo "SIM=$SIM" >> "$GITHUB_ENV"
           UDID=$(scripts/sim create "$SIM") && echo "UDID=$UDID" >> "$GITHUB_ENV"
         env:
-          SIM: CI-${{ runner.name }}-${{ github.run_id }}-${{ github.run_attempt }}
+          SIM: CI-${{ runner.name }}-${{ github.run_id }}-${{ github.run_attempt }}-${{ matrix.shard }}
+      - run: |
+          ONLY=$(grep -rhoE "^(final )?class [A-Za-z]+Tests *: *UITestCase" UITests \
+            | sed -E 's/^(final )?class ([A-Za-z]+Tests).*/\2/' | sort \
+            | awk -v s=${{ matrix.shard }} 'NR % 4 == s { printf "-only-testing:ScholiaUITests/%s ", $0 }')
+          echo "ONLY_FLAGS=$ONLY" >> "$GITHUB_ENV"
       - id: test
-        run: make test DESTINATION="platform=iOS Simulator,id=$UDID" TEST_FLAGS="-retry-tests-on-failure -test-iterations 2 -parallel-testing-enabled YES -parallel-testing-worker-count 3"
+        run: make test DESTINATION="platform=iOS Simulator,id=$UDID" TEST_FLAGS="-retry-tests-on-failure -test-iterations 2 $ONLY_FLAGS"
         env:
           TEST_RUNNER_SNAPSHOT_TESTING_RECORD: never
       - if: always() && steps.test.outcome != 'skipped'
@@ -34,7 +43,14 @@ jobs:
       - if: failure()
         uses: actions/upload-artifact@v7
         with:
-          name: xcresult
+          name: xcresult-${{ matrix.shard }}
           path: build/Results-*.xcresult
       - if: always() && env.SIM != ''
         run: scripts/sim delete "$SIM"
+
+  test:
+    if: always() && (github.event_name == 'workflow_dispatch' || github.event.pull_request.head.repo.full_name == github.repository)
+    needs: shard
+    runs-on: ubuntu-latest
+    steps:
+      - run: test "${{ needs.shard.result }}" = success
