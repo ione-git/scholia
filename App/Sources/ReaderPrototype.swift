@@ -27,6 +27,8 @@
                     failed
                 }
             }
+            .accessibilityElement(children: .contain)
+            .accessibilityIdentifier("reader.page")
             .environment(\.colorScheme, theme.isDark ? .dark : .light)
             .statusBarHidden()
             .task { await open() }
@@ -40,8 +42,7 @@
         private func page(_ controller: ReaderController) -> some View {
             ZStack {
                 if let word = controller.word {
-                    RoundedRectangle(cornerRadius: .radiusXs)
-                        .fill(.wordTap)
+                    Color.clear
                         .frame(width: word.rect.width, height: word.rect.height)
                         .position(x: word.rect.midX, y: word.rect.midY)
                         .allowsHitTesting(false)
@@ -72,7 +73,7 @@
                             .foregroundStyle(.inkMuted)
                             .padding(.bottom, .space8 + .space1)
                             .accessibilityIdentifier("reader.pageCounter")
-                            .accessibilityValue(page.location.chapter)
+                            .accessibilityValue(String(page.chapter))
                     }
                 }
                 .frame(maxWidth: .infinity)
@@ -80,7 +81,6 @@
                     HighlightDiagnostics(
                         highlights: controller.highlights, paintedHighlights: controller.paintedHighlights)
                 }
-                .background { TranslationDiagnostics(provider: translationService.provider) }
             }
             .ignoresSafeArea()
         }
@@ -190,21 +190,11 @@
                 let book = try await ReaderBook.open(url)
                 let controller = ReaderController(
                     book: book,
-                    style: ReaderStyle(
-                        font: ReaderTypeface(
-                            family: DesignSystem.serifFamilyName,
-                            regular: DesignSystem.serifFontURL,
-                            italic: DesignSystem.serifItalicFontURL
-                        ),
-                        fontSize: TextStyle.readingBody.size,
-                        lineHeight: TextStyle.readingBody.lineHeight,
-                        sideMargin: .space7,
-                        topMargin: .navTop + .controlH + .space8,
-                        minimumBottomMargin: .controlH + .space10,
-                        highlightRadius: .radiusXs
-                    ),
-                    colors: colors,
-                    highlightColor: highlightColor,
+                    language: book.language,
+                    location: nil,
+                    style: .book,
+                    colors: theme.colors,
+                    highlightColor: theme.highlightColor,
                     pageTurn: .slide,
                     highlightTitle: String(localized: "Highlight")
                 )
@@ -220,25 +210,13 @@
             guard let controller else {
                 return
             }
-            controller.colors = colors
-            controller.highlightColor = highlightColor
+            controller.colors = theme.colors
+            controller.highlightColor = theme.highlightColor
             controller.highlights = controller.highlights.map { highlight in
                 var highlight = highlight
-                highlight.color = highlightColor
+                highlight.color = theme.highlightColor
                 return highlight
             }
-        }
-
-        private var colors: ReaderColors {
-            ReaderColors(
-                page: UIColor(theme.page),
-                text: UIColor(theme.text),
-                selection: UIColor(theme.isDark ? ColorToken.selectionHandle.dark : ColorToken.selectionHandle.light)
-            )
-        }
-
-        private var highlightColor: UIColor {
-            UIColor(theme.isDark ? ColorToken.highlightYellow.dark : ColorToken.highlightYellow.light)
         }
     }
 
@@ -259,26 +237,7 @@
         }
     }
 
-    private struct TranslationDiagnostics: View {
-        let provider: any TranslationProvider
-
-        var body: some View {
-            Color.clear
-                .accessibilityElement()
-                .accessibilityIdentifier("debug.translationRequests")
-                .accessibilityLabel(Text(verbatim: requests))
-        }
-
-        private var requests: String {
-            let requests = (provider as? MockTranslationProvider)?.requests ?? []
-            return requests.map { "\($0.word) · \($0.offsetInSentence) · \($0.source) → \($0.target)" }
-                .joined(separator: "\n")
-        }
-    }
-
     extension ReaderTheme {
-        fileprivate var isDark: Bool { self == .night || self == .black }
-
         fileprivate var title: LocalizedStringResource {
             switch self {
             case .paper: "Paper"

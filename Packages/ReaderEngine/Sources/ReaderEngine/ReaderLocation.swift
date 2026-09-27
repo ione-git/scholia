@@ -1,13 +1,36 @@
 import UIKit
 
 public struct ReaderLocation: Codable, Hashable, Sendable {
-    public var chapter: String
-    public var progression: Double
+    public var chapter: Int
+    public var offset: Int
 
-    public init(chapter: String, progression: Double) {
+    public init(chapter: Int, offset: Int) {
         self.chapter = chapter
-        self.progression = progression
+        self.offset = offset
     }
+}
+
+extension ReaderLocation: Comparable {
+    public static func < (lhs: ReaderLocation, rhs: ReaderLocation) -> Bool {
+        (lhs.chapter, lhs.offset) < (rhs.chapter, rhs.offset)
+    }
+}
+
+public struct ReaderPageSpan: Equatable, Sendable {
+    public var chapter: Int
+    public var start: Int
+    public var end: Int
+
+    public func contains(_ location: ReaderLocation) -> Bool {
+        location.chapter == chapter && start <= location.offset
+            && (location.offset < end || location.offset == start)
+    }
+}
+
+public struct ReaderChapter: Equatable, Sendable {
+    public var title: String
+    public var location: ReaderLocation
+    var unresolvedFragment: String?
 }
 
 public struct ReaderTextRange: Codable, Hashable, Sendable {
@@ -25,7 +48,7 @@ public struct ReaderTextRange: Codable, Hashable, Sendable {
 }
 
 public struct ReaderPage: Equatable, Sendable {
-    public var location: ReaderLocation
+    public var chapter: Int
     public var number: Int
     public var count: Int
 }

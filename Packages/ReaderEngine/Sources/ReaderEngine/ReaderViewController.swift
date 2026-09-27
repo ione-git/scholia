@@ -6,40 +6,63 @@ import WebKit
 final class ReaderViewController: UIViewController {
     weak var controller: ReaderController?
     private let book: ReaderBook
+    private let language: String?
     private let style: ReaderStyle
+    private let initialLocation: ReaderLocation?
+    private let highlightTitle: String
     private let navigator: EPUBNavigatorViewController
+    private let backdrop = UIView()
+    private let curtain = UIView()
     private var colors: ReaderColors
     private var pageTurn: ReaderPageTurn
     private var swipes: [UISwipeGestureRecognizer] = []
     private var pressOrigin: CGPoint?
     private var isPainting = false
     private var isCurling = false
+    private var isShowing = false
+    private var isShown = false
+    private weak var pager: UIScrollView?
+    private var observations: [ScrollObservation] = []
+    private var shownPage: ChapterPage?
+    private var laidOutSize: CGSize?
+    private var tapGeneration = 0
+    private var pageCounts: [Int]?
+    private var countedLayout: PageLayout?
+    private var pageCounter: PageCounter?
+    private var countTask: Task<Void, Never>?
+    private var locateTask: Task<Void, Never>?
+    private var voiceOverTask: Task<Void, Never>?
 
     private static let highlightGroup = "highlights"
+    private static let wordGroup = "word"
+    private static let wordDecoration = "word"
     private static let cssFontWeights = 1...1000
+    private static let revealDuration: TimeInterval = 0.25
 
-    init(book: ReaderBook, style: ReaderStyle, colors: ReaderColors, pageTurn: ReaderPageTurn, highlightTitle: String) {
+    init(
+        book: ReaderBook, language: String?, location: ReaderLocation?, style: ReaderStyle, colors: ReaderColors,
+        pageTurn: ReaderPageTurn, highlightTitle: String
+    ) {
         self.book = book
+        self.language = language
         self.style = style
         self.colors = colors
         self.pageTurn = pageTurn
+        self.highlightTitle = highlightTitle
+        initialLocation = location
         navigator = try! EPUBNavigatorViewController(
             publication: book.publication,
-            initialLocation: nil,
-            config: .init(
-                preferences: Self.preferences(style: style, colors: colors),
-                editingActions: [EditingAction(title: highlightTitle, action: #selector(highlightSelection)), .copy],
-                decorationTemplates: [.highlight: Self.highlightTemplate(radius: style.highlightRadius)],
-                fontFamilyDeclarations: [Self.fontDeclaration(style.font)],
-                readiumCSSRSProperties: CSSRSProperties(
-                    pageGutter: CSSPxLength(style.sideMargin),
-                    baseLineHeight: .length(CSSPxLength(style.lineHeight)),
-                    overrides: ["font-size": CSSPxLength(style.fontSize).css()]
-                )
-            )
+            initialLocation: Self.locator(for: location, in: book.publication),
+            config: Self.configuration(style: style, colors: colors, highlightTitle: highlightTitle)
         )
         super.init(nibName: nil, bundle: nil)
         navigator.delegate = self
+    }
+
+    isolated deinit {
+        countTask?.cancel()
+        locateTask?.cancel()
+        voiceOverTask?.cancel()
     }
 
     @available(*, unavailable)
@@ -49,13 +72,15 @@ final class ReaderViewController: UIViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        view.backgroundColor = colors.page
         view.tintColor = colors.selection
-        addChild(navigator)
-        navigator.view.frame = view.bounds
-        navigator.view.autoresizingMask = [.flexibleWidth, .flexibleHeight]
-        view.addSubview(navigator.view)
-        navigator.didMove(toParent: self)
+        for cover in [backdrop, curtain] {
+            cover.backgroundColor = colors.page
+            cover.frame = view.bounds
+            cover.autoresizingMask = [.flexibleWidth, .flexibleHeight]
+        }
+        view.addSubview(backdrop)
+        embed(navigator)
+        view.addSubview(curtain)
         navigator.addObserver(
             .tap { [weak self] event in
                 await self?.tapped(at: event.location)
@@ -75,13 +100,58 @@ final class ReaderViewController: UIViewController {
             return swipe
         }
         apply(pageTurn)
+
+        voiceOverTask = Task { [weak self] in
+            for await _ in NotificationCenter.default.notifications(
+                named: UIAccessibility.voiceOverStatusDidChangeNotification)
+            {
+                self?.countPages()
+            }
+        }
+    }
+
+    override func viewDidLayoutSubviews() {
+        super.viewDidLayoutSubviews()
+        if view.bounds.size != laidOutSize {
+            laidOutSize = view.bounds.size
+            clearWord()
+        }
+        countPages()
     }
 
     func apply(_ colors: ReaderColors) {
         self.colors = colors
-        view.backgroundColor = colors.page
+        backdrop.backgroundColor = colors.page
+        curtain.backgroundColor = colors.page
         view.tintColor = colors.selection
         navigator.submitPreferences(Self.preferences(style: style, colors: colors))
+        paintWord()
+    }
+
+    func clearWord() {
+        tapGeneration += 1
+        guard controller?.word != nil else {
+            return
+        }
+        controller?.word = nil
+        paintWord()
+    }
+
+    private func show(_ word: ReaderWord) {
+        controller?.word = word
+        paintWord()
+    }
+
+    private func paintWord() {
+        let decorations = controller?.word.flatMap { word in
+            locator(for: word.range).map {
+                Decoration(
+                    id: Self.wordDecoration, locator: $0,
+                    style: Decoration.Style(
+                        id: .wordTap, config: Decoration.Style.HighlightConfig(tint: colors.wordTap)))
+            }
+        }
+        navigator.apply(decorations: decorations.map { [$0] } ?? [], in: Self.wordGroup)
     }
 
     func apply(_ highlights: [ReaderHighlight]) {
@@ -103,10 +173,226 @@ final class ReaderViewController: UIViewController {
         }
     }
 
+    private func embed(_ child: UIViewController, at index: Int? = nil) {
+        addChild(child)
+        child.view.frame = view.bounds
+        child.view.autoresizingMask = [.flexibleWidth, .flexibleHeight]
+        if let index {
+            view.insertSubview(child.view, at: index)
+        } else {
+            view.addSubview(child.view)
+        }
+        child.didMove(toParent: self)
+    }
+
+    private func show() async {
+        guard !isShowing, !isShown else {
+            return
+        }
+        isShowing = true
+        pager = navigator.view.descendants(of: UIScrollView.self).first { !($0.superview is WKWebView) }
+        if let pager {
+            observations.append(ScrollObservation(pager, keyPath: \.contentOffset) { [weak self] in self?.pageMoved() })
+        }
+        if let initialLocation, let webView = webView(inChapter: initialLocation.chapter) {
+            let function = navigator.presentation.scroll ? "scrollToOffset" : "showOffset"
+            _ = try? await webView.callAsyncJavaScript(
+                "return await scholia.\(function)(offset)", arguments: ["offset": initialLocation.offset],
+                contentWorld: .page)
+        }
+        isShown = true
+        trackPage()
+        countPages()
+        UIView.animate(withDuration: Self.revealDuration) {
+            self.curtain.alpha = 0
+        } completion: { _ in
+            self.curtain.removeFromSuperview()
+        }
+    }
+
+    private func trackPage() {
+        guard isShown, let page = currentPage() else {
+            return
+        }
+        guard page != shownPage else {
+            if navigator.presentation.scroll {
+                locate(page)
+            }
+            return
+        }
+        shownPage = page
+        clearWord()
+        controller?.pageSpan = nil
+        publishPage()
+        locate(page)
+    }
+
+    private func currentPage() -> ChapterPage? {
+        guard let pager, pager.bounds.width > 0 else {
+            return nil
+        }
+        let chapter = Int((distanceFromStart(of: pager.bounds, in: pager) / pager.bounds.width).rounded())
+        guard let scrollView = webView(inChapter: chapter)?.scrollView else {
+            return nil
+        }
+        observe(scrollView)
+        let width = scrollView.bounds.width
+        guard width > 0, scrollView.contentSize.width >= width else {
+            return nil
+        }
+        let count = Int((scrollView.contentSize.width / width).rounded())
+        let page = Int((distanceFromStart(of: scrollView.bounds, in: scrollView) / width).rounded())
+        return ChapterPage(chapter: chapter, page: min(max(page, 0), count - 1))
+    }
+
+    private func distanceFromStart(of rect: CGRect, in scrollView: UIScrollView) -> CGFloat {
+        navigator.presentation.readingProgression == .rtl ? scrollView.contentSize.width - rect.maxX : rect.minX
+    }
+
+    private func observe(_ scrollView: UIScrollView) {
+        observations.removeAll { $0.scrollView == nil }
+        guard !observations.contains(where: { $0.scrollView === scrollView }) else {
+            return
+        }
+        observations.append(
+            ScrollObservation(scrollView, keyPath: \.contentOffset) { [weak self] in self?.pageMoved() })
+        observations.append(ScrollObservation(scrollView, keyPath: \.contentSize) { [weak self] in self?.trackPage() })
+    }
+
+    private func pageMoved() {
+        clearWord()
+        trackPage()
+    }
+
+    private func webView(inChapter chapter: Int) -> WKWebView? {
+        guard let pager else {
+            return nil
+        }
+        let distance = CGFloat(chapter) * pager.bounds.width
+        return pager.subviews.lazy
+            .filter { abs(self.distanceFromStart(of: $0.frame, in: pager) - distance) < 1 }
+            .compactMap { $0.descendants(of: WKWebView.self).first }
+            .first
+    }
+
+    private func publishPage() {
+        guard let shownPage, let pageCounts, pageCounts.indices.contains(shownPage.chapter) else {
+            controller?.page = nil
+            return
+        }
+        let before = pageCounts[..<shownPage.chapter].reduce(0, +)
+        controller?.page = ReaderPage(
+            chapter: shownPage.chapter,
+            number: before + min(shownPage.page, pageCounts[shownPage.chapter] - 1) + 1,
+            count: pageCounts.reduce(0, +)
+        )
+    }
+
+    private func locate(_ page: ChapterPage) {
+        locateTask?.cancel()
+        guard let webView = webView(inChapter: page.chapter) else {
+            return
+        }
+        let script =
+            navigator.presentation.scroll
+            ? "return scholia.visibleOffsets()" : "return [scholia.offsetOfPage(page), scholia.offsetOfPage(page + 1)]"
+        locateTask = Task {
+            await resolveFragments(inChapter: page.chapter, in: webView)
+            let offsets =
+                try? await webView.callAsyncJavaScript(script, arguments: ["page": page.page], contentWorld: .page)
+                as? [Int]
+            guard !Task.isCancelled, let offsets, let start = offsets.first, let end = offsets.last else {
+                return
+            }
+            controller?.location = ReaderLocation(chapter: page.chapter, offset: start)
+            controller?.pageSpan = ReaderPageSpan(chapter: page.chapter, start: start, end: end)
+        }
+    }
+
+    private func resolveFragments(inChapter chapter: Int, in webView: WKWebView) async {
+        let fragments = book.unresolvedFragments(inChapter: chapter)
+        guard
+            !fragments.isEmpty,
+            let offsets = try? await webView.callAsyncJavaScript(
+                "return scholia.offsetsOfElements(ids)", arguments: ["ids": fragments], contentWorld: .page)
+                as? [String: Int]
+        else {
+            return
+        }
+        book.resolveFragments(offsets, inChapter: chapter)
+    }
+
+    private func countPages() {
+        let layout = PageLayout(size: view.bounds.size, isScrolled: navigator.presentation.scroll)
+        guard isShown, layout.size.width > 0, layout.size.height > 0, layout != countedLayout else {
+            return
+        }
+        countedLayout = layout
+        stopCounting()
+        let key = PageCountCache.key(book: book, style: style, size: layout.size)
+        pageCounts = layout.isScrolled ? nil : PageCountCache.counts(for: key)
+        shownPage = nil
+        controller?.pageSpan = nil
+        publishPage()
+        trackPage()
+        guard !layout.isScrolled, pageCounts == nil else {
+            return
+        }
+        let counter = PageCounter(
+            book: book, configuration: Self.configuration(style: style, colors: colors, highlightTitle: highlightTitle),
+            contentInset: { [weak self] in self?.contentInset ?? .zero })
+        counter.navigator.view.isUserInteractionEnabled = false
+        counter.navigator.view.accessibilityElementsHidden = true
+        embed(counter.navigator, at: 0)
+        pageCounter = counter
+        countTask = Task { [weak self] in
+            let counts = await counter.count()
+            guard !Task.isCancelled, let self else {
+                return
+            }
+            stopCounting()
+            guard let counts else {
+                return
+            }
+            PageCountCache.store(counts, for: key)
+            pageCounts = counts
+            publishPage()
+        }
+    }
+
+    private func stopCounting() {
+        countTask?.cancel()
+        countTask = nil
+        guard let pageCounter else {
+            return
+        }
+        pageCounter.navigator.willMove(toParent: nil)
+        pageCounter.navigator.view.removeFromSuperview()
+        pageCounter.navigator.removeFromParent()
+        self.pageCounter = nil
+    }
+
+    private var contentInset: UIEdgeInsets {
+        let available = view.bounds.height - style.topMargin - style.minimumBottomMargin
+        let lines = (available / style.lineHeight).rounded(.down)
+        return UIEdgeInsets(
+            top: style.topMargin, left: 0, bottom: view.bounds.height - style.topMargin - lines * style.lineHeight,
+            right: 0)
+    }
+
     private func tapped(at point: CGPoint) async {
+        tapGeneration += 1
+        let generation = tapGeneration
+        let isShowingWord = controller?.word != nil
         let word = await word(at: point)
-        controller?.word = word
-        if word == nil {
+        guard generation == tapGeneration else {
+            return
+        }
+        if let word {
+            show(word)
+        } else if isShowingWord {
+            clearWord()
+        } else {
             controller?.onPageTap?()
         }
     }
@@ -119,7 +405,7 @@ final class ReaderViewController: UIViewController {
             return nil
         }
         let local = navigator.view.convert(point, to: webView)
-        let arguments: [String: Any] = ["x": local.x, "y": local.y, "language": book.language ?? NSNull()]
+        let arguments: [String: Any] = ["x": local.x, "y": local.y, "language": language ?? NSNull()]
         guard
             let found = try? await webView.callAsyncJavaScript(
                 "return scholia.wordAt(x, y, language)", arguments: arguments, contentWorld: .page)
@@ -151,26 +437,6 @@ final class ReaderViewController: UIViewController {
             candidate = view.superview
         }
         return candidate as? WKWebView
-    }
-
-    private func updatePage(_ viewport: NavigatorViewport?) {
-        apply(pageTurn)
-        guard let resource = viewport?.resources.first else {
-            return
-        }
-        let visible = resource.progression.upperBound - resource.progression.lowerBound
-        guard visible > 0 else {
-            return
-        }
-        let page = ReaderPage(
-            location: ReaderLocation(chapter: resource.href.string, progression: resource.progression.lowerBound),
-            number: Int((resource.progression.lowerBound / visible).rounded()) + 1,
-            count: Int((1 / visible).rounded())
-        )
-        if page.location != controller?.page?.location {
-            controller?.word = nil
-        }
-        controller?.page = page
     }
 
     @objc private func highlightSelection() {
@@ -234,7 +500,11 @@ final class ReaderViewController: UIViewController {
     }
 
     private func curl(forward: Bool) async {
-        guard !isCurling, let current = await pageSnapshot() else {
+        guard !isCurling else {
+            return
+        }
+        clearWord()
+        guard let current = await pageSnapshot() else {
             return
         }
         isCurling = true
@@ -296,6 +566,35 @@ final class ReaderViewController: UIViewController {
         )
     }
 
+    private static func locator(for location: ReaderLocation?, in publication: Publication) -> Locator? {
+        guard let location, publication.readingOrder.indices.contains(location.chapter) else {
+            return nil
+        }
+        let link = publication.readingOrder[location.chapter]
+        return Locator(
+            href: link.url(), mediaType: link.mediaType ?? .xhtml, locations: Locator.Locations(progression: 0))
+    }
+
+    private static func configuration(style: ReaderStyle, colors: ReaderColors, highlightTitle: String)
+        -> EPUBNavigatorViewController.Configuration
+    {
+        EPUBNavigatorViewController.Configuration(
+            preferences: preferences(style: style, colors: colors),
+            editingActions: [EditingAction(title: highlightTitle, action: #selector(highlightSelection)), .copy],
+            decorationTemplates: [
+                .highlight: tintTemplate(className: "scholia-highlight", radius: style.highlightRadius),
+                .wordTap: tintTemplate(className: "scholia-word-tap", radius: style.highlightRadius),
+            ],
+            fontFamilyDeclarations: [fontDeclaration(style.font)],
+            readiumCSSRSProperties: CSSRSProperties(
+                pageGutter: CSSPxLength(style.sideMargin),
+                paraIndent: CSSPxLength(style.paragraphIndent),
+                baseLineHeight: .length(CSSPxLength(style.lineHeight)),
+                overrides: ["font-size": CSSPxLength(style.fontSize).css()]
+            )
+        )
+    }
+
     private static func preferences(style: ReaderStyle, colors: ReaderColors) -> EPUBPreferences {
         EPUBPreferences(
             backgroundColor: ReadiumNavigator.Color(uiColor: colors.page),
@@ -317,14 +616,14 @@ final class ReaderViewController: UIViewController {
         ).eraseToAnyHTMLFontFamilyDeclaration()
     }
 
-    private static func highlightTemplate(radius: CGFloat) -> HTMLDecorationTemplate {
+    private static func tintTemplate(className: String, radius: CGFloat) -> HTMLDecorationTemplate {
         HTMLDecorationTemplate(
             layout: .boxes,
             element: { decoration in
                 let tint = (decoration.style.config as? Decoration.Style.HighlightConfig)?.tint ?? .clear
-                return "<div class=\"scholia-highlight\" style=\"background-color: \(tint.css) !important\"/>"
+                return "<div class=\"\(className)\" style=\"background-color: \(tint.css) !important\"/>"
             },
-            stylesheet: ".scholia-highlight { border-radius: \(radius)px; z-index: -1; }"
+            stylesheet: ".\(className) { border-radius: \(radius)px; z-index: -1; }"
         )
     }
 }
@@ -333,15 +632,19 @@ extension ReaderViewController: EPUBNavigatorDelegate {
     func navigator(_ navigator: any Navigator, presentError error: NavigatorError) {}
 
     func navigator(_ navigator: any ViewportObservingNavigator, viewportDidChange viewport: NavigatorViewport?) {
-        updatePage(viewport)
+        apply(pageTurn)
+        guard viewport != nil else {
+            return
+        }
+        if isShown {
+            trackPage()
+        } else {
+            Task { await show() }
+        }
     }
 
     func navigatorContentInset(_ navigator: any VisualNavigator) -> UIEdgeInsets? {
-        let available = view.bounds.height - style.topMargin - style.minimumBottomMargin
-        let lines = (available / style.lineHeight).rounded(.down)
-        return UIEdgeInsets(
-            top: style.topMargin, left: 0, bottom: view.bounds.height - style.topMargin - lines * style.lineHeight,
-            right: 0)
+        contentInset
     }
 
     func navigator(
@@ -349,7 +652,10 @@ extension ReaderViewController: EPUBNavigatorDelegate {
     ) {
         userContentController.addUserScript(
             WKUserScript(source: Self.script, injectionTime: .atDocumentEnd, forMainFrameOnly: true))
-        userContentController.add(PaintedHighlights(controller: controller), name: "paintedHighlights")
+        userContentController.add(
+            PaintedCount(controller: controller, count: \.paintedHighlights), name: "paintedHighlights")
+        userContentController.add(
+            PaintedCount(controller: controller, count: \.paintedWordTints), name: "paintedWordTints")
     }
 
     func navigator(_ navigator: any SelectableNavigator, shouldShowMenuForSelection selection: Selection) -> Bool {
@@ -360,16 +666,18 @@ extension ReaderViewController: EPUBNavigatorDelegate {
         contentsOf: Bundle.module.url(forResource: "reader", withExtension: "js")!, encoding: .utf8)
 }
 
-private final class PaintedHighlights: NSObject, WKScriptMessageHandler {
+private final class PaintedCount: NSObject, WKScriptMessageHandler {
     private weak var controller: ReaderController?
+    private let count: ReferenceWritableKeyPath<ReaderController, Int>
 
-    init(controller: ReaderController?) {
+    init(controller: ReaderController?, count: ReferenceWritableKeyPath<ReaderController, Int>) {
         self.controller = controller
+        self.count = count
     }
 
     func userContentController(_ userContentController: WKUserContentController, didReceive message: WKScriptMessage) {
-        if let count = message.body as? Int {
-            controller?.paintedHighlights = count
+        if let value = message.body as? Int {
+            controller?[keyPath: count] = value
         }
     }
 }
@@ -381,6 +689,37 @@ extension ReaderViewController: UIGestureRecognizerDelegate {
     ) -> Bool {
         true
     }
+}
+
+private struct ChapterPage: Equatable {
+    var chapter: Int
+    var page: Int
+}
+
+private struct PageLayout: Equatable {
+    var size: CGSize
+    var isScrolled: Bool
+}
+
+private struct ScrollObservation {
+    weak var scrollView: UIScrollView?
+    let observation: NSKeyValueObservation
+
+    init<Value: Equatable & Sendable>(
+        _ scrollView: UIScrollView, keyPath: KeyPath<UIScrollView, Value>, onChange: @escaping @MainActor () -> Void
+    ) {
+        self.scrollView = scrollView
+        observation = scrollView.observe(keyPath, options: [.old, .new]) { _, change in
+            guard change.oldValue != change.newValue else {
+                return
+            }
+            MainActor.assumeIsolated { onChange() }
+        }
+    }
+}
+
+extension Decoration.Style.Id {
+    fileprivate static let wordTap: Self = "wordTap"
 }
 
 extension UIView {

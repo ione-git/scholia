@@ -4,18 +4,20 @@ public struct ReaderStyle {
     public var font: ReaderTypeface
     public var fontSize: CGFloat
     public var lineHeight: CGFloat
+    public var paragraphIndent: CGFloat
     public var sideMargin: CGFloat
     public var topMargin: CGFloat
     public var minimumBottomMargin: CGFloat
     public var highlightRadius: CGFloat
 
     public init(
-        font: ReaderTypeface, fontSize: CGFloat, lineHeight: CGFloat, sideMargin: CGFloat, topMargin: CGFloat,
-        minimumBottomMargin: CGFloat, highlightRadius: CGFloat
+        font: ReaderTypeface, fontSize: CGFloat, lineHeight: CGFloat, paragraphIndent: CGFloat, sideMargin: CGFloat,
+        topMargin: CGFloat, minimumBottomMargin: CGFloat, highlightRadius: CGFloat
     ) {
         self.font = font
         self.fontSize = fontSize
         self.lineHeight = lineHeight
+        self.paragraphIndent = paragraphIndent
         self.sideMargin = sideMargin
         self.topMargin = topMargin
         self.minimumBottomMargin = minimumBottomMargin
@@ -39,11 +41,13 @@ public struct ReaderColors: Equatable {
     public var page: UIColor
     public var text: UIColor
     public var selection: UIColor
+    public var wordTap: UIColor
 
-    public init(page: UIColor, text: UIColor, selection: UIColor) {
+    public init(page: UIColor, text: UIColor, selection: UIColor, wordTap: UIColor) {
         self.page = page
         self.text = text
         self.selection = selection
+        self.wordTap = wordTap
     }
 }
 

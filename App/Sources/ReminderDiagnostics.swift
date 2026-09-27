@@ -27,8 +27,10 @@
         private func refresh() async {
             let center = UNUserNotificationCenter.current()
             let requests = await center.pendingNotificationRequests()
+            let status = await center.notificationSettings().authorizationStatus
+            guard !Task.isCancelled else { return }
             reminders = requests.isEmpty ? "none" : requests.map(Self.summary).joined(separator: "\n")
-            permission = Self.name(of: await center.notificationSettings().authorizationStatus)
+            permission = Self.name(of: status)
         }
 
         private static func summary(of request: UNNotificationRequest) -> String {

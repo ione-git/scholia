@@ -1,7 +1,5 @@
 import XCTest
 
-private let bookOpenTimeout: TimeInterval = 30
-
 struct HomeScreen: Screen {
     let app: XCUIApplication
 
@@ -24,10 +22,6 @@ struct HomeScreen: Screen {
     var emptyAddBookButton: XCUIElement { app.buttons["home.emptyAddBook"] }
 
     func book(_ title: String) -> XCUIElement { app.descendants(matching: .any)["home.book.\(title)"] }
-
-    func background() throws -> RGBColor {
-        try app.screenshot().color(at: CGPoint(x: 0.02, y: 0.9))
-    }
 
     func heroCoverColor() throws -> RGBColor {
         try heroCover.screenshot().color(at: CGPoint(x: 0.5, y: 0.3))
@@ -77,13 +71,14 @@ struct HomeScreen: Screen {
         return LaunchScreen(app: app).waitUntilShown()
     }
 
+    func openHeroBook() -> ReaderScreen {
+        heroCover.waitUntil(\.isHittable, equals: true).tap()
+        return ReaderScreen(app: app).waitUntilOpened()
+    }
+
     func openReaderPrototype() -> ReaderScreen {
         openDebugMenu("home.readerPrototype")
-        let reader = ReaderScreen(app: app).waitUntilShown()
-        XCTAssertTrue(
-            reader.pageCounter.waitForExistence(timeout: bookOpenTimeout),
-            "\(reader.pageCounter.description) did not appear")
-        return reader
+        return ReaderScreen(app: app).waitUntilOpened()
     }
 
     func openEPUB() -> FilePickerScreen {

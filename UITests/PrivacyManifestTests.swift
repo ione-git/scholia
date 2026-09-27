@@ -2,10 +2,7 @@ import XCTest
 
 final class PrivacyManifestTests: UITestCase {
     func testAppBundleDeclaresRequiredReasonAPIs() {
-        let app = launch(
-            LaunchConfiguration(
-                resetsState: true, fixtures: [], opened: [], mocksTranslation: true, now: nil,
-                notificationPermission: nil))
+        let app = launch(.withoutBooks)
         let home = HomeScreen(app: app).waitUntilShown()
 
         home.privacyManifest.waitUntil(

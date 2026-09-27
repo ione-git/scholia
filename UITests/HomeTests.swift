@@ -4,8 +4,9 @@ final class HomeTests: UITestCase {
     func testFixtureLibraryShowsHeroAndRow() {
         let app = launch(
             LaunchConfiguration(
-                resetsState: true, fixtures: [.german, .frenchNoCover, .minimalMetadata], opened: [],
-                mocksTranslation: true,
+                resetsState: true, fixtures: [.german, .frenchNoCover, .minimalMetadata], opened: [], inProgress: [],
+                highlighted: [],
+                translation: .immediate,
                 now: nil, notificationPermission: nil))
         let home = HomeScreen(app: app).waitUntilShown()
 
@@ -28,7 +29,9 @@ final class HomeTests: UITestCase {
     func testSingleBookIsHeroWithEmptyRow() {
         let app = launch(
             LaunchConfiguration(
-                resetsState: true, fixtures: [.minimalMetadata], opened: [], mocksTranslation: true, now: nil,
+                resetsState: true, fixtures: [.minimalMetadata], opened: [], inProgress: [], highlighted: [],
+                translation: .immediate,
+                now: nil,
                 notificationPermission: nil))
         let home = HomeScreen(app: app).waitUntilShown()
 
@@ -41,7 +44,8 @@ final class HomeTests: UITestCase {
     func testLibraryOpensFromHome() {
         let app = launch(
             LaunchConfiguration(
-                resetsState: true, fixtures: [.german], opened: [], mocksTranslation: true, now: nil,
+                resetsState: true, fixtures: [.german], opened: [], inProgress: [], highlighted: [],
+                translation: .immediate, now: nil,
                 notificationPermission: nil))
         let home = HomeScreen(app: app).waitUntilShown()
 
@@ -53,7 +57,8 @@ final class HomeTests: UITestCase {
     func testHeaderHasGoalRingAndGlassButtonsAndOpensSettings() {
         let app = launch(
             LaunchConfiguration(
-                resetsState: true, fixtures: [.german], opened: [], mocksTranslation: true, now: nil,
+                resetsState: true, fixtures: [.german], opened: [], inProgress: [], highlighted: [],
+                translation: .immediate, now: nil,
                 notificationPermission: nil))
         let home = HomeScreen(app: app).waitUntilShown()
 

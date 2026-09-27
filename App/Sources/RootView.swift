@@ -3,6 +3,7 @@ import SwiftUI
 enum Route: Hashable {
     case library
     case settings
+    case reader(Book)
 }
 
 #if DEBUG
@@ -26,6 +27,7 @@ struct RootView: View {
                     switch route {
                     case .library: LibraryView()
                     case .settings: SettingsView()
+                    case .reader(let book): ReadingView(book: book)
                     }
                 }
                 #if DEBUG

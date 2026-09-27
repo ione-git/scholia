@@ -13,6 +13,7 @@ public struct TextStyle: Identifiable, Sendable {
     public let lineHeight: CGFloat
     public let weight: Int
     public let tracking: CGFloat
+    public let textIndent: CGFloat
     public let isUppercase: Bool
 
     public var id: String { name }
@@ -40,7 +41,7 @@ public struct TextStyle: Identifiable, Sendable {
         let ratio = newSize / size
         return TextStyle(
             name: name, family: family, size: newSize, lineHeight: lineHeight * ratio, weight: weight,
-            tracking: tracking * ratio, isUppercase: isUppercase)
+            tracking: tracking * ratio, textIndent: textIndent * ratio, isUppercase: isUppercase)
     }
 
     func fitting(_ text: String, in width: CGFloat) -> TextStyle {
@@ -61,7 +62,7 @@ public struct TextStyle: Identifiable, Sendable {
     public func weighted(_ newWeight: Int) -> TextStyle {
         TextStyle(
             name: name, family: family, size: size, lineHeight: lineHeight, weight: newWeight, tracking: tracking,
-            isUppercase: isUppercase)
+            textIndent: textIndent, isUppercase: isUppercase)
     }
 
     private static let weightAxis = "wght".utf8.reduce(0) { $0 << 8 | Int($1) }

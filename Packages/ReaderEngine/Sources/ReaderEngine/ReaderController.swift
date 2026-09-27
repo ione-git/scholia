@@ -5,6 +5,8 @@ import SwiftUI
 public final class ReaderController {
     public let book: ReaderBook
     public internal(set) var page: ReaderPage?
+    public internal(set) var location: ReaderLocation?
+    public internal(set) var pageSpan: ReaderPageSpan?
     public internal(set) var word: ReaderWord?
     public var colors: ReaderColors {
         didSet { viewController.apply(colors) }
@@ -13,6 +15,7 @@ public final class ReaderController {
         didSet { viewController.apply(highlights) }
     }
     public internal(set) var paintedHighlights: Int
+    public internal(set) var paintedWordTints: Int
     public var highlightColor: UIColor
     public var pageTurn: ReaderPageTurn {
         didSet { viewController.apply(pageTurn) }
@@ -21,18 +24,25 @@ public final class ReaderController {
     @ObservationIgnored let viewController: ReaderViewController
 
     public init(
-        book: ReaderBook, style: ReaderStyle, colors: ReaderColors, highlightColor: UIColor, pageTurn: ReaderPageTurn,
-        highlightTitle: String
+        book: ReaderBook, language: String?, location: ReaderLocation?, style: ReaderStyle, colors: ReaderColors,
+        highlightColor: UIColor, pageTurn: ReaderPageTurn, highlightTitle: String
     ) {
         self.book = book
+        self.location = location
         self.colors = colors
         self.highlightColor = highlightColor
         self.pageTurn = pageTurn
         highlights = []
         paintedHighlights = 0
+        paintedWordTints = 0
         viewController = ReaderViewController(
-            book: book, style: style, colors: colors, pageTurn: pageTurn, highlightTitle: highlightTitle)
+            book: book, language: language, location: location, style: style, colors: colors, pageTurn: pageTurn,
+            highlightTitle: highlightTitle)
         viewController.controller = self
+    }
+
+    public func clearWord() {
+        viewController.clearWord()
     }
 }
 

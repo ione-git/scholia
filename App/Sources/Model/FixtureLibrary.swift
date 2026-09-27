@@ -3,7 +3,10 @@
     import SwiftData
 
     enum FixtureLibrary {
-        static func seed(_ fixtures: [Fixture], opened: [Fixture], into context: ModelContext, now: Date) throws {
+        static func seed(
+            _ fixtures: [Fixture], opened: [Fixture], inProgress: [Fixture], highlighted: [Fixture],
+            into context: ModelContext, now: Date
+        ) throws {
             var stored = Set(try context.fetch(FetchDescriptor<Book>()).map(\.fileName))
             for fixture in fixtures {
                 guard let url = fixture.url, stored.insert(url.lastPathComponent).inserted else { continue }
@@ -19,10 +22,26 @@
                 let book = books.first { $0.fileName == fixture.url?.lastPathComponent }
                 book?.openedAt = now.addingTimeInterval(-Double(position) * openedInterval)
             }
+            for fixture in inProgress {
+                let book = books.first { $0.fileName == fixture.url?.lastPathComponent }
+                book?.position = ReadingPosition(chapter: 1, offset: 0)
+            }
+            for fixture in highlighted {
+                guard let book = books.first(where: { $0.fileName == fixture.url?.lastPathComponent }),
+                    book.highlights.isEmpty
+                else { continue }
+                for offset in 0..<highlightCount {
+                    let position = ReadingPosition(chapter: 1, offset: offset)
+                    let highlight = Highlight(start: position, end: position, color: .yellow, text: book.title)
+                    context.insert(highlight)
+                    highlight.book = book
+                }
+            }
             try context.save()
         }
 
         private static let openedInterval: TimeInterval = 60
+        private static let highlightCount = 7
     }
 
     extension Fixture {
@@ -30,6 +49,7 @@
             switch self {
             case .german: "Die Verwandlung"
             case .frenchNoCover: "Un matin en ville"
+            case .arabic: "صباح في المدينة"
             case .minimalMetadata: "Minimal"
             case .corrupted: "Corrupted"
             case .drm: "Encrypted"
@@ -39,7 +59,7 @@
         fileprivate var author: String? {
             switch self {
             case .german, .drm: "Franz Kafka"
-            case .frenchNoCover: "Scholia"
+            case .frenchNoCover, .arabic: "Scholia"
             case .minimalMetadata, .corrupted: nil
             }
         }
@@ -48,6 +68,7 @@
             switch self {
             case .german, .drm: "de"
             case .frenchNoCover: "fr"
+            case .arabic: "ar"
             case .minimalMetadata, .corrupted: "en"
             }
         }

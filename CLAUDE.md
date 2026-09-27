@@ -38,7 +38,7 @@ Out: saved words / vocabulary, footnotes, per-book target language, PDF, reader 
 - Tools: Xcode 26.4.1 with the iOS 26.4 simulator runtime (same in CI), `brew install xcodegen`. Formatting and lint use the `swift-format` bundled with Xcode, config in `.swift-format`.
 - `make generate` — generate the project.
 - `make build` — build app and tests.
-- `make test` — run all UI tests; `make test ONLY=ScholiaUITests/SmokeTests/testAppLaunches` for one test.
+- `make test` — run all UI tests; `make test ONLY=ScholiaUITests/SettingsTests/testOpensFromHomeAndGoesBack` for one test.
 - `make lint` / `make format` — check / fix formatting.
 - `make resolve` — update `Package.resolved` (pinned Swift package versions, copied into the generated project by `make generate`) after changing package dependencies.
 - `make device DEVICE=<id>` — build Debug, install and launch on a real iPhone (signing team is in `project.yml`; ids from `xcrun devicectl list devices`).

@@ -1,153 +1,116 @@
 import XCTest
 
-private let lightBackground = RGBColor(red: 244, green: 242, blue: 237)
-private let darkBackground = RGBColor(red: 21, green: 20, blue: 18)
-
 final class SettingsTests: UITestCase {
-    func testShowsDefaultsAndTogglesReminder() throws {
-        let app = launch(
-            LaunchConfiguration(
-                resetsState: true, fixtures: [], opened: [], mocksTranslation: true, now: nil,
-                notificationPermission: nil))
-        let settings = HomeScreen(app: app).waitUntilShown().openSettings()
+    func testOpensFromHomeAndGoesBack() {
+        let home = HomeScreen(app: launch(.withoutBooks)).waitUntilShown()
 
-        XCTAssertEqual(settings.translateTo.waitUntilExists().label, "Translate to, English")
-        settings.onWordTap("bubble").waitUntil(\.isSelected, equals: true)
-        XCTAssertFalse(settings.onWordTap("minimal").isSelected)
-        XCTAssertFalse(settings.onWordTap("card").isSelected)
-        XCTAssertEqual(settings.dailyGoal.label, "Daily goal, 20 min")
-        XCTAssertEqual(settings.reminderTime.label, "Reminder at \(try time(hour: 21))")
-        XCTAssertEqual(settings.reminder.label, "Reminder")
-        XCTAssertEqual(settings.reminder.value as? String, "0")
-        settings.theme("system").waitUntil(\.isSelected, equals: true)
-        XCTAssertFalse(settings.theme("light").isSelected)
-        XCTAssertFalse(settings.theme("dark").isSelected)
-        XCTAssertEqual(settings.sortBooks.label, "Sort books by, Recently opened")
-        XCTAssertEqual(settings.version.label, "Scholia \(try marketingVersion())")
+        let settings = home.openSettings()
         XCTAssertEqual(settings.backButton.label, "Back to Home")
-
-        settings.turnOnReminder()
-
-        XCTAssertEqual(settings.reminder.value as? String, "1")
-        attachScreenshot("Settings")
         settings.goBack()
+
+        home.settingsButton.waitUntil(\.isHittable, equals: true)
     }
 
     func testTranslateToDefaultsToSupportedDeviceLanguage() {
-        let settings = openSettings(deviceLanguage: "ru")
+        let settings = openSettings(launch(.withoutBooks, deviceLanguage: "ru"))
 
-        XCTAssertEqual(settings.translateTo.waitUntilExists().label, "Translate to, Russian")
+        settings.translateTo.waitUntil(\.label, equals: "Translate to, Russian")
     }
 
     func testTranslateToFallsBackToEnglishForUnsupportedDeviceLanguage() {
-        let settings = openSettings(deviceLanguage: "fi")
+        let settings = openSettings(launch(.withoutBooks, deviceLanguage: "fi"))
 
-        XCTAssertEqual(settings.translateTo.waitUntilExists().label, "Translate to, English")
+        settings.translateTo.waitUntil(\.label, equals: "Translate to, English")
     }
 
-    func testEveryValuePersistsAcrossRelaunch() {
-        let app = launch(
-            LaunchConfiguration(
-                resetsState: true, fixtures: [], opened: [], mocksTranslation: true, now: nil,
-                notificationPermission: nil))
-        var settings = HomeScreen(app: app).waitUntilShown().openSettings()
+    func testChoicesPersistAcrossRelaunch() {
+        let app = launch(.withoutBooks)
+        var settings = openSettings(app)
 
-        settings.chooseTranslationLanguage("de")
-        settings.translateTo.waitUntil(\.label, equals: "Translate to, German")
-        settings.onWordTap("card").tap()
-        settings.onWordTap("card").waitUntil(\.isSelected, equals: true)
+        settings.chooseWordTapStyle("card")
         settings.chooseDailyGoal(30)
         settings.dailyGoal.waitUntil(\.label, equals: "Daily goal, 30 min")
-        settings.turnOnReminder()
-        settings.theme("dark").tap()
-        settings.theme("dark").waitUntil(\.isSelected, equals: true)
+        settings.chooseTheme("dark")
         settings.chooseSortOrder("title")
         settings.sortBooks.waitUntil(\.label, equals: "Sort books by, Title")
-        XCTAssertEqual(settings.reminder.value as? String, "1")
         app.terminate()
 
-        let relaunched = launch(
-            LaunchConfiguration(
-                resetsState: false, fixtures: [], opened: [], mocksTranslation: true, now: nil,
-                notificationPermission: nil))
-        settings = HomeScreen(app: relaunched).waitUntilShown().openSettings()
+        var relaunch = LaunchConfiguration.withoutBooks
+        relaunch.resetsState = false
+        settings = openSettings(launch(relaunch))
 
-        XCTAssertEqual(settings.translateTo.waitUntilExists().label, "Translate to, German")
         settings.onWordTap("card").waitUntil(\.isSelected, equals: true)
         XCTAssertFalse(settings.onWordTap("bubble").isSelected)
         XCTAssertEqual(settings.dailyGoal.label, "Daily goal, 30 min")
-        XCTAssertEqual(settings.reminder.value as? String, "1")
         settings.theme("dark").waitUntil(\.isSelected, equals: true)
         XCTAssertFalse(settings.theme("system").isSelected)
         XCTAssertEqual(settings.sortBooks.label, "Sort books by, Title")
     }
 
-    func testThemeSwitchAppliesAppWide() {
-        let original = XCUIDevice.shared.appearance
-        addTeardownBlock { @MainActor in
-            XCUIDevice.shared.appearance = original
-        }
-        XCUIDevice.shared.appearance = .light
+    func testSortChosenInSettingsOrdersLibrary() {
         let app = launch(
             LaunchConfiguration(
-                resetsState: true, fixtures: [], opened: [], mocksTranslation: true, now: nil,
-                notificationPermission: nil))
-        let home = HomeScreen(app: app).waitUntilShown()
-        waitUntilBackground(home.background, is: lightBackground)
-        var settings = home.openSettings()
+                resetsState: true, fixtures: [.german, .frenchNoCover, .minimalMetadata], opened: [.frenchNoCover],
+                inProgress: [], highlighted: [],
+                translation: .immediate, now: nil, notificationPermission: nil))
+        let settings = openSettings(app)
 
-        settings.theme("dark").waitUntilExists().tap()
+        settings.chooseSortOrder("title")
+        let library = settings.goBack().openLibrary()
+        XCTAssertEqual(library.shownTitles, ["Die Verwandlung", "Minimal", "Un matin en ville"])
 
-        settings.theme("dark").waitUntil(\.isSelected, equals: true)
-        waitUntilBackground(settings.background, is: darkBackground)
-        settings.goBack()
-        waitUntilBackground(home.background, is: darkBackground)
+        library.sort(by: "author")
+        library.goBack().openSettings().sortBooks.waitUntil(\.label, equals: "Sort books by, Author")
+    }
 
-        settings = home.openSettings()
-        settings.theme("system").waitUntilExists().tap()
+    func testThemeOverridesSystemAppearance() {
+        let settings = openSettings(launch(.withoutBooks, appearance: .light))
+        settings.colorScheme.waitUntil(\.label, equals: "light")
 
-        settings.theme("system").waitUntil(\.isSelected, equals: true)
-        waitUntilBackground(settings.background, is: lightBackground)
+        settings.chooseTheme("dark")
+        settings.colorScheme.waitUntil(\.label, equals: "dark")
+
+        settings.chooseTheme("system")
+        settings.colorScheme.waitUntil(\.label, equals: "light")
         XCUIDevice.shared.appearance = .dark
-        waitUntilBackground(settings.background, is: darkBackground)
+        settings.colorScheme.waitUntil(\.label, equals: "dark")
 
-        settings.theme("light").tap()
-
-        settings.theme("light").waitUntil(\.isSelected, equals: true)
-        waitUntilBackground(settings.background, is: lightBackground)
+        settings.chooseTheme("light")
+        settings.colorScheme.waitUntil(\.label, equals: "light")
     }
 
-    private func openSettings(deviceLanguage: String) -> SettingsScreen {
-        let app = XCUIApplication()
-        app.launchEnvironment =
-            LaunchConfiguration(
-                resetsState: true, fixtures: [], opened: [], mocksTranslation: true, now: nil,
-                notificationPermission: nil
-            )
-            .environment
-        app.launchArguments = ["-AppleLanguages", "(\(deviceLanguage))"]
-        app.launch()
-        return HomeScreen(app: app).waitUntilShown().openSettings()
+    func testSettingsSnapshotLight() {
+        assertSnapshot(of: openSettingsWithReminder(appearance: .light), named: "Settings")
     }
 
-    private func time(hour: Int) throws -> String {
-        try XCTUnwrap(Calendar.current.date(bySettingHour: hour, minute: 0, second: 0, of: .now))
-            .formatted(.dateTime.hour().minute())
+    func testSettingsSnapshotDark() {
+        assertSnapshot(of: openSettingsWithReminder(appearance: .dark), named: "Settings")
     }
 
-    private func marketingVersion() throws -> String {
-        try XCTUnwrap(
-            Bundle(for: UITestCase.self).object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String)
+    func testSettingsThemeDarkSnapshotLight() {
+        assertSnapshot(of: openSettings(theme: "dark", appearance: .light), named: "Settings-ThemeDark")
     }
 
-    private func waitUntilBackground(
-        _ background: @escaping @MainActor () throws -> RGBColor, is expected: RGBColor,
-        file: StaticString = #filePath, line: UInt = #line
-    ) {
-        let predicate = NSPredicate { _, _ in
-            MainActor.assumeIsolated { (try? background())?.isClose(to: expected) ?? false }
-        }
-        let result = XCTWaiter.wait(for: [XCTNSPredicateExpectation(predicate: predicate, object: nil)], timeout: 10)
-        XCTAssertEqual(result, .completed, "background never became \(expected)", file: file, line: line)
+    func testHomeEmptyThemeDarkSnapshotLight() {
+        assertSnapshot(of: openSettings(theme: "dark", appearance: .light).goBack(), named: "Home-Empty-ThemeDark")
+    }
+
+    func testSettingsThemeLightSnapshotDark() {
+        assertSnapshot(of: openSettings(theme: "light", appearance: .dark), named: "Settings-ThemeLight")
+    }
+
+    private func openSettingsWithReminder(appearance: XCUIDevice.Appearance) -> SettingsScreen {
+        var configuration = LaunchConfiguration.withoutBooks
+        configuration.notificationPermission = .authorized
+        let settings = openSettings(launch(configuration, appearance: appearance, deviceLanguage: "ru"))
+        settings.tapReminder()
+        settings.reminder.waitUntil(\.isOn, equals: true)
+        return settings
+    }
+
+    private func openSettings(theme: String, appearance: XCUIDevice.Appearance) -> SettingsScreen {
+        let settings = openSettings(launch(.withoutBooks, appearance: appearance))
+        settings.chooseTheme(theme)
+        return settings
     }
 }

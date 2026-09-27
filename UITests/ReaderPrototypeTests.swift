@@ -12,30 +12,30 @@ final class ReaderPrototypeTests: UITestCase {
     func testOpensGermanFixtureOnFirstPage() {
         let reader = openReader()
 
-        XCTAssertEqual(reader.root.label, "Die Verwandlung")
-        XCTAssertEqual(reader.pageCounter.label, "1 of 18")
-        XCTAssertEqual(reader.pageCounter.value as? String, "OEBPS/chapter-1.xhtml")
+        XCTAssertEqual(reader.runningHead.label, "Die Verwandlung")
+        XCTAssertEqual(reader.pageCounter.label, "1 of 54")
+        XCTAssertEqual(reader.pageCounter.value as? String, "0")
         attachScreenshot("Reader")
     }
 
     func testSwipeTurnsPages() {
         let reader = openReader()
 
-        reader.turnForward(expecting: "2 of 18")
-        reader.turnForward(expecting: "3 of 18")
-        reader.turnBackward(expecting: "2 of 18")
+        reader.turnForward(expecting: "2 of 54")
+        reader.turnForward(expecting: "3 of 54")
+        reader.turnBackward(expecting: "2 of 54")
     }
 
     func testSwipeCrossesChapterBoundaryBothWays() {
         let reader = openReader()
         for page in 2...18 {
-            reader.turnForward(expecting: "\(page) of 18")
+            reader.turnForward(expecting: "\(page) of 54")
         }
 
-        reader.turnForward(expecting: "1 of 18")
-        XCTAssertEqual(reader.pageCounter.value as? String, "OEBPS/chapter-2.xhtml")
-        reader.turnBackward(expecting: "18 of 18")
-        XCTAssertEqual(reader.pageCounter.value as? String, "OEBPS/chapter-1.xhtml")
+        reader.turnForward(expecting: "19 of 54")
+        XCTAssertEqual(reader.pageCounter.value as? String, "1")
+        reader.turnBackward(expecting: "18 of 54")
+        XCTAssertEqual(reader.pageCounter.value as? String, "0")
     }
 
     func testTapOnWordReturnsWordSentenceAndRect() throws {
@@ -61,9 +61,9 @@ final class ReaderPrototypeTests: UITestCase {
     func testTapOnWordStopsAtLineBreaksAndBlocks() {
         let reader = openReader()
         for page in 2...18 {
-            reader.turnForward(expecting: "\(page) of 18")
+            reader.turnForward(expecting: "\(page) of 54")
         }
-        reader.turnForward(expecting: "1 of 18")
+        reader.turnForward(expecting: "19 of 54")
         let verse = reader.paragraph(startingWith: "Über allen Gipfeln").waitUntilExists()
         let stanza = reader.paragraph(startingWith: "Die Vögelein").waitUntilExists()
 
@@ -87,6 +87,8 @@ final class ReaderPrototypeTests: UITestCase {
         reader.tapMargin()
 
         reader.word.waitUntilGone()
+        XCTAssertFalse(reader.theme("paper").exists)
+        reader.tapMargin()
         reader.theme("paper").waitUntil(\.isHittable, equals: true)
         reader.tapMargin()
         reader.theme("paper").waitUntilGone()
@@ -99,7 +101,7 @@ final class ReaderPrototypeTests: UITestCase {
         paragraph.coordinate(withNormalizedOffset: .zero).withOffset(CGVector(dx: 3, dy: line / 2)).tap()
         reader.word.waitUntil(\.label, equals: "Als")
 
-        reader.turnForward(expecting: "2 of 18")
+        reader.turnForward(expecting: "2 of 54")
 
         reader.word.waitUntilGone()
         XCTAssertFalse(reader.wordTint.exists)
@@ -174,14 +176,15 @@ final class ReaderPrototypeTests: UITestCase {
         let reader = openReader()
         reader.choosePageTurn("curl")
 
-        reader.turnForward(expecting: "2 of 18")
-        reader.turnBackward(expecting: "1 of 18")
+        reader.turnForward(expecting: "2 of 54")
+        reader.turnBackward(expecting: "1 of 54")
     }
 
     func testOpenEPUBPresentsFilesPicker() {
         let app = launch(
             LaunchConfiguration(
-                resetsState: true, fixtures: [], opened: [], mocksTranslation: true, now: nil,
+                resetsState: true, fixtures: [], opened: [], inProgress: [], highlighted: [], translation: .immediate,
+                now: nil,
                 notificationPermission: nil))
 
         let picker = HomeScreen(app: app).waitUntilShown().openEPUB()
@@ -193,7 +196,8 @@ final class ReaderPrototypeTests: UITestCase {
     private func openReader() -> ReaderScreen {
         let app = launch(
             LaunchConfiguration(
-                resetsState: true, fixtures: [], opened: [], mocksTranslation: true, now: nil,
+                resetsState: true, fixtures: [], opened: [], inProgress: [], highlighted: [], translation: .immediate,
+                now: nil,
                 notificationPermission: nil))
         return HomeScreen(app: app).waitUntilShown().openReaderPrototype()
     }

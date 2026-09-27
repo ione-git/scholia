@@ -269,6 +269,7 @@ extension TextStyle {
         lineHeight: 30,
         weight: 600,
         tracking: -0.3,
+        textIndent: 0,
         isUppercase: false
     )
     public static let titleBook = TextStyle(
@@ -278,6 +279,7 @@ extension TextStyle {
         lineHeight: 29.9,
         weight: 500,
         tracking: 0,
+        textIndent: 0,
         isUppercase: false
     )
     public static let titleCard = TextStyle(
@@ -287,6 +289,7 @@ extension TextStyle {
         lineHeight: 25.3,
         weight: 500,
         tracking: 0,
+        textIndent: 0,
         isUppercase: false
     )
     public static let listSerif = TextStyle(
@@ -296,6 +299,7 @@ extension TextStyle {
         lineHeight: 22.1,
         weight: 400,
         tracking: 0,
+        textIndent: 0,
         isUppercase: false
     )
     public static let coverTitle = TextStyle(
@@ -305,6 +309,7 @@ extension TextStyle {
         lineHeight: 16.8,
         weight: 500,
         tracking: 0,
+        textIndent: 0,
         isUppercase: false
     )
     public static let readingBody = TextStyle(
@@ -314,6 +319,7 @@ extension TextStyle {
         lineHeight: 27,
         weight: 400,
         tracking: 0,
+        textIndent: 25.5,
         isUppercase: false
     )
     public static let readingQuote = TextStyle(
@@ -323,6 +329,7 @@ extension TextStyle {
         lineHeight: 24,
         weight: 400,
         tracking: 0,
+        textIndent: 0,
         isUppercase: false
     )
     public static let headline = TextStyle(
@@ -332,6 +339,7 @@ extension TextStyle {
         lineHeight: 28.6,
         weight: 600,
         tracking: -0.26,
+        textIndent: 0,
         isUppercase: false
     )
     public static let translation = TextStyle(
@@ -341,6 +349,7 @@ extension TextStyle {
         lineHeight: 24,
         weight: 500,
         tracking: 0,
+        textIndent: 0,
         isUppercase: false
     )
     public static let section = TextStyle(
@@ -350,6 +359,7 @@ extension TextStyle {
         lineHeight: 24,
         weight: 600,
         tracking: 0,
+        textIndent: 0,
         isUppercase: false
     )
     public static let title3 = TextStyle(
@@ -359,6 +369,7 @@ extension TextStyle {
         lineHeight: 21.25,
         weight: 600,
         tracking: 0,
+        textIndent: 0,
         isUppercase: false
     )
     public static let body = TextStyle(
@@ -368,6 +379,7 @@ extension TextStyle {
         lineHeight: 20.8,
         weight: 400,
         tracking: 0,
+        textIndent: 0,
         isUppercase: false
     )
     public static let callout = TextStyle(
@@ -377,6 +389,7 @@ extension TextStyle {
         lineHeight: 20.25,
         weight: 500,
         tracking: 0,
+        textIndent: 0,
         isUppercase: false
     )
     public static let subhead = TextStyle(
@@ -386,6 +399,7 @@ extension TextStyle {
         lineHeight: 18.2,
         weight: 500,
         tracking: 0,
+        textIndent: 0,
         isUppercase: false
     )
     public static let footnote = TextStyle(
@@ -395,6 +409,7 @@ extension TextStyle {
         lineHeight: 17.55,
         weight: 400,
         tracking: 0,
+        textIndent: 0,
         isUppercase: false
     )
     public static let caption = TextStyle(
@@ -404,6 +419,7 @@ extension TextStyle {
         lineHeight: 15.6,
         weight: 400,
         tracking: 0,
+        textIndent: 0,
         isUppercase: false
     )
     public static let labelCaps = TextStyle(
@@ -413,6 +429,7 @@ extension TextStyle {
         lineHeight: 13.2,
         weight: 600,
         tracking: 0.88,
+        textIndent: 0,
         isUppercase: true
     )
     public static let all: [TextStyle] = [

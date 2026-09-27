@@ -9,6 +9,10 @@ final class TranslationService {
         self.provider = provider
     }
 
+    func cached(_ request: TranslationRequest) -> WordTranslation? {
+        cache[request]
+    }
+
     func translate(_ request: TranslationRequest) async throws -> WordTranslation {
         if let cached = cache[request] {
             return cached
