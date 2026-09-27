@@ -148,7 +148,7 @@ final class ReaderPrototypeTests: UITestCase {
 
         reader.paintedHighlights.waitUntil(\.label, equals: "1")
         XCTAssertTrue(reader.highlights.label.hasPrefix("Kopf ein wenig hob, seinen"), reader.highlights.label)
-        XCTAssertFalse(reader.app.menuItems.firstMatch.exists)
+        XCTAssertFalse(reader.systemEditMenu.exists)
         let paint = try highlightColor(in: middle(ofLine: 5, from: 60, to: 200, in: paragraph), reader: reader)
         XCTAssertLessThanOrEqual(paint.found.distance(to: paint.expected), 6, "\(paint)")
     }

@@ -14,7 +14,7 @@ final class SelectionTests: UITestCase {
         XCTAssertEqual(menu.translateItem.label, "Translate")
         XCTAssertEqual(menu.copyItem.label, "Copy")
         XCTAssertTrue(menu.root.isHittable)
-        XCTAssertFalse(reader.app.menuItems.firstMatch.exists)
+        XCTAssertFalse(reader.systemEditMenu.exists)
         XCTAssertFalse(reader.bubble.exists)
     }
 

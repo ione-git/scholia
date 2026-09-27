@@ -24,6 +24,7 @@ struct ReaderScreen: Screen {
     var highlights: XCUIElement { app.descendants(matching: .any)["debug.highlights"] }
     var paintedHighlights: XCUIElement { app.descendants(matching: .any)["debug.paintedHighlights"] }
     var paintedWordTints: XCUIElement { app.descendants(matching: .any)["debug.paintedWordTints"] }
+    var systemEditMenu: XCUIElement { app.menuItems.firstMatch }
     var bubble: XCUIElement { app.otherElements["reader.bubble"] }
     var bubbleWord: XCUIElement { app.staticTexts["reader.bubble.word"] }
     var bubbleIPA: XCUIElement { app.staticTexts["reader.bubble.ipa"] }
