@@ -27,6 +27,10 @@ extension Screen {
         app.descendants(matching: .any)["debug.readingReminder"]
     }
 
+    var privacyManifest: XCUIElement {
+        app.descendants(matching: .any)["debug.privacyManifest"]
+    }
+
     var colorScheme: XCUIElement {
         app.descendants(matching: .any)["debug.colorScheme"]
     }

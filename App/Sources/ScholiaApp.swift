@@ -45,6 +45,7 @@ struct ScholiaApp: App {
                     .background { LaunchDiagnostics(configuration: .current) }
                     .background { LibraryDiagnostics() }
                     .background { ReminderDiagnostics(settings: settings) }
+                    .background { PrivacyDiagnostics() }
                     .background { AppearanceDiagnostics() }
                     .background { TranslationDiagnostics(provider: translationService.provider) }
                     .background { ReadingDiagnostics() }

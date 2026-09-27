@@ -58,12 +58,14 @@
             case .minimalMetadata: "Minimal"
             case .corrupted: "Corrupted"
             case .drm: "Encrypted"
+            case .zip64: "ZIP64"
+            case .fontObfuscation: "Obfuscated Font"
             }
         }
 
         fileprivate var author: String? {
             switch self {
-            case .german, .drm: "Franz Kafka"
+            case .german, .drm, .zip64, .fontObfuscation: "Franz Kafka"
             case .frenchNoCover, .arabic: "Scholia"
             case .minimalMetadata, .corrupted: nil
             }
@@ -71,7 +73,7 @@
 
         fileprivate var language: String {
             switch self {
-            case .german, .drm: "de"
+            case .german, .drm, .zip64, .fontObfuscation: "de"
             case .frenchNoCover: "fr"
             case .arabic: "ar"
             case .minimalMetadata, .corrupted: "en"
