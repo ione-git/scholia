@@ -33,6 +33,20 @@ final class DragHighlightTests: UITestCase {
         reader.paintedLive.waitUntil(\.label, equals: "0")
     }
 
+    func testDragWhileWordSelectedPaintsHighlightWithoutMenu() throws {
+        let reader = openGermanBook(launch(germanBook))
+        let menu = try reader.selectWord(onLine: 2, x: 20)
+
+        try reader.dragHighlight(in: reader.germanParagraph, fromLine: 1, x: 220, toLine: 2, x: 270)
+
+        reader.storedHighlights.waitUntil(\.stringValue, equals: "\(draggedText) · yellow")
+        reader.paintedHighlights.waitUntil(\.label, equals: "1")
+        reader.paintedLive.waitUntil(\.label, equals: "0")
+        menu.root.waitUntilGone()
+        XCTAssertFalse(reader.app.menuItems.firstMatch.exists)
+        XCTAssertFalse(reader.bubble.exists)
+    }
+
     func testDragToPageEdgeDoesNotTurnPage() throws {
         let reader = openGermanBook(launch(germanBook))
         reader.pageCounter.waitUntil(\.label, equals: firstPage)

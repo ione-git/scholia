@@ -24,6 +24,7 @@ final class ReaderViewController: UIViewController {
         }
     }
     private var pressGeneration = 0
+    private var touchClearedSelection = false
     private weak var livePaint: WKWebView?
     private var isCurling = false
     private var isShowing = false
@@ -98,7 +99,8 @@ final class ReaderViewController: UIViewController {
 
         view.addGestureRecognizer(
             TouchObserver(
-                onTouchDown: { [weak self] in self?.touchedDown() }, onTouchUp: { [weak self] in self?.touchedUp() }))
+                onTouchDown: { [weak self] in self?.touchedDown(at: $0) },
+                onTouchUp: { [weak self] in self?.touchedUp() }))
 
         let press = UILongPressGestureRecognizer(target: self, action: #selector(pressed))
         press.cancelsTouchesInView = false
@@ -542,6 +544,9 @@ final class ReaderViewController: UIViewController {
     }
 
     private func tapped(at point: CGPoint) async {
+        guard !touchClearedSelection else {
+            return
+        }
         tapGeneration += 1
         let generation = tapGeneration
         let isShowingWord = controller?.word != nil
@@ -587,10 +592,16 @@ final class ReaderViewController: UIViewController {
         return candidate as? WKWebView
     }
 
-    private func touchedDown() {
+    private func touchedDown(at location: CGPoint) {
         stopPainting()
-        guard pageSelection == nil else {
-            return
+        touchClearedSelection = false
+        if let pageSelection {
+            let selectionArea = pageSelection.selection.rect.insetBy(dx: -style.lineHeight, dy: -style.lineHeight)
+            guard !selectionArea.contains(location) else {
+                return
+            }
+            touchClearedSelection = true
+            clearSelection()
         }
         pressGeneration += 1
         press = .touched(generation: pressGeneration)
@@ -916,11 +927,11 @@ private struct PageSelection {
 }
 
 private final class TouchObserver: UIGestureRecognizer {
-    private let onTouchDown: () -> Void
+    private let onTouchDown: (CGPoint) -> Void
     private let onTouchUp: () -> Void
     private var isTouching = false
 
-    init(onTouchDown: @escaping () -> Void, onTouchUp: @escaping () -> Void) {
+    init(onTouchDown: @escaping (CGPoint) -> Void, onTouchUp: @escaping () -> Void) {
         self.onTouchDown = onTouchDown
         self.onTouchUp = onTouchUp
         super.init(target: nil, action: nil)
@@ -929,11 +940,11 @@ private final class TouchObserver: UIGestureRecognizer {
     }
 
     override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent) {
-        guard !isTouching else {
+        guard !isTouching, let touch = touches.first else {
             return
         }
         isTouching = true
-        onTouchDown()
+        onTouchDown(touch.location(in: view))
     }
 
     override func touchesEnded(_ touches: Set<UITouch>, with event: UIEvent) {
