@@ -17,6 +17,7 @@ public final class ReaderController {
     public var highlightColor: UIColor
     #if DEBUG
         public internal(set) var renderedStyle: ReaderRenderedStyle?
+        public internal(set) var pageCurl: ReaderPageCurl
     #endif
     @ObservationIgnored public var onPageTap: (() -> Void)?
     @ObservationIgnored public var looksUpWords: Bool
@@ -33,6 +34,9 @@ public final class ReaderController {
         highlights = []
         paintedHighlights = 0
         paintedWordTints = 0
+        #if DEBUG
+            pageCurl = ReaderPageCurl(state: .off, completed: 0, cancelled: 0)
+        #endif
         looksUpWords = true
         viewController = ReaderViewController(
             book: book, language: language, location: location, appearance: appearance, typefaces: typefaces,

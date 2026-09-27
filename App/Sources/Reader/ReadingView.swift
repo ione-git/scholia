@@ -31,6 +31,8 @@ struct ReadingView: View {
                     .ignoresSafeArea()
                     #if DEBUG
                         .background { ReaderAppearanceDiagnostics(controller: controller) }
+                        .background { PageCurlDiagnostics(controller: controller) }
+                        .background { HighlightPaintDiagnostics(controller: controller) }
                     #endif
             } else if cannotOpen {
                 Text("This book can’t be opened.")
@@ -228,6 +230,30 @@ struct ReadingView: View {
                 return ""
             }
             return "\(span.chapter):\(span.start)-\(span.end)"
+        }
+    }
+
+    private struct PageCurlDiagnostics: View {
+        let controller: ReaderController
+
+        var body: some View {
+            let curl = controller.pageCurl
+            Color.clear
+                .accessibilityElement()
+                .accessibilityIdentifier("debug.pageCurl")
+                .accessibilityLabel(Text(verbatim: curl.state.rawValue))
+                .accessibilityValue(Text(verbatim: "\(curl.completed) completed, \(curl.cancelled) cancelled"))
+        }
+    }
+
+    private struct HighlightPaintDiagnostics: View {
+        let controller: ReaderController
+
+        var body: some View {
+            Color.clear
+                .accessibilityElement()
+                .accessibilityIdentifier("debug.paintedHighlights")
+                .accessibilityLabel(Text(verbatim: "\(controller.paintedHighlights)"))
         }
     }
 #endif

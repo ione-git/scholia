@@ -73,7 +73,7 @@ final class PageCounter: NSObject {
         waiting = nil
     }
 
-    private static let script = try! String(
+    static let script = try! String(
         contentsOf: Bundle.module.url(forResource: "page-count", withExtension: "js")!, encoding: .utf8)
 }
 

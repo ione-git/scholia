@@ -116,6 +116,7 @@ struct ReaderSettingsSheet: View {
                 selection: binding(\.pageTurn), size: .regular,
                 segments: [
                     .init(.slide, title: Text("Slide"), count: nil, identifier: "readerSettings.pageTurn.slide"),
+                    .init(.curl, title: Text("Curl"), count: nil, identifier: "readerSettings.pageTurn.curl"),
                     .init(.fade, title: Text("Fade"), count: nil, identifier: "readerSettings.pageTurn.fade"),
                     .init(.scroll, title: Text("Scroll"), count: nil, identifier: "readerSettings.pageTurn.scroll"),
                 ])

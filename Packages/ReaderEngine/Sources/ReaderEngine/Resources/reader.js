@@ -187,6 +187,27 @@
       return page;
     },
 
+    showPage(page) {
+      const last = lastPage();
+      const shown = page < 0 ? last : Math.min(page, last);
+      const direction = isRightToLeft() ? -1 : 1;
+      document.scrollingElement.scrollTo({ left: direction * shown * window.innerWidth, behavior: "instant" });
+      return [shown, last + 1];
+    },
+
+    shownPage() {
+      return Math.round(Math.abs(window.scrollX) / window.innerWidth);
+    },
+
+    async highlightsPainted(expected, timeout) {
+      const deadline = performance.now() + timeout;
+      const selector = `:has(> .${paintedClasses.paintedHighlights})`;
+      while (document.querySelectorAll(selector).length < expected && performance.now() < deadline) {
+        await nextFrame();
+      }
+      await nextFrame();
+    },
+
     async scrollToOffset(offset) {
       await document.fonts.ready;
       for (const { node, start } of textNodes()) {
