@@ -8,11 +8,15 @@ struct ReadingView: View {
 
     @Environment(\.dismiss) private var dismiss
     @Environment(\.colorScheme) private var colorScheme
+    @Environment(\.accessibilityVoiceOverEnabled) private var isVoiceOverEnabled
     @Environment(\.modelContext) private var modelContext
     @Environment(Settings.self) private var settings
     @State private var controller: ReaderController?
     @State private var cannotOpen = false
     @State private var isChromeShown = false
+    @State private var isMenuShown = false
+    @State private var indexTab: ReaderIndexTab?
+    @State private var isSettingsShown = false
 
     var body: some View {
         ZStack {
@@ -28,11 +32,43 @@ struct ReadingView: View {
                     .padding(.horizontal, .space7)
                     .accessibilityIdentifier("reader.failure")
             }
-            page
+            ReaderChrome(
+                book: book, controller: controller, isShown: isChromeShown || isVoiceOverEnabled,
+                cannotOpen: cannotOpen, isMenuShown: $isMenuShown
+            ) {
+                dismiss()
+            }
+            .glassMenu(isPresented: $isMenuShown, alignment: .bottomTrailing) {
+                ReaderMenu(isShown: $isMenuShown, indexTab: $indexTab, isSettingsShown: $isSettingsShown)
+                    .padding(.bottom, ReaderChrome.menuBottomInset)
+                    .padding(.trailing, .space5)
+            }
+            .ignoresSafeArea()
+            if let controller, let word = controller.word {
+                TranslationBubblePlacement(anchor: word.rect, topLimit: .navTop + .controlH) {
+                    WordBubble(word: word, language: book.language)
+                        .accessibilityAction(.escape) { controller.clearWord() }
+                }
+                .id(word.range)
+                .ignoresSafeArea()
+            }
         }
-        .environment(\.colorScheme, theme.isDark ? .dark : .light)
+        #if DEBUG
+            .background { WordTintDiagnostics(painted: controller?.paintedWordTints ?? 0) }
+        #endif
+        .accessibilityElement(children: .contain)
+        .accessibilityIdentifier("reader.page")
+        .environment(\.colorScheme, shownColorScheme)
         .statusBarHidden()
         .toolbar(.hidden, for: .navigationBar)
+        .fullScreenCover(item: $indexTab) { tab in
+            ReaderIndexView(book: book, tab: tab)
+                .preferredColorScheme(shownColorScheme)
+        }
+        .sheet(isPresented: $isSettingsShown) {
+            ReaderSettingsSheet()
+                .preferredColorScheme(shownColorScheme)
+        }
         .task { await open() }
         .onChange(of: theme) { recolor() }
         .onChange(of: controller?.location) { _, location in save(location) }
@@ -43,36 +79,8 @@ struct ReadingView: View {
         settings.readerTheme.shown(in: colorScheme)
     }
 
-    private var page: some View {
-        VStack(spacing: 0) {
-            Text(book.title)
-                .textStyle(TextStyle.labelCaps.weighted(TextStyle.caption.weight))
-                .foregroundStyle(.inkMuted)
-                .lineLimit(1)
-                .frame(height: .controlH)
-                .padding(.horizontal, .space5 + .controlH)
-                .padding(.top, .navTop)
-                .accessibilityIdentifier("reader.runningHead")
-            Spacer()
-            if let page = controller?.page {
-                Text("\(page.number) of \(page.count)")
-                    .textStyle(.caption)
-                    .foregroundStyle(.inkMuted)
-                    .padding(.bottom, .space8 + .space1)
-                    .accessibilityIdentifier("reader.pageCounter")
-            }
-        }
-        .frame(maxWidth: .infinity)
-        .overlay(alignment: .topLeading) {
-            if isChromeShown || cannotOpen {
-                GlassButton(.back, label: Text("Back"), size: .regular, isActive: false) { dismiss() }
-                    .padding(.leading, .space4)
-                    .padding(.top, .navTop)
-                    .transition(.opacity)
-                    .accessibilityIdentifier("reader.back")
-            }
-        }
-        .ignoresSafeArea()
+    private var shownColorScheme: ColorScheme {
+        theme.isDark ? .dark : .light
     }
 
     private func open() async {
@@ -83,6 +91,7 @@ struct ReadingView: View {
             let readerBook = try await ReaderBook.open(book.fileURL)
             let controller = ReaderController(
                 book: readerBook,
+                language: book.language,
                 location: book.position.map { ReaderLocation(chapter: $0.chapter, offset: $0.offset) },
                 style: .book,
                 colors: theme.colors,
@@ -124,3 +133,16 @@ struct ReadingView: View {
         try? modelContext.save()
     }
 }
+
+#if DEBUG
+    private struct WordTintDiagnostics: View {
+        let painted: Int
+
+        var body: some View {
+            Color.clear
+                .accessibilityElement()
+                .accessibilityIdentifier("debug.paintedWordTints")
+                .accessibilityLabel(Text(verbatim: "\(painted)"))
+        }
+    }
+#endif

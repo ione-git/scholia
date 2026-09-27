@@ -11,6 +11,22 @@
         }
       }
     },
+    "%@ · %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@ · %2$@"
+          }
+        }
+      }
+    },
+    "%lld Selected" : {
+
+    },
+    "%lld books" : {
+
+    },
     "%lld min" : {
 
     },
@@ -75,14 +91,23 @@
     "Black" : {
 
     },
+    "Book Info" : {
+
+    },
     "Book cover" : {
       "shouldTranslate" : false
     },
     "Bookmark" : {
       "shouldTranslate" : false
     },
+    "Bookmark this page" : {
+
+    },
+    "Bookmarked. Remove bookmark" : {
+
+    },
     "Bookmarks" : {
-      "shouldTranslate" : false
+
     },
     "Bubble" : {
 
@@ -114,6 +139,9 @@
     "Collection name" : {
 
     },
+    "Collections" : {
+
+    },
     "Colours" : {
       "shouldTranslate" : false
     },
@@ -124,7 +152,7 @@
       "shouldTranslate" : false
     },
     "Contents" : {
-      "shouldTranslate" : false
+
     },
     "Create" : {
 
@@ -144,7 +172,20 @@
     "EPUB · %@" : {
 
     },
+    "EPUB · %@ · added %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "EPUB · %1$@ · added %2$@"
+          }
+        }
+      }
+    },
     "EPUB · %@ · from Files" : {
+
+    },
+    "EPUB · added %@" : {
 
     },
     "Effects" : {
@@ -162,6 +203,9 @@
     "Glass button" : {
       "shouldTranslate" : false
     },
+    "Glass menu" : {
+      "shouldTranslate" : false
+    },
     "Glass sheet" : {
       "shouldTranslate" : false
     },
@@ -169,7 +213,10 @@
 
     },
     "Highlights" : {
-      "shouldTranslate" : false
+
+    },
+    "In progress" : {
+
     },
     "Language" : {
 
@@ -186,8 +233,14 @@
     "List rows" : {
       "shouldTranslate" : false
     },
+    "Mark as Finished" : {
+
+    },
+    "Mark as Unread" : {
+
+    },
     "Menu" : {
-      "shouldTranslate" : false
+
     },
     "Minimal" : {
 
@@ -213,10 +266,16 @@
     "No books yet" : {
 
     },
+    "No translation needed" : {
+
+    },
     "None" : {
 
     },
     "Not Now" : {
+
+    },
+    "Not started" : {
 
     },
     "Notifications are off" : {
@@ -276,6 +335,21 @@
     "Reminder time" : {
 
     },
+    "Remove" : {
+
+    },
+    "Remove %lld books from your library?" : {
+
+    },
+    "Remove from Library" : {
+
+    },
+    "Remove “%@” from your library?" : {
+
+    },
+    "Reset reading progress" : {
+
+    },
     "Russian" : {
       "shouldTranslate" : false
     },
@@ -304,6 +378,9 @@
       "shouldTranslate" : false
     },
     "Select Books" : {
+
+    },
+    "Selection and toolbar" : {
 
     },
     "Sepia" : {
@@ -342,6 +419,154 @@
     "The book could not be saved. Try again." : {
 
     },
+    "The book file and its %lld highlights will be deleted from this iPhone." : {
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "device" : {
+              "ipad" : {
+                "variations" : {
+                  "plural" : {
+                    "one" : {
+                      "stringUnit" : {
+                        "state" : "translated",
+                        "value" : "The book file and its highlight will be deleted from this iPad."
+                      }
+                    },
+                    "other" : {
+                      "stringUnit" : {
+                        "state" : "translated",
+                        "value" : "The book file and its %lld highlights will be deleted from this iPad."
+                      }
+                    }
+                  }
+                }
+              },
+              "iphone" : {
+                "variations" : {
+                  "plural" : {
+                    "one" : {
+                      "stringUnit" : {
+                        "state" : "translated",
+                        "value" : "The book file and its highlight will be deleted from this iPhone."
+                      }
+                    },
+                    "other" : {
+                      "stringUnit" : {
+                        "state" : "translated",
+                        "value" : "The book file and its %lld highlights will be deleted from this iPhone."
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "The book file will be deleted from this iPhone." : {
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "device" : {
+              "ipad" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "The book file will be deleted from this iPad."
+                }
+              },
+              "iphone" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "The book file will be deleted from this iPhone."
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "The book file will be deleted from this iPhone."
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "The book files and their %lld highlights will be deleted from this iPhone." : {
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "device" : {
+              "ipad" : {
+                "variations" : {
+                  "plural" : {
+                    "one" : {
+                      "stringUnit" : {
+                        "state" : "translated",
+                        "value" : "The book files and %lld highlight will be deleted from this iPad."
+                      }
+                    },
+                    "other" : {
+                      "stringUnit" : {
+                        "state" : "translated",
+                        "value" : "The book files and their %lld highlights will be deleted from this iPad."
+                      }
+                    }
+                  }
+                }
+              },
+              "iphone" : {
+                "variations" : {
+                  "plural" : {
+                    "one" : {
+                      "stringUnit" : {
+                        "state" : "translated",
+                        "value" : "The book files and %lld highlight will be deleted from this iPhone."
+                      }
+                    },
+                    "other" : {
+                      "stringUnit" : {
+                        "state" : "translated",
+                        "value" : "The book files and their %lld highlights will be deleted from this iPhone."
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "The book files will be deleted from this iPhone." : {
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "device" : {
+              "ipad" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "The book files will be deleted from this iPad."
+                }
+              },
+              "iphone" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "The book files will be deleted from this iPhone."
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "The book files will be deleted from this iPhone."
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "The book’s language decides how words are read and translated. Detected from the file; change it if it looks wrong." : {
 
     },
@@ -349,7 +574,7 @@
 
     },
     "Themes & Settings" : {
-      "shouldTranslate" : false
+
     },
     "This book can't be opened." : {
       "shouldTranslate" : false
@@ -369,7 +594,52 @@
     "Translate to" : {
 
     },
+    "Translating %@" : {
+
+    },
     "Translation" : {
+
+    },
+    "Translation bubble" : {
+
+    },
+    "Translation unavailable" : {
+
+    },
+    "Unread" : {
+
+    },
+    "adjective" : {
+
+    },
+    "adverb" : {
+
+    },
+    "conjunction" : {
+
+    },
+    "determiner" : {
+
+    },
+    "interjection" : {
+
+    },
+    "noun" : {
+
+    },
+    "number" : {
+
+    },
+    "particle" : {
+
+    },
+    "preposition" : {
+
+    },
+    "pronoun" : {
+
+    },
+    "verb" : {
 
     },
     "· detected" : {

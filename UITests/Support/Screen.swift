@@ -15,8 +15,16 @@ extension Screen {
         app.descendants(matching: .any)["debug.storedLibrary"]
     }
 
+    var storedHighlights: XCUIElement {
+        app.descendants(matching: .any)["debug.storedHighlights"]
+    }
+
     var readingReminder: XCUIElement {
         app.descendants(matching: .any)["debug.readingReminder"]
+    }
+
+    var colorScheme: XCUIElement {
+        app.descendants(matching: .any)["debug.colorScheme"]
     }
 
     @discardableResult

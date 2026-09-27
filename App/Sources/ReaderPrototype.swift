@@ -27,6 +27,8 @@
                     failed
                 }
             }
+            .accessibilityElement(children: .contain)
+            .accessibilityIdentifier("reader.page")
             .environment(\.colorScheme, theme.isDark ? .dark : .light)
             .statusBarHidden()
             .task { await open() }
@@ -40,8 +42,7 @@
         private func page(_ controller: ReaderController) -> some View {
             ZStack {
                 if let word = controller.word {
-                    RoundedRectangle(cornerRadius: .radiusXs)
-                        .fill(.wordTap)
+                    Color.clear
                         .frame(width: word.rect.width, height: word.rect.height)
                         .position(x: word.rect.midX, y: word.rect.midY)
                         .allowsHitTesting(false)
@@ -80,7 +81,6 @@
                     HighlightDiagnostics(
                         highlights: controller.highlights, paintedHighlights: controller.paintedHighlights)
                 }
-                .background { TranslationDiagnostics(provider: translationService.provider) }
             }
             .ignoresSafeArea()
         }
@@ -190,6 +190,7 @@
                 let book = try await ReaderBook.open(url)
                 let controller = ReaderController(
                     book: book,
+                    language: book.language,
                     location: nil,
                     style: .book,
                     colors: theme.colors,
@@ -233,23 +234,6 @@
                 .accessibilityElement()
                 .accessibilityIdentifier("debug.paintedHighlights")
                 .accessibilityLabel(Text(verbatim: "\(paintedHighlights)"))
-        }
-    }
-
-    private struct TranslationDiagnostics: View {
-        let provider: any TranslationProvider
-
-        var body: some View {
-            Color.clear
-                .accessibilityElement()
-                .accessibilityIdentifier("debug.translationRequests")
-                .accessibilityLabel(Text(verbatim: requests))
-        }
-
-        private var requests: String {
-            let requests = (provider as? MockTranslationProvider)?.requests ?? []
-            return requests.map { "\($0.word) · \($0.offsetInSentence) · \($0.source) → \($0.target)" }
-                .joined(separator: "\n")
         }
     }
 

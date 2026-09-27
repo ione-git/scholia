@@ -36,7 +36,8 @@ final class TokenGalleryTests: UITestCase {
     private func openGallery() -> TokenGalleryScreen {
         let app = launch(
             LaunchConfiguration(
-                resetsState: true, fixtures: [], opened: [], mocksTranslation: true, now: nil,
+                resetsState: true, fixtures: [], opened: [], inProgress: [], highlighted: [], translation: .immediate,
+                now: nil,
                 notificationPermission: nil, unreadableStore: false))
         return HomeScreen(app: app).waitUntilShown().openTokenGallery()
     }

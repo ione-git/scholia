@@ -4,7 +4,7 @@ XCODEBUILD = xcodebuild -project Scholia.xcodeproj -scheme Scholia -destination 
 SOURCES = App UITests Packages
 RESOLVED = Scholia.xcodeproj/project.xcworkspace/xcshareddata/swiftpm/Package.resolved
 
-.PHONY: generate build test lint format device resolve
+.PHONY: generate build test snapshots lint format device resolve
 
 generate:
 	xcodegen generate --quiet
@@ -19,6 +19,9 @@ build: generate
 
 test: generate
 	$(XCODEBUILD) test -quiet -resultBundlePath build/Results-$$(date +%s).xcresult $(if $(ONLY),-only-testing:$(ONLY)) $(TEST_FLAGS)
+
+snapshots: export TEST_RUNNER_SNAPSHOT_TESTING_RECORD = failed
+snapshots: test
 
 lint:
 	xcrun swift-format lint --strict --recursive $(SOURCES)

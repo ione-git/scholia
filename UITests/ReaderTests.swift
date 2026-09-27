@@ -12,7 +12,7 @@ final class ReaderTests: UITestCase {
         let reader = home.openHeroBook()
 
         reader.pageCounter.waitUntil(\.label, equals: "1 of \(bookPages)")
-        XCTAssertEqual(reader.root.label, "Die Verwandlung")
+        XCTAssertEqual(reader.runningHead.label, "Die Verwandlung")
         reader.paragraph(startingWith: "Als Gregor Samsa").waitUntilExists()
         XCTAssertFalse(reader.backButton.exists)
     }
@@ -58,7 +58,8 @@ final class ReaderTests: UITestCase {
 
         let relaunched = launch(
             LaunchConfiguration(
-                resetsState: false, fixtures: [], opened: [], mocksTranslation: true, now: nil,
+                resetsState: false, fixtures: [], opened: [], inProgress: [], highlighted: [], translation: .immediate,
+                now: nil,
                 notificationPermission: nil, unreadableStore: false))
         let relaunchedHome = HomeScreen(app: relaunched).waitUntilShown()
         relaunchedHome.heroProgress.waitUntil(\.stringValue, equals: percent(4, of: bookPages))
@@ -80,7 +81,8 @@ final class ReaderTests: UITestCase {
     func testRightToLeftBookCountsPagesAndReopensAtSamePage() {
         let app = launch(
             LaunchConfiguration(
-                resetsState: true, fixtures: [.arabic], opened: [], mocksTranslation: true, now: nil,
+                resetsState: true, fixtures: [.arabic], opened: [], inProgress: [], highlighted: [],
+                translation: .immediate, now: nil,
                 notificationPermission: nil, unreadableStore: false))
         let reader = HomeScreen(app: app).waitUntilShown().openHeroBook()
         reader.pageCounter.waitUntil(\.label, equals: "1 of \(arabicBookPages)")
@@ -100,12 +102,13 @@ final class ReaderTests: UITestCase {
     func testOpensFromLibraryAndBackReturnsToLibrary() {
         let app = launch(
             LaunchConfiguration(
-                resetsState: true, fixtures: [.german, .frenchNoCover], opened: [.german], mocksTranslation: true,
+                resetsState: true, fixtures: [.german, .frenchNoCover], opened: [.german], inProgress: [],
+                highlighted: [], translation: .immediate,
                 now: nil, notificationPermission: nil, unreadableStore: false))
         let library = HomeScreen(app: app).waitUntilShown().openLibrary()
 
         let reader = library.openBook("Un matin en ville").waitUntilOpened()
-        XCTAssertEqual(reader.root.label, "Un matin en ville")
+        XCTAssertEqual(reader.runningHead.label, "Un matin en ville")
         reader.paragraph(startingWith: "Le matin, la ville").waitUntilExists()
 
         let back = reader.backToLibrary()
@@ -126,7 +129,8 @@ final class ReaderTests: UITestCase {
     func testUnreadableBookShowsFailureWithBackButton() {
         let app = launch(
             LaunchConfiguration(
-                resetsState: true, fixtures: [.german, .corrupted], opened: [], mocksTranslation: true, now: nil,
+                resetsState: true, fixtures: [.german, .corrupted], opened: [], inProgress: [], highlighted: [],
+                translation: .immediate, now: nil,
                 notificationPermission: nil, unreadableStore: false))
         let library = HomeScreen(app: app).waitUntilShown().openLibrary()
 
@@ -140,7 +144,8 @@ final class ReaderTests: UITestCase {
     private func launchWithGermanBook() -> XCUIApplication {
         launch(
             LaunchConfiguration(
-                resetsState: true, fixtures: [.german], opened: [], mocksTranslation: true, now: nil,
+                resetsState: true, fixtures: [.german], opened: [], inProgress: [], highlighted: [],
+                translation: .immediate, now: nil,
                 notificationPermission: nil, unreadableStore: false))
     }
 

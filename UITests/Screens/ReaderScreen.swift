@@ -1,13 +1,20 @@
 import XCTest
 
 private let bookOpenTimeout: TimeInterval = 30
+private let germanFirstParagraph = "Als Gregor Samsa"
+private let germanFirstHeading = "Erster Teil"
 
 struct ReaderScreen: Screen {
     let app: XCUIApplication
 
-    var root: XCUIElement { app.staticTexts["reader.runningHead"] }
+    var root: XCUIElement { app.descendants(matching: .any)["reader.page"] }
+    var runningHead: XCUIElement { app.staticTexts["reader.runningHead"] }
+    var title: XCUIElement { app.staticTexts["reader.title"] }
+    var subtitle: XCUIElement { app.staticTexts["reader.subtitle"] }
     var pageCounter: XCUIElement { app.staticTexts["reader.pageCounter"] }
     var backButton: XCUIElement { app.buttons["reader.back"] }
+    var bookmarkButton: XCUIElement { app.buttons["reader.bookmark"] }
+    var menuButton: XCUIElement { app.buttons["reader.menu"] }
     var failure: XCUIElement { app.staticTexts["reader.failure"] }
     var word: XCUIElement { app.staticTexts["reader.word"] }
     var sentence: XCUIElement { app.staticTexts["reader.sentence"] }
@@ -16,6 +23,16 @@ struct ReaderScreen: Screen {
     var wordTint: XCUIElement { app.descendants(matching: .any)["reader.wordTint"] }
     var highlights: XCUIElement { app.descendants(matching: .any)["debug.highlights"] }
     var paintedHighlights: XCUIElement { app.descendants(matching: .any)["debug.paintedHighlights"] }
+    var paintedWordTints: XCUIElement { app.descendants(matching: .any)["debug.paintedWordTints"] }
+    var bubble: XCUIElement { app.otherElements["reader.bubble"] }
+    var bubbleWord: XCUIElement { app.staticTexts["reader.bubble.word"] }
+    var bubbleIPA: XCUIElement { app.staticTexts["reader.bubble.ipa"] }
+    var bubbleTranslation: XCUIElement { app.staticTexts["reader.bubble.translation"] }
+    var bubbleGrammar: XCUIElement { app.staticTexts["reader.bubble.grammar"] }
+    var bubbleLoading: XCUIElement { app.descendants(matching: .any)["reader.bubble.loading"] }
+    var bubbleFailure: XCUIElement { app.staticTexts["reader.bubble.failure"] }
+    var germanParagraph: XCUIElement { paragraph(startingWith: germanFirstParagraph) }
+    var germanHeading: XCUIElement { paragraph(startingWith: germanFirstHeading) }
     var highlightMenuItem: XCUIElement { app.menuItems["Highlight"] }
 
     func theme(_ name: String) -> XCUIElement { app.buttons["reader.theme.\(name)"] }
@@ -23,6 +40,17 @@ struct ReaderScreen: Screen {
 
     func paragraph(startingWith text: String) -> XCUIElement {
         app.webViews.staticTexts.matching(NSPredicate(format: "label BEGINSWITH %@", text)).firstMatch
+    }
+
+    func wordPoint(onLine index: Int, x: CGFloat) throws -> XCUICoordinate {
+        let line = try TokenValues.load().lineHeight("reading-body")
+        return germanParagraph.waitUntilExists()
+            .coordinate(withNormalizedOffset: .zero)
+            .withOffset(CGVector(dx: x, dy: line * CGFloat(index) + line / 2))
+    }
+
+    func tapWord(onLine index: Int, x: CGFloat) throws {
+        try wordPoint(onLine: index, x: x).tap()
     }
 
     @discardableResult
@@ -42,6 +70,16 @@ struct ReaderScreen: Screen {
     func hideChrome() {
         tapMargin()
         backButton.waitUntilGone()
+    }
+
+    @discardableResult
+    func openMenu() -> ReaderMenuScreen {
+        menuButton.waitUntil(\.isHittable, equals: true).tap()
+        return ReaderMenuScreen(app: app).waitUntilShown()
+    }
+
+    func toggleBookmark() {
+        bookmarkButton.waitUntil(\.isEnabled, equals: true).tap()
     }
 
     @discardableResult

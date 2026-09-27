@@ -12,7 +12,7 @@ final class ReaderPrototypeTests: UITestCase {
     func testOpensGermanFixtureOnFirstPage() {
         let reader = openReader()
 
-        XCTAssertEqual(reader.root.label, "Die Verwandlung")
+        XCTAssertEqual(reader.runningHead.label, "Die Verwandlung")
         XCTAssertEqual(reader.pageCounter.label, "1 of 54")
         XCTAssertEqual(reader.pageCounter.value as? String, "0")
         attachScreenshot("Reader")
@@ -87,6 +87,8 @@ final class ReaderPrototypeTests: UITestCase {
         reader.tapMargin()
 
         reader.word.waitUntilGone()
+        XCTAssertFalse(reader.theme("paper").exists)
+        reader.tapMargin()
         reader.theme("paper").waitUntil(\.isHittable, equals: true)
         reader.tapMargin()
         reader.theme("paper").waitUntilGone()
@@ -181,7 +183,8 @@ final class ReaderPrototypeTests: UITestCase {
     func testOpenEPUBPresentsFilesPicker() {
         let app = launch(
             LaunchConfiguration(
-                resetsState: true, fixtures: [], opened: [], mocksTranslation: true, now: nil,
+                resetsState: true, fixtures: [], opened: [], inProgress: [], highlighted: [], translation: .immediate,
+                now: nil,
                 notificationPermission: nil, unreadableStore: false))
 
         let picker = HomeScreen(app: app).waitUntilShown().openEPUB()
@@ -193,7 +196,8 @@ final class ReaderPrototypeTests: UITestCase {
     private func openReader() -> ReaderScreen {
         let app = launch(
             LaunchConfiguration(
-                resetsState: true, fixtures: [], opened: [], mocksTranslation: true, now: nil,
+                resetsState: true, fixtures: [], opened: [], inProgress: [], highlighted: [], translation: .immediate,
+                now: nil,
                 notificationPermission: nil, unreadableStore: false))
         return HomeScreen(app: app).waitUntilShown().openReaderPrototype()
     }

@@ -48,6 +48,15 @@
                     link(Text("Sheets and popover"), element: "presentations") {
                         PresentationGallery(colorScheme: appearance.colorScheme)
                     }
+                    link(Text("Selection and toolbar"), element: "selection") {
+                        SelectionGallery(colorScheme: appearance.colorScheme)
+                    }
+                    link(Text("Translation bubble"), element: "translationBubble") {
+                        TranslationBubbleGallery(colorScheme: appearance.colorScheme)
+                    }
+                    link(Text("Glass menu"), element: "glassMenu") {
+                        GlassMenuGallery(colorScheme: appearance.colorScheme)
+                    }
                 }
             }
             .navigationTitle("Component Gallery")
@@ -106,6 +115,21 @@
                     }
                 }
                 .padding(.space5)
+                .background(.surfacePaper, in: RoundedRectangle(cornerRadius: .radiusLg))
+                HStack(spacing: .space2) {
+                    button(.back, label: Text("Back"), element: "chromeBack", size: .regular, isActive: false) {}
+                    StackedTitle(
+                        title: Text(verbatim: "Die Verwandlung"), subtitle: Text(verbatim: "Franz Kafka · Erster Teil"),
+                        titleIdentifier: "glassButtonGallery.stackedTitle.title",
+                        subtitleIdentifier: "glassButtonGallery.stackedTitle.subtitle"
+                    )
+                    .frame(maxWidth: .infinity)
+                    button(
+                        .bookmarkFilled, label: Text("Bookmarked. Remove bookmark"), element: "bookmarkFilled",
+                        size: .regular, isActive: false
+                    ) {}
+                }
+                .padding(.space4)
                 .background(.surfacePaper, in: RoundedRectangle(cornerRadius: .radiusLg))
                 HStack(spacing: .space4) {
                     button(
@@ -406,6 +430,104 @@
             }
             .buttonStyle(.plain)
             .accessibilityIdentifier("presentationGallery.\(element)")
+        }
+    }
+
+    private struct SelectionGallery: View {
+        let colorScheme: ColorScheme?
+        @State private var selected: Set<String> = ["Solaris"]
+
+        var body: some View {
+            GalleryPage(identifier: "selectionGallery", colorScheme: colorScheme) {
+                HStack(alignment: .top, spacing: .space4) {
+                    cover("Solaris", color: 0x35545E)
+                    cover("Educated", color: 0x8A6D2F)
+                }
+                GlassToolbar {
+                    GlassToolbarItem(Text("Collection"), icon: .collection, role: nil) {}
+                        .accessibilityIdentifier("selectionGallery.collection")
+                    GlassToolbarItem(Text("Finished"), icon: .select, role: nil) {}
+                        .accessibilityIdentifier("selectionGallery.finished")
+                    GlassToolbarItem(Text("Remove"), icon: .trash, role: .destructive) {}
+                        .accessibilityIdentifier("selectionGallery.remove")
+                }
+                .disabled(selected.isEmpty)
+            }
+            .navigationTitle("Selection and toolbar")
+        }
+
+        private func cover(_ title: String, color: UInt32) -> some View {
+            let isSelected = selected.contains(title)
+            return Button {
+                if selected.remove(title) == nil {
+                    selected.insert(title)
+                }
+            } label: {
+                BookCover(
+                    title: title, author: nil, color: Color(hex: color), image: nil, size: .library, isFinished: false,
+                    finishedValue: Text("Finished")
+                )
+                .selectable(isSelected: isSelected)
+            }
+            .buttonStyle(.plain)
+            .accessibilityAddTraits(isSelected ? .isSelected : [])
+            .accessibilityIdentifier("selectionGallery.cover.\(title)")
+        }
+    }
+
+    private struct TranslationBubbleGallery: View {
+        let colorScheme: ColorScheme?
+
+        private let word = "Ungeziefer"
+
+        var body: some View {
+            GalleryPage(identifier: "translationBubbleGallery", colorScheme: colorScheme) {
+                VStack(alignment: .leading, spacing: .space4) {
+                    bubble(
+                        .translated(
+                            translation: Text(verbatim: "vermin"), ipa: Text(verbatim: "[ˈʊnɡəˌtsiːfɐ]"),
+                            grammar: Text("\("das Ungeziefer") · \("noun")")),
+                        element: "translated")
+                    bubble(.loading(label: Text("Translating \(word)")), element: "loading")
+                    bubble(.failed(message: Text("Translation unavailable")), element: "failed")
+                }
+                .padding(.space5)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .background(.surfacePaper, in: RoundedRectangle(cornerRadius: .radiusLg))
+            }
+            .navigationTitle("Translation bubble")
+        }
+
+        private func bubble(_ phase: TranslationBubble.Phase, element: String) -> some View {
+            TranslationBubble(
+                word: Text(verbatim: word), phase: phase, wordLocale: Locale(identifier: "de"),
+                translationLocale: Locale(identifier: "en"), identifier: "translationBubbleGallery.\(element)")
+        }
+    }
+
+    private struct GlassMenuGallery: View {
+        let colorScheme: ColorScheme?
+
+        var body: some View {
+            GalleryPage(identifier: "glassMenuGallery", colorScheme: colorScheme) {
+                GlassMenu(size: .reader) {
+                    item(Text("Contents"), icon: .contents, element: "contents")
+                    item(Text("Highlights"), icon: .highlighter, element: "highlights")
+                    item(Text("Bookmarks"), icon: .bookmark, element: "bookmarks")
+                    GlassMenuDivider()
+                    GlassMenuItem(Text("Themes & Settings"), sample: Text(verbatim: "Aa")) {}
+                        .accessibilityIdentifier("glassMenuGallery.settings")
+                }
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, .space5)
+                .background(.surfacePaper, in: RoundedRectangle(cornerRadius: .radiusLg))
+            }
+            .navigationTitle("Glass menu")
+        }
+
+        private func item(_ title: Text, icon: Icon, element: String) -> some View {
+            GlassMenuItem(title, icon: icon) {}
+                .accessibilityIdentifier("glassMenuGallery.\(element)")
         }
     }
 
