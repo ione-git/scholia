@@ -52,8 +52,9 @@ final class HighlightMenuTests: UITestCase {
         reader.paintedHighlights.waitUntil(\.label, equals: "2")
     }
 
-    func testDeleteRemovesHighlightAndFreesTheWord() throws {
-        let reader = try openHighlightedBook(launch(germanBook))
+    func testDeleteRemovesHighlightAndFreesTheWordAfterReopenAndRelaunch() throws {
+        let app = launch(germanBook)
+        let reader = try openHighlightedBook(app)
 
         try reader.tapHighlight(onLine: 2, x: 20).delete()
 
@@ -66,6 +67,14 @@ final class HighlightMenuTests: UITestCase {
         try reopened.tapWord(onLine: 2, x: 20)
         reopened.bubbleWord.waitUntil(\.label, equals: "seinem")
         XCTAssertEqual(reopened.paintedHighlights.label, "0")
+        app.terminate()
+
+        let relaunched = HomeScreen(app: launch(storedGermanBook)).waitUntilShown().openHeroBook()
+        relaunched.germanParagraph.waitUntilExists()
+        XCTAssertEqual(relaunched.storedHighlights.label, "0")
+        XCTAssertEqual(relaunched.paintedHighlights.label, "0")
+        try relaunched.tapWord(onLine: 2, x: 20)
+        relaunched.bubbleWord.waitUntil(\.label, equals: "seinem")
     }
 
     func testTapOutsideClosesMenuWithoutBubbleOrChrome() throws {
