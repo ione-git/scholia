@@ -8,7 +8,7 @@ final class HomeTests: UITestCase {
                 translation: .immediate, now: nil,
                 notificationPermission: nil))
         let home = HomeScreen(app: app).waitUntilShown()
-        home.goalRing.waitUntil(\.label, equals: "Daily goal")
+        home.goalRing.waitUntil(\.label, equals: "Today: 0 of 20 minutes read")
         XCTAssertEqual(home.goalRing.stringValue, 0.0.formatted(.percent.precision(.fractionLength(0))))
 
         let library = home.openLibrary()

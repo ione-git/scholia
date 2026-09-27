@@ -26,7 +26,7 @@ jobs:
         env:
           SIM: CI-${{ runner.name }}-${{ github.run_id }}-${{ github.run_attempt }}
       - id: test
-        run: make test DESTINATION="platform=iOS Simulator,id=$UDID" TEST_FLAGS="-retry-tests-on-failure -test-iterations 2"
+        run: make test DESTINATION="platform=iOS Simulator,id=$UDID" TEST_FLAGS="-retry-tests-on-failure -test-iterations 2 -parallel-testing-enabled YES -parallel-testing-worker-count 3"
         env:
           TEST_RUNNER_SNAPSHOT_TESTING_RECORD: never
       - if: always() && steps.test.outcome != 'skipped'

@@ -40,6 +40,7 @@ struct ScholiaApp: App {
                 .environment(translationService)
                 .environment(appDelegate.orientationLock)
                 .environment(pronouncer)
+                .environment(\.pausesLoading, TestAnimations.areOff)
                 .transaction { transaction in
                     if TestAnimations.areOff {
                         transaction.animation = nil

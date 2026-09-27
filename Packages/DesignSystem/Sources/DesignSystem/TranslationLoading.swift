@@ -1,13 +1,19 @@
 import SwiftUI
 
+extension EnvironmentValues {
+    @Entry public var pausesLoading = false
+}
+
 struct TranslationLoading<Content: View>: View {
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @Environment(\.pausesLoading) private var pausesLoading
 
     @ViewBuilder let content: (TimeInterval) -> Content
 
     var body: some View {
-        TimelineView(.animation(paused: reduceMotion)) { context in
-            content(reduceMotion ? 0 : context.date.timeIntervalSinceReferenceDate)
+        let isPaused = reduceMotion || pausesLoading
+        TimelineView(.animation(paused: isPaused)) { context in
+            content(isPaused ? 0 : context.date.timeIntervalSinceReferenceDate)
         }
     }
 }

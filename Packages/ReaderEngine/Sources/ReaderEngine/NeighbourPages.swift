@@ -300,7 +300,7 @@ extension NeighbourPages: EPUBNavigatorDelegate {
     func navigator(
         _ navigator: EPUBNavigatorViewController, setupUserScripts userContentController: WKUserContentController
     ) {
-        for script in [ReaderViewController.script, PageCounter.script] {
+        for script in [ReaderViewController.script, "\(PageCounter.script)\nreportPageCount([]);"] {
             userContentController.addUserScript(
                 WKUserScript(source: script, injectionTime: .atDocumentEnd, forMainFrameOnly: true))
         }

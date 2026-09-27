@@ -33,6 +33,7 @@ struct HighlightMenuLayer: View {
                     }
                     .accessibilityIdentifier("reader.highlightMenu.delete")
                 }
+                .fixedSize()
                 .accessibilityLabel(Text("Highlight color", comment: "Menu of colours for a tapped highlight"))
                 .accessibilityIdentifier("reader.highlightMenu")
                 .accessibilityAction(.escape) { controller.clearTappedHighlight() }
