@@ -54,12 +54,7 @@ final class TranslationTests: UITestCase {
     }
 
     func testTranslateToListsProviderLanguages() {
-        let app = launch(
-            LaunchConfiguration(
-                resetsState: true, fixtures: [], opened: [], inProgress: [], highlighted: [], translation: .immediate,
-                now: nil,
-                notificationPermission: nil))
-        let settings = HomeScreen(app: app).waitUntilShown().openSettings()
+        let settings = openSettings(launch(.withoutBooks))
 
         settings.openTranslationLanguages()
 
@@ -69,22 +64,15 @@ final class TranslationTests: UITestCase {
     }
 
     func testTranslateToPersistsAndTargetsTranslations() throws {
-        let app = launch(
-            LaunchConfiguration(
-                resetsState: true, fixtures: [], opened: [], inProgress: [], highlighted: [], translation: .immediate,
-                now: nil,
-                notificationPermission: nil))
-        var settings = HomeScreen(app: app).waitUntilShown().openSettings()
+        let app = launch(.withoutBooks)
+        var settings = openSettings(app)
         settings.chooseTranslationLanguage("fr")
         settings.translateTo.waitUntil(\.label, equals: "Translate to, French")
         app.terminate()
 
-        let relaunched = launch(
-            LaunchConfiguration(
-                resetsState: false, fixtures: [], opened: [], inProgress: [], highlighted: [], translation: .immediate,
-                now: nil,
-                notificationPermission: nil))
-        settings = HomeScreen(app: relaunched).waitUntilShown().openSettings()
+        var relaunch = LaunchConfiguration.withoutBooks
+        relaunch.resetsState = false
+        settings = openSettings(launch(relaunch))
         XCTAssertEqual(settings.translateTo.waitUntilExists().label, "Translate to, French")
         let reader = settings.goBack().openReaderPrototype()
 
@@ -95,11 +83,6 @@ final class TranslationTests: UITestCase {
     }
 
     private func openReader() -> ReaderScreen {
-        let app = launch(
-            LaunchConfiguration(
-                resetsState: true, fixtures: [], opened: [], inProgress: [], highlighted: [], translation: .immediate,
-                now: nil,
-                notificationPermission: nil))
-        return HomeScreen(app: app).waitUntilShown().openReaderPrototype()
+        HomeScreen(app: launch(.withoutBooks)).waitUntilShown().openReaderPrototype()
     }
 }
