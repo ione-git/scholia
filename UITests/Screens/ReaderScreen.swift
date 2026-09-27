@@ -23,10 +23,10 @@ struct ReaderScreen: Screen {
     var translation: XCUIElement { app.staticTexts["reader.translation"] }
     var translationRequests: XCUIElement { app.descendants(matching: .any)["debug.translationRequests"] }
     var wordTint: XCUIElement { app.descendants(matching: .any)["reader.wordTint"] }
-    var highlights: XCUIElement { app.descendants(matching: .any)["debug.highlights"] }
     var paintedHighlights: XCUIElement { app.descendants(matching: .any)["debug.paintedHighlights"] }
     var paintedWordTints: XCUIElement { app.descendants(matching: .any)["debug.paintedWordTints"] }
     var systemEditMenu: XCUIElement { app.menuItems.firstMatch }
+    var paintedLive: XCUIElement { app.descendants(matching: .any)["debug.paintedLive"] }
     var bubble: XCUIElement { app.otherElements["reader.bubble"] }
     var bubbleWord: XCUIElement { app.staticTexts["reader.bubble.word"] }
     var bubbleIPA: XCUIElement { app.staticTexts["reader.bubble.ipa"] }
@@ -48,10 +48,31 @@ struct ReaderScreen: Screen {
     }
 
     func wordPoint(onLine index: Int, x: CGFloat) throws -> XCUICoordinate {
+        try point(in: germanParagraph, onLine: index, x: x)
+    }
+
+    func point(in paragraph: XCUIElement, onLine index: Int, x: CGFloat) throws -> XCUICoordinate {
         let line = try TokenValues.load().lineHeight("reading-body")
-        return germanParagraph.waitUntilExists()
+        return paragraph.waitUntilExists()
             .coordinate(withNormalizedOffset: .zero)
             .withOffset(CGVector(dx: x, dy: line * CGFloat(index) + line / 2))
+    }
+
+    func dragHighlight(
+        in paragraph: XCUIElement, fromLine start: Int, x startX: CGFloat, toLine end: Int, x endX: CGFloat
+    ) throws {
+        try point(in: paragraph, onLine: start, x: startX)
+            .press(forDuration: 1, thenDragTo: try point(in: paragraph, onLine: end, x: endX))
+    }
+
+    func dragHighlightAndHold(
+        in paragraph: XCUIElement, fromLine start: Int, x startX: CGFloat, toLine end: Int, x endX: CGFloat,
+        for hold: TimeInterval
+    ) throws {
+        try point(in: paragraph, onLine: start, x: startX)
+            .press(
+                forDuration: 1, thenDragTo: try point(in: paragraph, onLine: end, x: endX), withVelocity: .default,
+                thenHoldForDuration: hold)
     }
 
     func tapWord(onLine index: Int, x: CGFloat) throws {

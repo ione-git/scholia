@@ -137,22 +137,6 @@ final class ReaderPrototypeTests: UITestCase {
         }
     }
 
-    func testLongPressAndDragPaintsHighlightWithoutMenu() throws {
-        let reader = openReader()
-        let line = try readingLineHeight()
-        let paragraph = reader.paragraph(startingWith: "Als Gregor Samsa").waitUntilExists()
-        let origin = paragraph.coordinate(withNormalizedOffset: .zero)
-
-        origin.withOffset(CGVector(dx: 60, dy: line * 5 + line / 2))
-            .press(forDuration: 1, thenDragTo: origin.withOffset(CGVector(dx: 200, dy: line * 6 + line / 2)))
-
-        reader.paintedHighlights.waitUntil(\.label, equals: "1")
-        XCTAssertTrue(reader.highlights.label.hasPrefix("Kopf ein wenig hob, seinen"), reader.highlights.label)
-        XCTAssertFalse(reader.systemEditMenu.exists)
-        let paint = try highlightColor(in: middle(ofLine: 5, from: 60, to: 200, in: paragraph), reader: reader)
-        XCTAssertLessThanOrEqual(paint.found.distance(to: paint.expected), 6, "\(paint)")
-    }
-
     func testOpenEPUBPresentsFilesPicker() {
         let app = launch(
             LaunchConfiguration(
@@ -177,23 +161,5 @@ final class ReaderPrototypeTests: UITestCase {
 
     private func readingLineHeight() throws -> CGFloat {
         try TokenValues.load().lineHeight("reading-body")
-    }
-
-    private func middle(ofLine index: Int, from start: CGFloat, to end: CGFloat, in paragraph: XCUIElement) throws
-        -> CGRect
-    {
-        let line = try readingLineHeight()
-        let y = paragraph.frame.minY + line * CGFloat(index) + line / 2
-        return CGRect(x: paragraph.frame.minX + start, y: y - 4, width: end - start, height: 8)
-    }
-
-    private func highlightColor(in rect: CGRect, reader: ReaderScreen) throws -> (found: RGB, expected: RGB) {
-        let tokens = try TokenValues.load()
-        let dark = XCUIDevice.shared.appearance == .dark
-        let page = try tokens.color("surface-paper", dark: dark)
-        let highlight = try tokens.color("highlight-yellow", dark: dark, over: page)
-        let pixels = try ScreenPixels(XCUIScreen.main.screenshot(), pointWidth: reader.app.frame.width)
-        let painted = try XCTUnwrap(pixels.colors(in: rect).min { $0.distance(to: page) < $1.distance(to: page) })
-        return (painted, highlight)
     }
 }

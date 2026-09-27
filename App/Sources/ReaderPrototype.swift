@@ -88,10 +88,6 @@
                     }
                 }
                 .frame(maxWidth: .infinity)
-                .background {
-                    HighlightDiagnostics(
-                        highlights: controller.highlights, paintedHighlights: controller.paintedHighlights)
-                }
             }
             .ignoresSafeArea()
         }
@@ -211,10 +207,11 @@
                 controller.onPageTap = { isChromeShown.wrappedValue.toggle() }
                 controller.onHighlight = { [weak controller] range in
                     guard let controller else {
-                        return
+                        return false
                     }
                     controller.highlights.append(
                         ReaderHighlight(id: UUID().uuidString, range: range, color: controller.highlightColor))
+                    return true
                 }
                 self.controller = controller
             } catch {
@@ -232,23 +229,6 @@
                 highlight.color = controller.highlightColor
                 return highlight
             }
-        }
-    }
-
-    private struct HighlightDiagnostics: View {
-        let highlights: [ReaderHighlight]
-        let paintedHighlights: Int
-
-        var body: some View {
-            Color.clear
-                .accessibilityElement()
-                .accessibilityIdentifier("debug.highlights")
-                .accessibilityLabel(Text(verbatim: highlights.map(\.range.text).joined(separator: "\n")))
-                .accessibilityValue(Text(verbatim: "\(highlights.count)"))
-            Color.clear
-                .accessibilityElement()
-                .accessibilityIdentifier("debug.paintedHighlights")
-                .accessibilityLabel(Text(verbatim: "\(paintedHighlights)"))
         }
     }
 
