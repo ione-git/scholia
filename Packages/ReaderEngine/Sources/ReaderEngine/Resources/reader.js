@@ -104,6 +104,33 @@
     return rect ? pageOf(rect) : null;
   }
 
+  function lastPageOfNode(node) {
+    const range = document.createRange();
+    range.selectNodeContents(node);
+    const rects = boxes(range);
+    return rects.length === 0 ? -1 : pageOf(rects[rects.length - 1]);
+  }
+
+  function offsetInNodeOfPage(node, page) {
+    let low = 0;
+    let high = node.data.length - 1;
+    while (low < high) {
+      const middle = (low + high) >> 1;
+      const found = pageOfCharacter(node, middle);
+      if (found === null || found >= page) {
+        high = middle;
+      } else {
+        low = middle + 1;
+      }
+    }
+    return low;
+  }
+
+  function endOfText(nodes) {
+    const last = nodes[nodes.length - 1];
+    return last ? last.start + last.node.data.length : 0;
+  }
+
   function lastPage() {
     return Math.max(0, Math.round(document.scrollingElement.scrollWidth / window.innerWidth) - 1);
   }
@@ -230,27 +257,27 @@
       }
       const nodes = textNodes();
       for (const { node, start } of nodes) {
-        const range = document.createRange();
-        range.selectNodeContents(node);
-        const rects = boxes(range);
-        if (rects.length === 0 || pageOf(rects[rects.length - 1]) < page) {
-          continue;
+        if (lastPageOfNode(node) >= page) {
+          return start + offsetInNodeOfPage(node, page);
         }
-        let low = 0;
-        let high = node.data.length - 1;
-        while (low < high) {
-          const middle = (low + high) >> 1;
-          const found = pageOfCharacter(node, middle);
-          if (found === null || found >= page) {
-            high = middle;
-          } else {
-            low = middle + 1;
-          }
-        }
-        return start + low;
       }
-      const last = nodes[nodes.length - 1];
-      return last ? last.start + last.node.data.length : 0;
+      return endOfText(nodes);
+    },
+
+    pageStarts() {
+      const starts = [0];
+      const pages = lastPage() + 1;
+      const nodes = textNodes();
+      for (const { node, start } of nodes) {
+        const last = Math.min(lastPageOfNode(node), pages - 1);
+        while (starts.length <= last) {
+          starts.push(start + offsetInNodeOfPage(node, starts.length));
+        }
+      }
+      while (starts.length < pages) {
+        starts.push(endOfText(nodes));
+      }
+      return starts;
     },
 
     async showOffset(offset) {
@@ -284,12 +311,6 @@
     },
 
     offsetsOfElements,
-
-    pagesOfElements(ids) {
-      return Object.fromEntries(
-        Object.entries(offsetsOfElements(ids)).map(([id, offset]) => [id, pageOfOffset(offset)])
-      );
-    },
 
     wordAt(x, y, language) {
       const caret = document.caretRangeFromPoint(x, y);

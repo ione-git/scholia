@@ -45,6 +45,9 @@
                     link(Text("Chapter rows"), element: "chapterRows") {
                         ChapterRowGallery(colorScheme: appearance.colorScheme)
                     }
+                    link(Text("Highlight cards"), element: "highlightCards") {
+                        HighlightCardGallery(colorScheme: appearance.colorScheme)
+                    }
                     link(Text("Segmented control"), element: "segmentedControl") {
                         SegmentedControlGallery(colorScheme: appearance.colorScheme)
                     }
@@ -341,6 +344,57 @@
                 }
             }
             .navigationTitle("Chapter rows")
+        }
+    }
+
+    private struct HighlightCardGallery: View {
+        private struct Card: Hashable {
+            let element: String
+            let quote: String
+            let language: String
+            let direction: LayoutDirection
+            let color: HighlightColor
+            let meta: String?
+        }
+
+        let colorScheme: ColorScheme?
+
+        private let cards = [
+            Card(
+                element: "short", quote: "Es war kein Traum.", language: "de", direction: .leftToRight, color: .yellow,
+                meta: "I · Page 3"),
+            Card(
+                element: "long",
+                quote:
+                    "Seine vielen, im Vergleich zu seinem sonstigen Umfang kläglich dünnen Beine flimmerten ihm hilflos vor den Augen.",
+                language: "de", direction: .leftToRight, color: .green, meta: "I · Page 3"),
+            Card(
+                element: "noMeta", quote: "machte ihn ganz melancholisch", language: "de", direction: .leftToRight,
+                color: .blue, meta: nil),
+            Card(
+                element: "rightToLeft", quote: "في الصباح تستيقظ المدينة ببطء.", language: "ar",
+                direction: .rightToLeft,
+                color: .pink, meta: "Page 1"),
+            Card(
+                element: "purple", quote: "Er lag auf seinem panzerartig harten Rücken", language: "de",
+                direction: .leftToRight, color: .purple, meta: "III · Page 37"),
+        ]
+
+        var body: some View {
+            GalleryPage(identifier: "highlightCardGallery", colorScheme: colorScheme) {
+                LazyVStack(spacing: .space3) {
+                    ForEach(cards, id: \.self) { card in
+                        HighlightCard(
+                            quote: Text(verbatim: card.quote, spokenIn: Locale(identifier: card.language)),
+                            quoteDirection: card.direction, color: card.color.solid.color,
+                            meta: card.meta.map { Text(verbatim: $0) }
+                        )
+                        .accessibilityElement(children: .combine)
+                        .accessibilityIdentifier("highlightCardGallery.\(card.element)")
+                    }
+                }
+            }
+            .navigationTitle("Highlight cards")
         }
     }
 

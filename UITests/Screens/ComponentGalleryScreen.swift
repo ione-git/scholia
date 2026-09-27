@@ -28,6 +28,9 @@ struct ComponentGalleryScreen: Screen {
     func openBookCovers() -> BookCoverGalleryScreen { open("bookCover", as: BookCoverGalleryScreen.init) }
     func openListRows() -> ListRowGalleryScreen { open("listRows", as: ListRowGalleryScreen.init) }
     func openChapterRows() -> ChapterRowGalleryScreen { open("chapterRows", as: ChapterRowGalleryScreen.init) }
+    func openHighlightCards() -> HighlightCardGalleryScreen {
+        open("highlightCards", as: HighlightCardGalleryScreen.init)
+    }
     func openSegmentedControls() -> SegmentedControlGalleryScreen {
         open("segmentedControl", as: SegmentedControlGalleryScreen.init)
     }
@@ -108,6 +111,14 @@ struct ChapterRowGalleryScreen: ComponentGalleryPage {
     var root: XCUIElement { app.scrollViews["chapterRowGallery.scrollView"] }
 
     func row(_ element: String) -> XCUIElement { app.descendants(matching: .any)["chapterRowGallery.\(element)"] }
+}
+
+struct HighlightCardGalleryScreen: ComponentGalleryPage {
+    let app: XCUIApplication
+
+    var root: XCUIElement { app.scrollViews["highlightCardGallery.scrollView"] }
+
+    func card(_ element: String) -> XCUIElement { app.descendants(matching: .any)["highlightCardGallery.\(element)"] }
 }
 
 struct SegmentedControlGalleryScreen: ComponentGalleryPage {

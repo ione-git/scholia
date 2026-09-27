@@ -20,7 +20,15 @@ extension Highlight {
         self.range.start == range.start && self.range.end == range.end
     }
 
+    var key: String {
+        "\(start.chapter):\(start.offset)-\(end.offset)"
+    }
+
     func readerHighlight(color: UIColor) -> ReaderHighlight {
-        ReaderHighlight(id: "\(start.chapter):\(start.offset)-\(end.offset)", range: range, color: color)
+        ReaderHighlight(id: key, range: range, color: color)
+    }
+
+    static func isInBookOrder(_ lhs: Highlight, _ rhs: Highlight) -> Bool {
+        (lhs.start.chapter, lhs.start.offset, lhs.end.offset) < (rhs.start.chapter, rhs.start.offset, rhs.end.offset)
     }
 }

@@ -45,8 +45,16 @@ public final class ReaderBook {
     }
 
     public func indexOfChapter(containing location: ReaderLocation) -> Int? {
+        guard !hasUnknownOffsets(inChapter: location.chapter) else {
+            return nil
+        }
         let start = tableOfContents.map(\.location).filter { $0 <= location }.max()
         return tableOfContents.lastIndex { $0.location == start }
+    }
+
+    private func hasUnknownOffsets(inChapter chapter: Int) -> Bool {
+        let chapters = tableOfContents.filter { $0.location.chapter == chapter }
+        return chapters.count > 1 && chapters.contains { $0.unresolvedFragment != nil }
     }
 
     func unresolvedFragments(inChapter chapter: Int) -> [String] {

@@ -17,7 +17,7 @@ struct WordBubble: View {
 
     var body: some View {
         TranslationBubble(
-            word: Text(verbatim: word.text),
+            word: Text(verbatim: word.text, spokenIn: Locale(identifier: language)),
             phase: phase,
             wordLocale: Locale(identifier: language),
             translationLocale: Locale(identifier: settings.translationLanguage),

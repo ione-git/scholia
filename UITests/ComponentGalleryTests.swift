@@ -54,6 +54,13 @@ final class ComponentGalleryTests: UITestCase {
             attachScreenshot("ChapterRows\(suffix)")
             gallery = chapters.goBack()
 
+            let highlightCards = gallery.openHighlightCards()
+            XCTAssertEqual(highlightCards.root.value as? String, appearance.rawValue)
+            for element in ["short", "long", "noMeta", "rightToLeft", "purple"] {
+                highlightCards.card(element).waitUntilExists()
+            }
+            gallery = highlightCards.goBack()
+
             let segmented = gallery.openSegmentedControls()
             XCTAssertEqual(segmented.root.value as? String, appearance.rawValue)
             for element in ["contents", "highlights", "bookmarks", "bubble", "minimal", "card"] {

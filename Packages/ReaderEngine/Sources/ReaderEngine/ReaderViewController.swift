@@ -504,38 +504,25 @@ final class ReaderViewController: UIViewController {
     }
 
     private func publishPage() {
-        let startPages = pageCounts.map(Self.startPages(of:))
-        let chapterStartPages = pageCounts.flatMap(chapterStartPages(in:))
-        if controller?.startPages != chapterStartPages {
-            controller?.startPages = chapterStartPages
+        let pageStarts = pageCounts?.map(\.pageStarts)
+        if controller?.pageStarts != pageStarts {
+            controller?.pageStarts = pageStarts
         }
-        guard let shownPage, let pageCounts, let startPages, pageCounts.indices.contains(shownPage.chapter) else {
+        guard let shownPage, let pageCounts, pageCounts.indices.contains(shownPage.chapter) else {
             controller?.page = nil
             return
         }
+        let before = pageCounts[..<shownPage.chapter].map(\.pages).reduce(0, +)
         controller?.page = ReaderPage(
             chapter: shownPage.chapter,
-            number: startPages[shownPage.chapter] + min(shownPage.page, pageCounts[shownPage.chapter].pages - 1),
+            number: before + min(shownPage.page, pageCounts[shownPage.chapter].pages - 1) + 1,
             count: pageCounts.map(\.pages).reduce(0, +)
         )
     }
 
-    private func chapterStartPages(in pageCounts: [PageCount]) -> [Int]? {
-        guard pageCounts.count == book.publication.readingOrder.count else {
-            return nil
-        }
-        let startPages = Self.startPages(of: pageCounts)
-        return book.tableOfContents.map { chapter in
-            let file = chapter.location.chapter
-            return startPages[file] + (chapter.fragment.flatMap { pageCounts[file].fragmentPages[$0] } ?? 0)
-        }
-    }
-
-    private static func startPages(of pageCounts: [PageCount]) -> [Int] {
-        var start = 1
-        return pageCounts.map { count in
-            defer { start += count.pages }
-            return start
+    private func resolveFragments(in pageCounts: [PageCount]) {
+        for (chapter, count) in pageCounts.enumerated() {
+            book.resolveFragments(count.fragmentOffsets, inChapter: chapter)
         }
     }
 
@@ -597,6 +584,9 @@ final class ReaderViewController: UIViewController {
         stopCounting()
         let key = PageCountCache.key(book: book, style: style, size: layout.size)
         pageCounts = layout.isScrolled ? nil : PageCountCache.counts(for: key)
+        if let pageCounts {
+            resolveFragments(in: pageCounts)
+        }
         shownPage = nil
         controller?.pageSpan = nil
         publishPage()
@@ -621,6 +611,7 @@ final class ReaderViewController: UIViewController {
                 return
             }
             PageCountCache.store(counts, for: key)
+            resolveFragments(in: counts)
             pageCounts = counts
             publishPage()
         }

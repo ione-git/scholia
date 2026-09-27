@@ -218,6 +218,9 @@
     "Highlight" : {
       "comment" : "Selection menu item that highlights the selected text"
     },
+    "Highlight cards" : {
+
+    },
     "Highlights" : {
 
     },
@@ -653,6 +656,126 @@
     },
     "pronoun" : {
 
+    },
+    "readerHighlights.color.blue" : {
+      "comment" : "Highlights list row, VoiceOver value: the highlight's colour",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Blue"
+          }
+        }
+      }
+    },
+    "readerHighlights.color.green" : {
+      "comment" : "Highlights list row, VoiceOver value: the highlight's colour",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Green"
+          }
+        }
+      }
+    },
+    "readerHighlights.color.pink" : {
+      "comment" : "Highlights list row, VoiceOver value: the highlight's colour",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Pink"
+          }
+        }
+      }
+    },
+    "readerHighlights.color.purple" : {
+      "comment" : "Highlights list row, VoiceOver value: the highlight's colour",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Purple"
+          }
+        }
+      }
+    },
+    "readerHighlights.color.yellow" : {
+      "comment" : "Highlights list row, VoiceOver value: the highlight's colour",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Yellow"
+          }
+        }
+      }
+    },
+    "readerHighlights.meta.chapterPage" : {
+      "comment" : "Highlights list row, under the quote: chapter title and page of the highlight",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@ · Page %2$lld"
+          }
+        }
+      }
+    },
+    "readerHighlights.meta.page" : {
+      "comment" : "Highlights list row, under the quote: page of a highlight outside any chapter",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Page %lld"
+          }
+        }
+      }
+    },
+    "readerHighlights.value.colorChapter" : {
+      "comment" : "Highlights list row, VoiceOver value: colour and chapter title of the highlight",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@, %2$@"
+          }
+        }
+      }
+    },
+    "readerHighlights.value.colorChapterPage" : {
+      "comment" : "Highlights list row, VoiceOver value: colour, chapter title and page of the highlight",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@, %2$@, Page %3$lld"
+          }
+        }
+      }
+    },
+    "readerHighlights.value.colorPage" : {
+      "comment" : "Highlights list row, VoiceOver value: colour and page of a highlight outside any chapter",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@, Page %2$lld"
+          }
+        }
+      }
     },
     "verb" : {
 
