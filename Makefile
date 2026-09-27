@@ -1,6 +1,6 @@
 DESTINATION ?= platform=iOS Simulator,name=iPhone 17 Pro,OS=26.4.1
 DERIVED_DATA ?= build/DerivedData
-XCODEBUILD = xcodebuild -project Scholia.xcodeproj -scheme Scholia -destination '$(DESTINATION)' -derivedDataPath $(DERIVED_DATA)
+XCODEBUILD = $(if $(CI),,nice -n 10 )xcodebuild -project Scholia.xcodeproj -scheme Scholia -destination '$(DESTINATION)' -derivedDataPath $(DERIVED_DATA)
 SOURCES = App UITests Packages
 RESOLVED = Scholia.xcodeproj/project.xcworkspace/xcshareddata/swiftpm/Package.resolved
 
