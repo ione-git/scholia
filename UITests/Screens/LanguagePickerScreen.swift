@@ -10,11 +10,6 @@ struct LanguagePickerScreen: Screen {
 
     private static let languagePrefix = "languagePicker.language."
 
-    var languages: [String] {
-        app.buttons.matching(NSPredicate(format: "identifier BEGINSWITH %@", Self.languagePrefix))
-            .allElementsBoundByIndex.map { String($0.identifier.dropFirst(Self.languagePrefix.count)) }
-    }
-
     func language(_ code: String) -> XCUIElement { app.buttons[Self.languagePrefix + code] }
 
     @discardableResult

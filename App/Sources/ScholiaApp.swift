@@ -48,6 +48,7 @@ struct ScholiaApp: App {
                     .background { PrivacyDiagnostics() }
                     .background { AppearanceDiagnostics() }
                     .background { TranslationDiagnostics(provider: translationService.provider) }
+                    .background { SafeAreaDiagnostics() }
                     .background { PasteboardDiagnostics() }
                 #endif
         }

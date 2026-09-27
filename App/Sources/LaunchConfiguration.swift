@@ -20,6 +20,11 @@ enum TranslationMock: String {
     case held
 }
 
+struct FixtureCollection {
+    var name: String
+    var books: [Fixture]
+}
+
 enum NotificationPermission: String {
     case authorized
     case declined
@@ -35,6 +40,7 @@ struct LaunchConfiguration {
     var translation: TranslationMock?
     var now: Date?
     var notificationPermission: NotificationPermission?
+    var collections: [FixtureCollection] = []
 
     static let current = LaunchConfiguration(environment: ProcessInfo.processInfo.environment)
 }
@@ -49,6 +55,7 @@ extension LaunchConfiguration {
         static let translation = "SCHOLIA_TRANSLATION"
         static let now = "SCHOLIA_NOW"
         static let notificationPermission = "SCHOLIA_NOTIFICATIONS"
+        static let collections = "SCHOLIA_COLLECTIONS"
     }
 
     init(environment: [String: String]) {
@@ -61,7 +68,8 @@ extension LaunchConfiguration {
                 highlighted: Self.fixtures(environment[Key.highlighted]),
                 translation: environment[Key.translation].flatMap(TranslationMock.init),
                 now: environment[Key.now].flatMap { try? Date($0, strategy: .iso8601) },
-                notificationPermission: environment[Key.notificationPermission].flatMap(NotificationPermission.init)
+                notificationPermission: environment[Key.notificationPermission].flatMap(NotificationPermission.init),
+                collections: Self.collections(environment[Key.collections])
             )
         #else
             self.init(
@@ -73,6 +81,13 @@ extension LaunchConfiguration {
 
     private static func fixtures(_ value: String?) -> [Fixture] {
         value?.split(separator: ",").compactMap { Fixture(rawValue: String($0)) } ?? []
+    }
+
+    private static func collections(_ value: String?) -> [FixtureCollection] {
+        value?.split(separator: ";").map { entry in
+            let name = entry.prefix { $0 != ":" }
+            return FixtureCollection(name: String(name), books: fixtures(String(entry.dropFirst(name.count + 1))))
+        } ?? []
     }
 
     var environment: [String: String] {
@@ -100,6 +115,12 @@ extension LaunchConfiguration {
         }
         if let notificationPermission {
             environment[Key.notificationPermission] = notificationPermission.rawValue
+        }
+        if !collections.isEmpty {
+            environment[Key.collections] = collections.map { collection in
+                "\(collection.name):\(collection.books.map(\.rawValue).joined(separator: ","))"
+            }
+            .joined(separator: ";")
         }
         return environment
     }
