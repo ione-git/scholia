@@ -1,4 +1,5 @@
 import DesignSystem
+import OSLog
 import ReaderEngine
 import SwiftData
 import SwiftUI
@@ -44,8 +45,11 @@ struct ReadingView: View {
                     .padding(.trailing, .space5)
             }
             .ignoresSafeArea()
+            if let controller {
+                SelectionMenuLayer(controller: controller)
+            }
             if let controller, let word = controller.word {
-                TranslationBubblePlacement(anchor: word.rect, topLimit: .navTop + .controlH) {
+                TranslationBubblePlacement(anchor: word.rect, topLimit: .navTop + .controlH, gap: .bubble) {
                     WordBubble(word: word, language: book.language)
                         .accessibilityAction(.escape) { controller.clearWord() }
                 }
@@ -54,7 +58,12 @@ struct ReadingView: View {
             }
         }
         #if DEBUG
-            .background { WordTintDiagnostics(painted: controller?.paintedWordTints ?? 0) }
+            .background {
+                PaintedDiagnostics(identifier: "debug.paintedWordTints", count: controller?.paintedWordTints ?? 0)
+            }
+            .background {
+                PaintedDiagnostics(identifier: "debug.paintedHighlights", count: controller?.paintedHighlights ?? 0)
+            }
         #endif
         .accessibilityElement(children: .contain)
         .accessibilityIdentifier("reader.page")
@@ -73,6 +82,7 @@ struct ReadingView: View {
         }
         .task { await open() }
         .onChange(of: theme) { recolor() }
+        .onChange(of: book.highlights) { paintHighlights() }
         .onChange(of: controller?.location) { _, location in save(location) }
         .onChange(of: controller?.page) { _, page in save(page) }
     }
@@ -97,13 +107,19 @@ struct ReadingView: View {
                 location: book.position.map { ReaderLocation(chapter: $0.chapter, offset: $0.offset) },
                 style: .book,
                 colors: theme.colors,
-                highlightColor: theme.highlightColor,
-                pageTurn: .slide,
-                highlightTitle: String(localized: "Highlight")
+                highlightColor: theme.highlightColor(settings.highlightColor),
+                pageTurn: .slide
             )
             let isChromeShown = $isChromeShown
             controller.onPageTap = { withAnimation { isChromeShown.wrappedValue.toggle() } }
+            let book = book
+            let modelContext = modelContext
+            let settings = settings
+            controller.onHighlight = { range in
+                Self.addHighlight(range, color: settings.highlightColor, to: book, in: modelContext)
+            }
             self.controller = controller
+            paintHighlights()
             book.openedAt = LaunchConfiguration.current.now ?? .now
             try? modelContext.save()
         } catch {
@@ -116,7 +132,28 @@ struct ReadingView: View {
             return
         }
         controller.colors = theme.colors
-        controller.highlightColor = theme.highlightColor
+        controller.highlightColor = theme.highlightColor(settings.highlightColor)
+        paintHighlights()
+    }
+
+    private func paintHighlights() {
+        controller?.highlights = book.highlights.map { $0.readerHighlight(color: theme.highlightColor($0.color)) }
+    }
+
+    private static func addHighlight(
+        _ range: ReaderTextRange, color: HighlightColor, to book: Book, in modelContext: ModelContext
+    ) {
+        guard !book.highlights.contains(where: { $0.covers(range) }) else {
+            return
+        }
+        let highlight = Highlight(range: range, color: color)
+        modelContext.insert(highlight)
+        book.highlights.append(highlight)
+        do {
+            try modelContext.save()
+        } catch {
+            logger.error("Saving a highlight failed: \(error.localizedDescription, privacy: .public)")
+        }
     }
 
     private func save(_ location: ReaderLocation?) {
@@ -136,15 +173,18 @@ struct ReadingView: View {
     }
 }
 
+private let logger = Logger(subsystem: "com.ione.scholia", category: "reader")
+
 #if DEBUG
-    private struct WordTintDiagnostics: View {
-        let painted: Int
+    private struct PaintedDiagnostics: View {
+        let identifier: String
+        let count: Int
 
         var body: some View {
             Color.clear
                 .accessibilityElement()
-                .accessibilityIdentifier("debug.paintedWordTints")
-                .accessibilityLabel(Text(verbatim: "\(painted)"))
+                .accessibilityIdentifier(identifier)
+                .accessibilityLabel(Text(verbatim: "\(count)"))
         }
     }
 #endif

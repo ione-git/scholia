@@ -19,6 +19,10 @@ extension Screen {
         app.descendants(matching: .any)["debug.storedHighlights"]
     }
 
+    var pasteboard: XCUIElement {
+        app.descendants(matching: .any)["debug.pasteboard"]
+    }
+
     var readingReminder: XCUIElement {
         app.descendants(matching: .any)["debug.readingReminder"]
     }
