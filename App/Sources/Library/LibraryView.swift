@@ -334,5 +334,6 @@ private struct LibraryMenu: View {
                 .accessibilityIdentifier("libraryMenu.sortBy")
             }
         }
+        .id(isSortShown)
     }
 }
