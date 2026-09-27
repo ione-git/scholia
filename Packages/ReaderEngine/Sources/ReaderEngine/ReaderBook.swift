@@ -1,7 +1,6 @@
 import Foundation
 import Observation
 import ReadiumShared
-import ReadiumStreamer
 
 @Observable
 public final class ReaderBook {
@@ -20,20 +19,7 @@ public final class ReaderBook {
     }
 
     public static func open(_ url: URL) async throws(ReaderError) -> ReaderBook {
-        guard let file = FileURL(url: url) else {
-            throw .unreadable
-        }
-        let retriever = AssetRetriever(httpClient: DefaultHTTPClient())
-        guard case .success(let asset) = await retriever.retrieve(url: file) else {
-            throw .unreadable
-        }
-        let opener = PublicationOpener(parser: EPUBParser())
-        guard case .success(let publication) = await opener.open(asset: asset, allowUserInteraction: false) else {
-            throw .unreadable
-        }
-        guard !publication.isRestricted else {
-            throw .protected
-        }
+        let publication = try await Publication.open(url)
         let contents = (try? await publication.tableOfContents().get()) ?? []
         return ReaderBook(
             url: url, publication: publication,
@@ -71,9 +57,4 @@ public final class ReaderBook {
             return [chapter].compactMap { $0 } + chapters(in: link.children, readingOrder: readingOrder)
         }
     }
-}
-
-public enum ReaderError: Error {
-    case unreadable
-    case protected
 }
