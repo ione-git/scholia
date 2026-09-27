@@ -3,34 +3,42 @@
     import SwiftUI
 
     struct TokenGallery: View {
+        private static let surfaceColours = colours(prefixedBy: ["surface", "glass"])
+        private static let inkAndControlColours = colours(
+            prefixedBy: ["ink", "on-", "accent", "track", "hairline", "control"])
+        private static let highlightColours = colours(prefixedBy: ["highlight"])
+        private static let otherColours = ColorToken.all.filter { token in
+            [surfaceColours, inkAndControlColours, highlightColours].allSatisfy { group in
+                !group.contains { $0.id == token.id }
+            }
+        }
+
         var body: some View {
-            ScrollView {
-                VStack(alignment: .leading, spacing: .space6) {
-                    section("Colours") {
-                        ForEach(ColorToken.all) { token in
-                            HStack(spacing: .space3) {
-                                ColorSwatch(token: token, scheme: .light)
-                                ColorSwatch(token: token, scheme: .dark)
-                                Text(token.name).textStyle(.body)
-                            }
-                        }
+            GalleryPage(identifier: "tokenGallery.scrollView", colorScheme: nil) {
+                GroupedList {
+                    section(Text("Surface colours"), name: "coloursSurfaces") { colourRows(Self.surfaceColours) }
+                    section(Text("Ink and control colours"), name: "coloursInkAndControls") {
+                        colourRows(Self.inkAndControlColours)
                     }
-                    section("Text styles") {
+                    section(Text("Highlight colours"), name: "coloursHighlights") {
+                        colourRows(Self.highlightColours)
+                    }
+                    section(Text("Other colours"), name: "coloursOther") { colourRows(Self.otherColours) }
+                    section(Text("Text styles"), name: "textStyles") {
                         ForEach(TextStyle.all) { style in
                             Text(style.name)
                                 .textStyle(style)
                                 .accessibilityIdentifier("tokenGallery.textStyle.\(style.name)")
-                                .accessibilityValue(Text(style.uiFont.fontName))
                         }
                     }
-                    section("Spacing") {
+                    section(Text("Spacing"), name: "spacing") {
                         ForEach(NumberToken.spacing) { token in
                             numberRow(token, element: "spacing") {
                                 Rectangle().fill(.ink).frame(width: token.value, height: .space2)
                             }
                         }
                     }
-                    section("Radius") {
+                    section(Text("Radius"), name: "radius") {
                         ForEach(NumberToken.radius) { token in
                             numberRow(token, element: "radius") {
                                 RoundedRectangle(cornerRadius: token.value)
@@ -40,7 +48,7 @@
                             }
                         }
                     }
-                    section("Shadows") {
+                    section(Text("Shadows"), name: "shadows") {
                         ForEach(ShadowToken.all) { token in
                             HStack(spacing: .space4) {
                                 RoundedRectangle(cornerRadius: .radiusMd)
@@ -54,12 +62,12 @@
                             .accessibilityIdentifier("tokenGallery.shadow.\(token.name)")
                         }
                     }
-                    section("Effects") {
+                    section(Text("Effects"), name: "effects") {
                         ForEach(NumberToken.effects) { token in
                             numberRow(token, element: "effect") {}
                         }
                     }
-                    section("Reader themes") {
+                    section(Text("Reader themes"), name: "readerThemes") {
                         ForEach(ReaderTheme.allCases, id: \.self) { theme in
                             RoundedRectangle(cornerRadius: .radiusMd)
                                 .fill(theme.page)
@@ -73,19 +81,34 @@
                         }
                     }
                 }
-                .padding(.horizontal, .space5)
-                .padding(.bottom, .space10)
-                .foregroundStyle(.ink)
             }
-            .accessibilityIdentifier("tokenGallery.scrollView")
-            .background(.surface)
             .navigationTitle("Token Gallery")
         }
 
-        private func section(_ title: LocalizedStringKey, @ViewBuilder content: () -> some View) -> some View {
-            VStack(alignment: .leading, spacing: .space3) {
-                Text(title).textStyle(.section)
-                content()
+        private static func colours(prefixedBy prefixes: [String]) -> [ColorToken] {
+            ColorToken.all.filter { token in prefixes.contains { token.name.hasPrefix($0) } }
+        }
+
+        private func section(_ title: Text, name: String, @ViewBuilder content: () -> some View) -> some View {
+            NavigationLink {
+                GalleryPage(identifier: "tokenGallery.section.\(name)", colorScheme: nil) {
+                    VStack(alignment: .leading, spacing: .space3) { content() }
+                }
+                .navigationTitle(title)
+            } label: {
+                ListRow(title, height: .regular) { ListRowChevron() }
+            }
+            .buttonStyle(.plain)
+            .accessibilityIdentifier("tokenGallery.\(name)")
+        }
+
+        private func colourRows(_ tokens: [ColorToken]) -> some View {
+            ForEach(tokens) { token in
+                HStack(spacing: .space3) {
+                    ColorSwatch(token: token, scheme: .light)
+                    ColorSwatch(token: token, scheme: .dark)
+                    Text(token.name).textStyle(.body)
+                }
             }
         }
 

@@ -20,7 +20,7 @@
         @State private var appearance = Appearance.system
 
         var body: some View {
-            GalleryPage(identifier: "componentGallery", colorScheme: appearance.colorScheme) {
+            GalleryPage(identifier: "componentGallery.scrollView", colorScheme: appearance.colorScheme) {
                 GroupedSection(Text("Appearance")) {
                     ListRow(Text("Theme"), height: .control) {
                         SegmentedControl(
@@ -40,6 +40,9 @@
                     link(Text("Chip"), element: "chip") { ChipGallery(colorScheme: appearance.colorScheme) }
                     link(Text("Book cover"), element: "bookCover") {
                         BookCoverGallery(colorScheme: appearance.colorScheme)
+                    }
+                    link(Text("Large and image covers"), element: "largeBookCover") {
+                        LargeBookCoverGallery(colorScheme: appearance.colorScheme)
                     }
                     link(Text("List rows"), element: "listRows") { ListRowGallery(colorScheme: appearance.colorScheme) }
                     link(Text("Segmented control"), element: "segmentedControl") {
@@ -65,41 +68,13 @@
         }
     }
 
-    private struct GalleryPage<Content: View>: View {
-        let identifier: String
-        let colorScheme: ColorScheme?
-        @ViewBuilder let content: Content
-
-        var body: some View {
-            ScrollView {
-                VStack(alignment: .leading, spacing: .space6) { content }
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    .padding(.horizontal, .space5)
-                    .padding(.bottom, .space10)
-            }
-            .accessibilityIdentifier("\(identifier).scrollView")
-            .modifier(AppearanceValue())
-            .background(.surface)
-            .foregroundStyle(.ink)
-            .preferredColorScheme(colorScheme)
-        }
-    }
-
-    private struct AppearanceValue: ViewModifier {
-        @Environment(\.colorScheme) private var colorScheme
-
-        func body(content: Content) -> some View {
-            content.accessibilityValue(Text(verbatim: colorScheme == .dark ? "dark" : "light"))
-        }
-    }
-
     private struct GlassButtonGallery: View {
         let colorScheme: ColorScheme?
         @State private var isMenuOpen = true
         @State private var isReaderMenuOpen = false
 
         var body: some View {
-            GalleryPage(identifier: "glassButtonGallery", colorScheme: colorScheme) {
+            GalleryPage(identifier: "glassButtonGallery.scrollView", colorScheme: colorScheme) {
                 HStack(spacing: .space4) {
                     button(.back, label: Text("Back"), element: "back", size: .regular, isActive: false) {}
                     button(.add, label: Text("Add a book"), element: "add", size: .regular, isActive: false) {}
@@ -140,7 +115,7 @@
         @State private var collections = [("Biographies", 4), ("Fiction", 11)]
 
         var body: some View {
-            GalleryPage(identifier: "chipGallery", colorScheme: colorScheme) {
+            GalleryPage(identifier: "chipGallery.scrollView", colorScheme: colorScheme) {
                 ScrollView(.horizontal) {
                     HStack(spacing: .space2) {
                         chip(Text("All"), key: "All", count: 24)
@@ -170,41 +145,54 @@
         let colorScheme: ColorScheme?
 
         var body: some View {
-            GalleryPage(identifier: "bookCoverGallery", colorScheme: colorScheme) {
+            GalleryPage(identifier: "bookCoverGallery.scrollView", colorScheme: colorScheme) {
                 HStack(alignment: .top, spacing: .space4) {
-                    cover(
-                        "Die Verwandlung", author: "Franz Kafka", color: 0x2E3A4F, image: nil, size: .hero,
+                    GalleryBookCover(
+                        title: "Die Verwandlung", author: "Franz Kafka", color: 0x2E3A4F, image: nil, size: .hero,
                         isFinished: false)
-                    cover(
-                        "Solaris", author: "Stanisław Lem", color: 0x35545E, image: nil, size: .library,
+                    GalleryBookCover(
+                        title: "Solaris", author: "Stanisław Lem", color: 0x35545E, image: nil, size: .library,
                         isFinished: false)
-                    cover("Thumbnail", author: nil, color: 0x8A6D2F, image: nil, size: .thumbnail, isFinished: false)
+                    GalleryBookCover(
+                        title: "Thumbnail", author: nil, color: 0x8A6D2F, image: nil, size: .thumbnail,
+                        isFinished: false)
                 }
                 HStack(alignment: .top, spacing: .space4) {
-                    cover(
-                        "Il nome della rosa", author: "Umberto Eco", color: 0x6B2F3A, image: nil, size: .row,
+                    GalleryBookCover(
+                        title: "Il nome della rosa", author: "Umberto Eco", color: 0x6B2F3A, image: nil, size: .row,
                         isFinished: false)
-                    cover(
-                        "Educated", author: "Tara Westover", color: 0x8A6D2F, image: nil, size: .grid, isFinished: false
-                    )
-                    cover(
-                        "L’Étranger", author: "Albert Camus", color: 0x9A6B4E, image: nil, size: .library,
-                        isFinished: true
-                    )
+                    GalleryBookCover(
+                        title: "Educated", author: "Tara Westover", color: 0x8A6D2F, image: nil, size: .grid,
+                        isFinished: false)
+                    GalleryBookCover(
+                        title: "L’Étranger", author: "Albert Camus", color: 0x9A6B4E, image: nil, size: .library,
+                        isFinished: true)
                 }
+            }
+            .navigationTitle("Book cover")
+        }
+    }
+
+    private struct LargeBookCoverGallery: View {
+        let colorScheme: ColorScheme?
+
+        var body: some View {
+            GalleryPage(identifier: "largeBookCoverGallery.scrollView", colorScheme: colorScheme) {
                 HStack(alignment: .top, spacing: .space4) {
                     VStack(spacing: .space4) {
-                        cover(
-                            "Der Prozess", author: "Franz Kafka", color: 0x2E3A4F, image: nil, size: .heroLarge,
-                            isFinished: false)
+                        GalleryBookCover(
+                            title: "Der Prozess", author: "Franz Kafka", color: 0x2E3A4F, image: nil,
+                            size: .heroLarge, isFinished: false)
                         ProgressBar(value: 0.4)
                             .frame(width: BookCover.Size.heroLarge.width)
                             .accessibilityIdentifier("bookCoverGallery.progress")
                     }
-                    cover("Image", author: nil, color: 0x2F5D50, image: sampleImage, size: .library, isFinished: false)
+                    GalleryBookCover(
+                        title: "Image", author: nil, color: 0x2F5D50, image: sampleImage, size: .library,
+                        isFinished: false)
                 }
             }
-            .navigationTitle("Book cover")
+            .navigationTitle("Large and image covers")
         }
 
         private var sampleImage: Image {
@@ -215,11 +203,17 @@
                     .environment(\.colorScheme, .light))
             return Image(uiImage: renderer.uiImage ?? UIImage())
         }
+    }
 
-        private func cover(
-            _ title: String, author: String?, color: UInt32, image: Image?, size: BookCover.Size,
-            isFinished: Bool
-        ) -> some View {
+    private struct GalleryBookCover: View {
+        let title: String
+        let author: String?
+        let color: UInt32
+        let image: Image?
+        let size: BookCover.Size
+        let isFinished: Bool
+
+        var body: some View {
             BookCover(
                 title: title, author: author, color: Color(hex: color), image: image, size: size,
                 isFinished: isFinished, finishedValue: Text("Finished")
@@ -235,7 +229,7 @@
         @State private var isFictionChecked = true
 
         var body: some View {
-            GalleryPage(identifier: "listRowGallery", colorScheme: colorScheme) {
+            GalleryPage(identifier: "listRowGallery.scrollView", colorScheme: colorScheme) {
                 GroupedSection(Text("Translation")) {
                     ListRow(Text("Translate to"), height: .regular) { ListRowValue(Text("Russian")) }
                         .accessibilityElement(children: .combine)
@@ -297,7 +291,7 @@
         @State private var onWordTap = "bubble"
 
         var body: some View {
-            GalleryPage(identifier: "segmentedControlGallery", colorScheme: colorScheme) {
+            GalleryPage(identifier: "segmentedControlGallery.scrollView", colorScheme: colorScheme) {
                 SegmentedControl(
                     selection: $tab, size: .regular,
                     segments: [
@@ -334,7 +328,7 @@
         @State private var pageTurn = "slide"
 
         var body: some View {
-            GalleryPage(identifier: "presentationGallery", colorScheme: colorScheme) {
+            GalleryPage(identifier: "presentationGallery.scrollView", colorScheme: colorScheme) {
                 GroupedList {
                     row(Text("Modal sheet"), element: "modalSheet") { isModalSheetShown = true }
                     row(Text("Glass sheet"), element: "glassSheet") { isGlassSheetShown = true }
@@ -345,7 +339,6 @@
                                 .foregroundStyle(.ink)
                                 .padding(.space4)
                                 .accessibilityIdentifier("galleryPopover.text")
-                                .modifier(AppearanceValue())
                                 .popoverStyle()
                         }
                 }
@@ -372,7 +365,6 @@
                 .padding(.top, .space4)
                 .accessibilityElement(children: .contain)
                 .accessibilityIdentifier("galleryModalSheet.content")
-                .modifier(AppearanceValue())
             }
             .sheet(isPresented: $isGlassSheetShown) {
                 VStack(spacing: .space4) {
@@ -397,7 +389,6 @@
                 .padding(.top, .space4)
                 .accessibilityElement(children: .contain)
                 .accessibilityIdentifier("galleryGlassSheet.content")
-                .modifier(AppearanceValue())
                 .presentationDetents([.medium])
                 .glassSheetStyle()
             }
@@ -417,7 +408,7 @@
         @State private var selected: Set<String> = ["Solaris"]
 
         var body: some View {
-            GalleryPage(identifier: "selectionGallery", colorScheme: colorScheme) {
+            GalleryPage(identifier: "selectionGallery.scrollView", colorScheme: colorScheme) {
                 HStack(alignment: .top, spacing: .space4) {
                     cover("Solaris", color: 0x35545E)
                     cover("Educated", color: 0x8A6D2F)

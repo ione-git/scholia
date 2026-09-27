@@ -5,13 +5,15 @@ struct TokenGalleryScreen: Screen {
 
     var root: XCUIElement { app.scrollViews["tokenGallery.scrollView"] }
 
-    func shownElements() throws -> [String: String] {
-        var values: [String: String] = [:]
-        var pending = [try root.snapshot()]
-        while let snapshot = pending.popLast() {
-            values[snapshot.identifier] = snapshot.value as? String ?? ""
-            pending += snapshot.children
-        }
-        return values
+    func open(_ section: String) -> TokenGallerySectionScreen {
+        app.buttons["tokenGallery.\(section)"].waitUntilExists().tap()
+        return TokenGallerySectionScreen(app: app, section: section).waitUntilShown().waitUntilSettled()
     }
+}
+
+struct TokenGallerySectionScreen: Screen {
+    let app: XCUIApplication
+    let section: String
+
+    var root: XCUIElement { app.scrollViews["tokenGallery.section.\(section)"] }
 }

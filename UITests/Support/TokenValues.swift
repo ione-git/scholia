@@ -1,45 +1,15 @@
 import XCTest
 
-struct DesignTokens: Decodable {
-    struct Token: Decodable {
-        let name: String
-    }
-
-    struct Category: Decodable {
-        let tokens: [Token]
-    }
-
-    struct TypeGroup: Decodable {
-        let family: String
-        let styles: [Token]
-    }
-
-    struct Typography: Decodable {
-        let groups: [TypeGroup]
-    }
-
-    let color: Category
-    let type: Typography
-    let spacing: Category
-    let radius: Category
-    let shadow: Category
-    let effects: Category
-
-    static func load() throws -> DesignTokens {
-        try JSONDecoder().decode(DesignTokens.self, from: data())
-    }
-
-    static func data() throws -> Data {
-        let url = try XCTUnwrap(Bundle(for: UITestCase.self).url(forResource: "tokens", withExtension: "json"))
-        return try Data(contentsOf: url)
-    }
-}
-
 struct TokenValues {
     private let json: [String: Any]
 
     static func load() throws -> TokenValues {
-        TokenValues(json: try XCTUnwrap(JSONSerialization.jsonObject(with: DesignTokens.data()) as? [String: Any]))
+        TokenValues(json: try XCTUnwrap(JSONSerialization.jsonObject(with: data()) as? [String: Any]))
+    }
+
+    private static func data() throws -> Data {
+        let url = try XCTUnwrap(Bundle(for: UITestCase.self).url(forResource: "tokens", withExtension: "json"))
+        return try Data(contentsOf: url)
     }
 
     func color(_ name: String, dark: Bool) throws -> RGB {

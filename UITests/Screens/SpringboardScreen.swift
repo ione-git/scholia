@@ -13,9 +13,7 @@ struct SpringboardScreen: Screen {
 
     var customizeButton: XCUIElement { app.buttons["Customize"] }
 
-    func appIconBackground() throws -> RGBColor {
-        try appIcon.screenshot().color(at: CGPoint(x: 0.12, y: 0.5))
-    }
+    func mode(_ name: String) -> XCUIElement { app.segmentedControls.buttons[name] }
 
     func scrollToAppIcon() -> XCUIElement {
         if !appIcon.isHittable {
@@ -25,13 +23,13 @@ struct SpringboardScreen: Screen {
     }
 
     @discardableResult
-    func customizeIcons(_ options: String...) -> Self {
+    func customizeIcons(_ style: String, _ settings: XCUIElement...) -> Self {
         dock.waitUntilExists().coordinate(withNormalizedOffset: CGVector(dx: 0.1, dy: 0.5)).press(forDuration: 1.5)
         editButton.waitUntilExists().tap()
         customizeButton.waitUntilExists().tap()
-        for option in options {
-            app.buttons[option].waitUntil(\.isHittable, equals: true).tap()
-            app.buttons[option].waitUntil(\.isSelected, equals: true)
+        for setting in [app.buttons["Default"], app.buttons[style]] + settings {
+            setting.waitUntil(\.isHittable, equals: true).tap()
+            setting.waitUntil(\.isSelected, equals: true)
         }
         XCUIDevice.shared.press(.home)
         editButton.waitUntilGone()
