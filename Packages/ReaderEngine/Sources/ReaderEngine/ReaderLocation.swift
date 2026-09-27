@@ -20,6 +20,7 @@ public struct ReaderPageSpan: Equatable, Sendable {
     public var chapter: Int
     public var start: Int
     public var end: Int
+    public var firstLine: String
 
     public func contains(_ location: ReaderLocation) -> Bool {
         location.chapter == chapter && start <= location.offset
@@ -30,6 +31,7 @@ public struct ReaderPageSpan: Equatable, Sendable {
 public struct ReaderChapter: Equatable, Sendable {
     public var title: String
     public var location: ReaderLocation
+    let fragment: String?
     var unresolvedFragment: String?
 }
 
@@ -65,6 +67,11 @@ public struct ReaderWord: Equatable, Sendable {
 
 public struct ReaderSelection: Equatable, Sendable {
     public var text: String
+    public var rect: CGRect
+}
+
+public struct ReaderTappedHighlight: Equatable, Sendable {
+    public var id: String
     public var rect: CGRect
 }
 

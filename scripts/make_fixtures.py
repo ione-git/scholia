@@ -136,12 +136,14 @@ def section(title, body, attributes=""):
     return f'<section epub:type="chapter"{attributes}>\n<h1>{escape(title)}</h1>\n{body}\n</section>'
 
 
-def chapter(language, title, body):
-    return xhtml(language, title, section(title, body))
+def chapter(language, title, body, attributes=""):
+    return xhtml(language, title, section(title, body, attributes))
 
 
-def anchored_chapters(language, title, chapters):
-    sections = (section(heading, body, f' id="chapter-{index}"') for index, (heading, body) in enumerate(chapters, 1))
+def anchored_chapters(language, title, chapters, first=1):
+    sections = (
+        section(heading, body, f' id="chapter-{index}"') for index, (heading, body) in enumerate(chapters, first)
+    )
     return xhtml(language, title, "\n".join(sections))
 
 
@@ -182,10 +184,29 @@ def package(identifier, title, language, creator, documents, cover):
 """
 
 
-def epub(identifier, title, language, creator, chapters, cover, in_one_file=False):
-    if in_one_file:
+def epub(identifier, title, language, creator, chapters, cover, in_one_file=False, anchored=False, files=None):
+    if files:
+        documents = []
+        hrefs = []
+        first = 1
+        for number, count in enumerate(files, 1):
+            group = chapters[first - 1 : first - 1 + count]
+            if count == 1:
+                documents.append(chapter(language, *group[0]))
+                hrefs.append(f"chapter-{number}.xhtml")
+            else:
+                documents.append(anchored_chapters(language, title, group, first))
+                hrefs.extend(f"chapter-{number}.xhtml#chapter-{index}" for index in range(first, first + count))
+            first += count
+    elif in_one_file:
         documents = [anchored_chapters(language, title, chapters)]
         hrefs = [f"chapter-1.xhtml#chapter-{index}" for index in range(1, len(chapters) + 1)]
+    elif anchored:
+        documents = [
+            chapter(language, heading, body, f' id="chapter-{index}"')
+            for index, (heading, body) in enumerate(chapters, 1)
+        ]
+        hrefs = [f"chapter-{index}.xhtml#chapter-{index}" for index in range(1, len(chapters) + 1)]
     else:
         documents = [chapter(language, heading, body) for heading, body in chapters]
         hrefs = [f"chapter-{index}.xhtml" for index in range(1, len(chapters) + 1)]
@@ -222,6 +243,8 @@ def zip64(data):
 
 
 def main():
+    german_cover = png(600, 900, (47, 74, 58), (96, 128, 108))
+    minimal_cover = png(600, 900, (140, 59, 46), (196, 110, 92))
     german = epub(
         "urn:scholia:fixture:german",
         "Die Verwandlung",
@@ -232,7 +255,7 @@ def main():
             ("Zweiter Teil", VERSE + prose(KAFKA * 10)),
             ("Dritter Teil", prose(KAFKA * 10)),
         ],
-        png(600, 900, (47, 74, 58), (96, 128, 108)),
+        german_cover,
     )
     french = epub(
         "urn:scholia:fixture:french-no-cover",
@@ -242,6 +265,32 @@ def main():
         [("Premier chapitre", prose(FRENCH * 6)), ("Deuxième chapitre", prose(FRENCH * 6))],
         None,
         in_one_file=True,
+    )
+    french_sections = epub(
+        "urn:scholia:fixture:french-sections",
+        "Un soir en ville",
+        "fr",
+        "Scholia",
+        [
+            ("Premier chapitre", prose(FRENCH * 2)),
+            ("Deuxième chapitre", prose(FRENCH * 2)),
+            ("Troisième chapitre", prose(FRENCH * 2)),
+        ],
+        None,
+        files=[1, 2],
+    )
+    french_split = epub(
+        "urn:scholia:fixture:french-split",
+        "Trois matins",
+        "fr",
+        "Scholia",
+        [
+            ("Premier matin", prose(FRENCH * 4)),
+            ("Deuxième matin", prose(FRENCH * 4)),
+            ("Troisième matin", prose(FRENCH * 4)),
+        ],
+        None,
+        files=[1, 2],
     )
     arabic = epub(
         "urn:scholia:fixture:arabic",
@@ -254,6 +303,7 @@ def main():
             ("الفصل الثالث", prose(ARABIC * 4)),
         ],
         None,
+        anchored=True,
     )
     minimal = archive(
         epub(
@@ -262,7 +312,7 @@ def main():
             "en",
             None,
             [("Chapter One", prose(ENGLISH))],
-            png(600, 900, (140, 59, 46), (196, 110, 92)),
+            minimal_cover,
         )
     )
     drm = epub("urn:scholia:fixture:drm", "Encrypted", "de", "Franz Kafka", [("Erster Teil", prose(KAFKA))], None)
@@ -287,10 +337,14 @@ def main():
     books = {
         "german.epub": archive(german),
         "french-no-cover.epub": archive(french),
+        "french-sections.epub": archive(french_sections),
+        "french-split.epub": archive(french_split),
         "arabic.epub": archive(arabic),
         "minimal-metadata.epub": minimal,
         "corrupted.epub": minimal[: len(minimal) // 2],
         "drm.epub": archive(drm),
+        "german-cover.png": german_cover,
+        "minimal-metadata-cover.png": minimal_cover,
         "zip64.epub": zip64(archive(large)),
         "font-obfuscation.epub": archive(font),
     }

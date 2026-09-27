@@ -11,12 +11,38 @@
         }
       }
     },
+    "%@ left" : {
+
+    },
     "%@ · %@" : {
+      "comment" : "Two parts of one line joined by a middle dot, e.g. a bookmark's page, then its chapter",
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "new",
             "value" : "%1$@ · %2$@"
+          }
+        }
+      }
+    },
+    "%@ · %@ · %@" : {
+      "comment" : "Word card, under the word: IPA transcription, dictionary form and part of speech",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@ · %2$@ · %3$@"
+          }
+        }
+      }
+    },
+    "%@: %@" : {
+      "comment" : "VoiceOver label of the translation pill: the tapped word, then its translation",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@: %2$@"
           }
         }
       }
@@ -27,7 +53,26 @@
     "%lld books" : {
 
     },
+    "%lld h %lld min left" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$lld h %2$lld min left"
+          }
+        }
+      }
+    },
+    "%lld h left" : {
+
+    },
     "%lld min" : {
+
+    },
+    "%lld min left" : {
+
+    },
+    "%lld min to go" : {
 
     },
     "%lld of %lld" : {
@@ -70,6 +115,9 @@
     "All %lld" : {
 
     },
+    "All meanings" : {
+      "comment" : "Word card: label above the numbered dictionary meanings of the word"
+    },
     "Allow notifications for Scholia in Settings to get a daily reminder." : {
 
     },
@@ -90,6 +138,12 @@
     },
     "Black" : {
 
+    },
+    "Black theme" : {
+
+    },
+    "Blue" : {
+      "comment" : "Highlight colour name, label of its swatch"
     },
     "Book Info" : {
 
@@ -121,11 +175,17 @@
     "Card" : {
 
     },
+    "Chapter rows" : {
+      "shouldTranslate" : false
+    },
     "Chip" : {
       "shouldTranslate" : false
     },
     "Close" : {
 
+    },
+    "Close card" : {
+      "comment" : "Word card: VoiceOver label of the dimmed page that closes the card"
     },
     "Close menu" : {
 
@@ -141,9 +201,6 @@
     },
     "Collections" : {
 
-    },
-    "Colours" : {
-      "shouldTranslate" : false
     },
     "Component Gallery" : {
       "shouldTranslate" : false
@@ -161,7 +218,7 @@
 
     },
     "Curl" : {
-      "shouldTranslate" : false
+
     },
     "Daily goal" : {
 
@@ -195,7 +252,7 @@
       "shouldTranslate" : false
     },
     "Fade" : {
-      "shouldTranslate" : false
+
     },
     "Fiction" : {
       "shouldTranslate" : false
@@ -212,8 +269,26 @@
     "Glass sheet" : {
       "shouldTranslate" : false
     },
+    "Goal done" : {
+
+    },
+    "Green" : {
+      "comment" : "Highlight colour name, label of its swatch"
+    },
     "Highlight" : {
       "comment" : "Selection menu item that highlights the selected text"
+    },
+    "Highlight cards" : {
+
+    },
+    "Highlight color" : {
+      "comment" : "Menu of colours for a tapped highlight"
+    },
+    "Highlight color menu" : {
+
+    },
+    "Highlight colours" : {
+      "shouldTranslate" : false
     },
     "Highlights" : {
 
@@ -221,7 +296,19 @@
     "In progress" : {
 
     },
+    "In this context" : {
+      "comment" : "Word card: label above the translation of the word in its sentence"
+    },
+    "Ink and control colours" : {
+      "shouldTranslate" : false
+    },
     "Language" : {
+
+    },
+    "Large and image covers" : {
+      "shouldTranslate" : false
+    },
+    "Larger text" : {
 
     },
     "Launch Screen" : {
@@ -235,6 +322,12 @@
     },
     "List rows" : {
       "shouldTranslate" : false
+    },
+    "Lock rotation" : {
+
+    },
+    "Loose line spacing" : {
+
     },
     "Mark as Finished" : {
 
@@ -266,6 +359,9 @@
     "Night" : {
 
     },
+    "Night theme" : {
+
+    },
     "No books yet" : {
 
     },
@@ -273,6 +369,9 @@
 
     },
     "None" : {
+
+    },
+    "Normal line spacing" : {
 
     },
     "Not Now" : {
@@ -296,17 +395,41 @@
     "Open Settings" : {
 
     },
+    "Opens details" : {
+      "comment" : "VoiceOver hint on the translation in the word bubble or pill: opens the word card"
+    },
+    "Other colours" : {
+      "shouldTranslate" : false
+    },
+    "Page %lld" : {
+      "comment" : "Contents row: start page of the chapter"
+    },
+    "Page turn" : {
+
+    },
     "Paper" : {
+
+    },
+    "Paper theme" : {
 
     },
     "Pick up where you left off." : {
 
+    },
+    "Pink" : {
+      "comment" : "Highlight colour name, label of its swatch"
     },
     "Popover" : {
       "shouldTranslate" : false
     },
     "Progress" : {
 
+    },
+    "Pronounce" : {
+      "comment" : "Word card: VoiceOver label of the button that speaks the word aloud"
+    },
+    "Purple" : {
+      "comment" : "Highlight colour name, label of its swatch"
     },
     "Radius" : {
       "shouldTranslate" : false
@@ -347,6 +470,9 @@
     "Remove from Library" : {
 
     },
+    "Remove highlight" : {
+      "comment" : "Button in the highlight colour menu that deletes it"
+    },
     "Remove “%@” from your library?" : {
 
     },
@@ -366,7 +492,7 @@
       "shouldTranslate" : false
     },
     "Scroll" : {
-      "shouldTranslate" : false
+
     },
     "Search" : {
 
@@ -392,6 +518,9 @@
     "Sepia" : {
 
     },
+    "Sepia theme" : {
+
+    },
     "Settings" : {
 
     },
@@ -402,7 +531,10 @@
       "shouldTranslate" : false
     },
     "Slide" : {
-      "shouldTranslate" : false
+
+    },
+    "Smaller text" : {
+
     },
     "Sort books by" : {
 
@@ -416,7 +548,13 @@
     "Spacing" : {
       "shouldTranslate" : false
     },
+    "Surface colours" : {
+      "shouldTranslate" : false
+    },
     "System" : {
+
+    },
+    "Text size" : {
 
     },
     "Text styles" : {
@@ -588,11 +726,142 @@
     "This book can’t be opened." : {
 
     },
+    "Tight line spacing" : {
+
+    },
     "Time to read" : {
 
     },
     "Title" : {
 
+    },
+    "Today: %lld minutes read, %lld minutes to go" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Today: %#@read@, %#@toGo@"
+          },
+          "substitutions" : {
+            "read" : {
+              "argNum" : 1,
+              "formatSpecifier" : "lld",
+              "variations" : {
+                "plural" : {
+                  "one" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "%arg minute read"
+                    }
+                  },
+                  "other" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "%arg minutes read"
+                    }
+                  }
+                }
+              }
+            },
+            "toGo" : {
+              "argNum" : 2,
+              "formatSpecifier" : "lld",
+              "variations" : {
+                "plural" : {
+                  "one" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "%arg minute to go"
+                    }
+                  },
+                  "other" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "%arg minutes to go"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "Today: %lld of %lld minutes read" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Today: %1$lld of %#@goal@ read"
+          },
+          "substitutions" : {
+            "goal" : {
+              "argNum" : 2,
+              "formatSpecifier" : "lld",
+              "variations" : {
+                "plural" : {
+                  "one" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "%arg minute"
+                    }
+                  },
+                  "other" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "%arg minutes"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "Today: goal done, %lld minutes read" : {
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Today: goal done, %lld minute read"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Today: goal done, %lld minutes read"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "Today: goal reached, %lld minutes read" : {
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Today: goal reached, %lld minute read"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Today: goal reached, %lld minutes read"
+                }
+              }
+            }
+          }
+        }
+      }
     },
     "Token Gallery" : {
       "shouldTranslate" : false
@@ -612,11 +881,20 @@
     "Translation bubble" : {
 
     },
+    "Translation pill" : {
+      "comment" : "Component Gallery: row and title of the translation pill page"
+    },
     "Translation unavailable" : {
 
     },
     "Unread" : {
 
+    },
+    "Word card" : {
+      "comment" : "Component Gallery: row and title of the word card page"
+    },
+    "Yellow" : {
+      "comment" : "Highlight colour name, label of its swatch"
     },
     "adjective" : {
 
@@ -648,11 +926,110 @@
     "pronoun" : {
 
     },
+    "readerBookmarks.bookmark" : {
+      "comment" : "Bookmarks row when neither the page nor the chapter of the bookmark is known",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Bookmark"
+          }
+        }
+      }
+    },
+    "readerBookmarks.page" : {
+      "comment" : "Bookmarks row: the page the bookmark is on",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Page %lld"
+          }
+        }
+      }
+    },
+    "readerHighlights.meta.chapterPage" : {
+      "comment" : "Highlights list row, under the quote: chapter title and page of the highlight",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@ · Page %2$lld"
+          }
+        }
+      }
+    },
+    "readerHighlights.meta.page" : {
+      "comment" : "Highlights list row, under the quote: page of a highlight outside any chapter",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Page %lld"
+          }
+        }
+      }
+    },
+    "readerHighlights.value.colorChapter" : {
+      "comment" : "Highlights list row, VoiceOver value: colour and chapter title of the highlight",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@, %2$@"
+          }
+        }
+      }
+    },
+    "readerHighlights.value.colorChapterPage" : {
+      "comment" : "Highlights list row, VoiceOver value: colour, chapter title and page of the highlight",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@, %2$@, Page %3$lld"
+          }
+        }
+      }
+    },
+    "readerHighlights.value.colorPage" : {
+      "comment" : "Highlights list row, VoiceOver value: colour and page of a highlight outside any chapter",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@, Page %2$lld"
+          }
+        }
+      }
+    },
+    "readerSettings.font.system" : {
+      "comment" : "Font chip in the reader settings sheet: the system sans-serif typeface",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "System"
+          }
+        }
+      }
+    },
     "verb" : {
 
     },
     "· detected" : {
 
+    },
+    "— %@" : {
+      "comment" : "Word card: usage note after a dictionary meaning, e.g. “— figurative”"
     },
     "“%@” is damaged or is not an EPUB file." : {
 

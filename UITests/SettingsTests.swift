@@ -3,6 +3,7 @@ import XCTest
 final class SettingsTests: UITestCase {
     func testOpensFromHomeAndGoesBack() {
         let home = HomeScreen(app: launch(.withoutBooks)).waitUntilShown()
+        XCTAssertEqual(home.settingsButton.waitUntilExists().label, "Settings")
 
         let settings = home.openSettings()
         XCTAssertEqual(settings.backButton.label, "Back to Home")
@@ -57,7 +58,7 @@ final class SettingsTests: UITestCase {
 
         settings.chooseSortOrder("title")
         let library = settings.goBack().openLibrary()
-        XCTAssertEqual(library.shownTitles, ["Die Verwandlung", "Minimal", "Un matin en ville"])
+        library.waitUntil(\.shownTitles, equals: ["Die Verwandlung", "Minimal", "Un matin en ville"])
 
         library.sort(by: "author")
         library.goBack().openSettings().sortBooks.waitUntil(\.label, equals: "Sort books by, Author")

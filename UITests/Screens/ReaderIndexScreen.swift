@@ -7,7 +7,55 @@ struct ReaderIndexScreen: Screen {
     var title: XCUIElement { app.staticTexts["readerIndex.title"] }
     var subtitle: XCUIElement { app.staticTexts["readerIndex.subtitle"] }
 
+    var chapters: [XCUIElement] { chapterRows.allElementsBoundByIndex }
+    var highlights: [XCUIElement] { highlightRows.allElementsBoundByIndex }
+    var bookmarks: [XCUIElement] {
+        app.buttons.matching(NSPredicate(format: "identifier BEGINSWITH %@", "readerIndex.bookmark."))
+            .allElementsBoundByIndex
+    }
+
+    private var chapterRows: XCUIElementQuery {
+        app.buttons.matching(NSPredicate(format: "identifier BEGINSWITH %@", "readerIndex.chapter."))
+    }
+
+    private var highlightRows: XCUIElementQuery {
+        app.buttons.matching(NSPredicate(format: "identifier BEGINSWITH %@", "readerIndex.highlight."))
+    }
+
     func tab(_ name: String) -> XCUIElement { app.buttons["readerIndex.tab.\(name)"] }
+
+    func chapter(_ title: String) -> XCUIElement { app.buttons["readerIndex.chapter.\(title)"] }
+
+    func highlight(_ key: String) -> XCUIElement { app.buttons["readerIndex.highlight.\(key)"] }
+
+    func bookmark(page: Int) -> XCUIElement { app.buttons["readerIndex.bookmark.\(page)"] }
+
+    @discardableResult
+    func waitUntilStartPagesShown(file: StaticString = #filePath, line: UInt = #line) -> ReaderIndexScreen {
+        chapterRows.firstMatch.waitUntil(\.stringValue, equals: "Page 1", file: file, line: line)
+        return self
+    }
+
+    @discardableResult
+    func jump(to title: String) -> ReaderScreen {
+        chapter(title).waitUntil(\.isHittable, equals: true).tap()
+        root.waitUntilGone()
+        return ReaderScreen(app: app).waitUntilShown()
+    }
+
+    @discardableResult
+    func jump(toHighlight row: XCUIElement) -> ReaderScreen {
+        row.waitUntil(\.isHittable, equals: true).tap()
+        root.waitUntilGone()
+        return ReaderScreen(app: app).waitUntilShown()
+    }
+
+    @discardableResult
+    func jump(toBookmarkOnPage page: Int) -> ReaderScreen {
+        bookmark(page: page).waitUntil(\.isHittable, equals: true).tap()
+        root.waitUntilGone()
+        return ReaderScreen(app: app).waitUntilShown()
+    }
 
     @discardableResult
     func done() -> ReaderScreen {

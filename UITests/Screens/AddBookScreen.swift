@@ -6,17 +6,11 @@ struct AddBookScreen: Screen {
     var root: XCUIElement { cancelButton }
 
     var cancelButton: XCUIElement { app.buttons["addBook.cancel"] }
-    var cover: XCUIElement { app.descendants(matching: .any)["addBook.cover"] }
-    var fileInfo: XCUIElement { app.staticTexts["addBook.fileInfo"] }
     var titleField: XCUIElement { app.textFields["addBook.title"] }
     var authorField: XCUIElement { app.textFields["addBook.author"] }
     var languageButton: XCUIElement { app.buttons["addBook.language"] }
     var collectionButton: XCUIElement { app.buttons["addBook.collection"] }
     var addButton: XCUIElement { app.buttons["addBook.add"] }
-
-    func coverColor() throws -> RGBColor {
-        try cover.screenshot().color(at: CGPoint(x: 0.5, y: 0.3))
-    }
 
     @discardableResult
     func replaceTitle(with title: String) throws -> Self {

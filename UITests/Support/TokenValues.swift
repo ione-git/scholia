@@ -1,45 +1,15 @@
 import XCTest
 
-struct DesignTokens: Decodable {
-    struct Token: Decodable {
-        let name: String
-    }
-
-    struct Category: Decodable {
-        let tokens: [Token]
-    }
-
-    struct TypeGroup: Decodable {
-        let family: String
-        let styles: [Token]
-    }
-
-    struct Typography: Decodable {
-        let groups: [TypeGroup]
-    }
-
-    let color: Category
-    let type: Typography
-    let spacing: Category
-    let radius: Category
-    let shadow: Category
-    let effects: Category
-
-    static func load() throws -> DesignTokens {
-        try JSONDecoder().decode(DesignTokens.self, from: data())
-    }
-
-    static func data() throws -> Data {
-        let url = try XCTUnwrap(Bundle(for: UITestCase.self).url(forResource: "tokens", withExtension: "json"))
-        return try Data(contentsOf: url)
-    }
-}
-
 struct TokenValues {
     private let json: [String: Any]
 
     static func load() throws -> TokenValues {
-        TokenValues(json: try XCTUnwrap(JSONSerialization.jsonObject(with: DesignTokens.data()) as? [String: Any]))
+        TokenValues(json: try XCTUnwrap(JSONSerialization.jsonObject(with: data()) as? [String: Any]))
+    }
+
+    private static func data() throws -> Data {
+        let url = try XCTUnwrap(Bundle(for: UITestCase.self).url(forResource: "tokens", withExtension: "json"))
+        return try Data(contentsOf: url)
     }
 
     func color(_ name: String, dark: Bool) throws -> RGB {
@@ -69,4 +39,27 @@ struct TokenValues {
         let value = try XCTUnwrap(styles.first { $0["name"] as? String == style }?["lineHeight"] as? String, style)
         return try CGFloat(XCTUnwrap(Double(value.replacingOccurrences(of: "px", with: "")), style))
     }
+
+    func readingScale() throws -> [ReadingStep] {
+        let scale = try XCTUnwrap((json["type"] as? [String: Any])?["readingScale"] as? [String: Any])
+        let steps = try XCTUnwrap(scale["steps"] as? [[String: Any]])
+        return try steps.map { step in
+            let heights = try XCTUnwrap(step["lineHeight"] as? [String: String])
+            return ReadingStep(
+                fontSize: try points(step["fontSize"]), tight: try points(heights["tight"]),
+                normal: try points(heights["normal"]), loose: try points(heights["loose"]))
+        }
+    }
+
+    private func points(_ value: Any?) throws -> Int {
+        let text = try XCTUnwrap(value as? String)
+        return try XCTUnwrap(Int(text.replacingOccurrences(of: "px", with: "")), text)
+    }
+}
+
+struct ReadingStep {
+    let fontSize: Int
+    let tight: Int
+    let normal: Int
+    let loose: Int
 }

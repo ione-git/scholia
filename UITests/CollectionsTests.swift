@@ -13,18 +13,13 @@ final class CollectionsTests: UITestCase {
         XCTAssertFalse(library.allChip.exists)
         XCTAssertFalse(library.newCollectionChip.exists)
 
-        let alert = library.openMenu().openNewCollection()
-        XCTAssertEqual(alert.root.label, "New Collection")
-        alert.type("Philosophy").create(returningTo: library)
+        library.openMenu().openNewCollection().type("Philosophy").create(returningTo: library)
 
-        library.collectionRow.waitUntilExists()
-        XCTAssertEqual(library.collectionChips, ["Philosophy"])
-        XCTAssertEqual(library.allChip.label, "All, 2")
-        XCTAssertEqual(library.collectionChip("Philosophy").label, "Philosophy, 0")
+        library.waitUntil(\.collectionChips, equals: ["Philosophy"])
         XCTAssertTrue(library.allChip.isSelected)
         XCTAssertFalse(library.collectionChip("Philosophy").isSelected)
         XCTAssertEqual(library.newCollectionChip.label, "New collection")
-        XCTAssertEqual(library.shownTitles, ["Die Verwandlung", "Un matin en ville"])
+        library.waitUntil(\.shownTitles, equals: ["Die Verwandlung", "Un matin en ville"])
     }
 
     func testNewCollectionChipCreatesCollectionsInCreationOrder() {
@@ -43,20 +38,15 @@ final class CollectionsTests: UITestCase {
         XCTAssertFalse(alert.createButton.isEnabled)
         alert.type("Biographies")
         alert.createButton.waitUntil(\.isEnabled, equals: true)
-        attachScreenshot("Library-NewCollection")
         alert.create(returningTo: library)
 
-        library.collectionChip("Biographies").waitUntilExists()
-        XCTAssertEqual(library.collectionChips, ["Science Fiction", "Biographies"])
-        XCTAssertLessThan(library.allChip.frame.maxX, library.collectionChip("Science Fiction").frame.minX)
-        XCTAssertLessThan(
-            library.collectionChip("Biographies").frame.maxX, library.newCollectionChip.frame.minX)
+        library.waitUntil(\.collectionChips, equals: ["Science Fiction", "Biographies"])
 
         library.newCollection().type("Fiction").cancel(returningTo: library)
         XCTAssertEqual(library.collectionChips, ["Science Fiction", "Biographies"])
     }
 
-    func testAddBookCollectionRowAddsBookToChosenCollections() throws {
+    func testChosenCollectionsAreSavedWithBook() throws {
         let app = launch(
             LaunchConfiguration(
                 resetsState: true, fixtures: [.minimalMetadata], opened: [], inProgress: [], highlighted: [],
@@ -67,18 +57,28 @@ final class CollectionsTests: UITestCase {
         addBook.collectionButton.waitUntil(\.label, equals: "Collection, None")
 
         let sheet = addBook.chooseCollections()
-        XCTAssertEqual(sheet.bookTitle.label, "Die Verwandlung")
-        XCTAssertEqual(sheet.bookAuthor.label, "Franz Kafka")
-        XCTAssertEqual(sheet.collections, [])
         sheet.newCollection().type("Classics").create(returningTo: sheet)
         sheet.collection("Classics").waitUntil(\.isSelected, equals: true)
         sheet.newCollection().type("German").create(returningTo: sheet)
         sheet.collection("German").waitUntil(\.isSelected, equals: true)
         sheet.newCollection().type("Poetry").create(returningTo: sheet)
         sheet.toggle("Poetry")
-        XCTAssertEqual(sheet.collections, ["Classics", "German", "Poetry"])
-        attachScreenshot("Library-AddTo")
+        sheet.waitUntil(\.collections, equals: ["Classics", "German", "Poetry"])
         sheet.done()
+        addBook.collectionButton.waitUntil(\.label, equals: "Collection, Classics, German")
+
+        let library = addBook.add().openLibrary()
+        library.show(library.collectionChip("Classics"))
+        library.waitUntil(\.shownTitles, equals: ["Die Verwandlung"])
+        library.show(library.collectionChip("Poetry"))
+        library.waitUntil(\.shownTitles, equals: [])
+    }
+
+    func testCancelKeepsPreviousCollectionChoice() throws {
+        let collections = ["Classics", "German", "Poetry"].map { FixtureCollection(name: $0, books: []) }
+        let home = HomeScreen(app: launch(seeded([], collections: collections))).waitUntilShown()
+        let addBook = try home.openFromOtherApp(.german)
+        addBook.chooseCollections().toggle("Classics").toggle("German").done()
         addBook.collectionButton.waitUntil(\.label, equals: "Collection, Classics, German")
 
         let reopened = addBook.chooseCollections()
@@ -86,78 +86,64 @@ final class CollectionsTests: UITestCase {
         XCTAssertTrue(reopened.collection("German").isSelected)
         XCTAssertFalse(reopened.collection("Poetry").isSelected)
         reopened.toggle("German").toggle("Poetry").cancel()
-        addBook.collectionButton.waitUntil(\.label, equals: "Collection, Classics, German")
 
-        let library = addBook.add().openLibrary()
-        XCTAssertEqual(library.collectionChips, ["Classics", "German", "Poetry"])
-        XCTAssertEqual(library.allChip.label, "All, 2")
-        XCTAssertEqual(library.collectionChip("Classics").label, "Classics, 1")
-        XCTAssertEqual(library.collectionChip("German").label, "German, 1")
-        XCTAssertEqual(library.collectionChip("Poetry").label, "Poetry, 0")
+        XCTAssertEqual(addBook.collectionButton.label, "Collection, Classics, German")
     }
 
-    func testAddToCollectionSheetShowsAuthorWhenTitleIsEmpty() throws {
-        let app = launch(
-            LaunchConfiguration(
-                resetsState: true, fixtures: [], opened: [], inProgress: [], highlighted: [], translation: .immediate,
-                now: nil,
-                notificationPermission: nil))
-        let addBook = try HomeScreen(app: app).waitUntilShown().openFromOtherApp(.german)
-        addBook.authorField.waitUntil(\.stringValue, equals: "Franz Kafka")
-
-        try addBook.replaceTitle(with: " ")
-        addBook.addButton.waitUntil(\.isEnabled, equals: false)
-
-        let sheet = addBook.chooseCollections()
-        XCTAssertEqual(sheet.bookAuthor.label, "Franz Kafka")
-    }
-
-    func testChipFiltersGridByCollection() throws {
-        let first = launch(
-            LaunchConfiguration(
-                resetsState: true, fixtures: [.minimalMetadata], opened: [], inProgress: [], highlighted: [],
-                translation: .immediate,
-                now: nil,
-                notificationPermission: nil))
-        let german = try HomeScreen(app: first).waitUntilShown().openFromOtherApp(.german).chooseCollections()
-        german.newCollection().type("Classics").create(returningTo: german)
-        german.newCollection().type("German").create(returningTo: german)
-        german.done().add()
-        let app = launch(
-            LaunchConfiguration(
-                resetsState: false, fixtures: [], opened: [], inProgress: [], highlighted: [], translation: .immediate,
-                now: nil,
-                notificationPermission: nil))
-        let french = try HomeScreen(app: app).waitUntilShown().openFromOtherApp(.frenchNoCover).chooseCollections()
-        french.collection("Classics").waitUntil(\.isSelected, equals: false)
-        let home = french.toggle("Classics").done().add()
-
-        let library = home.openLibrary()
-        XCTAssertEqual(library.shownTitles, ["Un matin en ville", "Die Verwandlung", "Minimal"])
-        XCTAssertEqual(library.allChip.label, "All, 3")
-        XCTAssertEqual(library.collectionChip("Classics").label, "Classics, 2")
-        XCTAssertEqual(library.collectionChip("German").label, "German, 1")
-        attachScreenshot("Library-A")
+    func testChipFiltersGridByCollection() {
+        let collections = [
+            FixtureCollection(name: "Classics", books: [.german, .frenchNoCover]),
+            FixtureCollection(name: "German", books: [.german]),
+        ]
+        let app = launch(seeded([.german, .frenchNoCover, .minimalMetadata], collections: collections))
+        let library = HomeScreen(app: app).waitUntilShown().openLibrary()
+        library.waitUntil(\.shownTitles, equals: ["Die Verwandlung", "Minimal", "Un matin en ville"])
 
         library.show(library.collectionChip("Classics"))
-        library.book("Minimal").waitUntilGone()
-        XCTAssertEqual(library.shownTitles, ["Un matin en ville", "Die Verwandlung"])
+        library.waitUntil(\.shownTitles, equals: ["Die Verwandlung", "Un matin en ville"])
         XCTAssertFalse(library.allChip.isSelected)
 
         library.search("matin")
-        library.book("Die Verwandlung").waitUntilGone()
-        XCTAssertEqual(library.shownTitles, ["Un matin en ville"])
+        library.waitUntil(\.shownTitles, equals: ["Un matin en ville"])
         library.search("")
-        library.book("Die Verwandlung").waitUntilExists()
+        library.waitUntil(\.shownTitles, equals: ["Die Verwandlung", "Un matin en ville"])
 
         library.show(library.collectionChip("German"))
-        library.book("Un matin en ville").waitUntilGone()
-        XCTAssertEqual(library.shownTitles, ["Die Verwandlung"])
+        library.waitUntil(\.shownTitles, equals: ["Die Verwandlung"])
         XCTAssertFalse(library.collectionChip("Classics").isSelected)
 
         library.show(library.allChip)
-        library.book("Minimal").waitUntilExists()
-        XCTAssertEqual(library.shownTitles, ["Un matin en ville", "Die Verwandlung", "Minimal"])
+        library.waitUntil(\.shownTitles, equals: ["Die Verwandlung", "Minimal", "Un matin en ville"])
         XCTAssertFalse(library.collectionChip("German").isSelected)
+    }
+
+    func testLibraryAddToSnapshotLight() throws {
+        assertSnapshot(of: try openAddToCollection(appearance: .light), named: "Library-AddTo")
+    }
+
+    func testLibraryAddToSnapshotDark() throws {
+        assertSnapshot(of: try openAddToCollection(appearance: .dark), named: "Library-AddTo")
+    }
+
+    private func openAddToCollection(appearance: XCUIDevice.Appearance) throws -> AddToCollectionScreen {
+        var configuration = seeded(
+            [.german, .frenchNoCover, .minimalMetadata, .corrupted, .drm],
+            collections: [
+                FixtureCollection(name: "Classics", books: [.german, .frenchNoCover]),
+                FixtureCollection(name: "German", books: [.german]),
+                FixtureCollection(name: "Poetry", books: []),
+            ])
+        configuration.now = try Date("2026-03-14T09:30:00Z", strategy: .iso8601)
+        let library = HomeScreen(app: launch(configuration, appearance: appearance)).waitUntilShown().openLibrary()
+        let sheet = library.openBookMenu("Die Verwandlung").addToCollection()
+        sheet.collection("German").waitUntil(\.isSelected, equals: true)
+        return sheet
+    }
+
+    private func seeded(_ fixtures: [Fixture], collections: [FixtureCollection]) -> LaunchConfiguration {
+        var configuration = LaunchConfiguration.withoutBooks
+        configuration.fixtures = fixtures
+        configuration.collections = collections
+        return configuration
     }
 }

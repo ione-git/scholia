@@ -1,8 +1,10 @@
-(() => {
+function reportPageCount(fragments) {
   async function report() {
     await document.fonts.ready;
-    const pages = Math.round(document.scrollingElement.scrollWidth / window.innerWidth);
-    webkit.messageHandlers.pageCount.postMessage(Math.max(1, pages));
+    webkit.messageHandlers.pageCount.postMessage({
+      pageStarts: scholia.pageStarts(),
+      fragmentOffsets: scholia.offsetsOfElements(fragments),
+    });
   }
 
   if (document.readyState === "complete") {
@@ -10,4 +12,4 @@
   } else {
     window.addEventListener("load", report);
   }
-})();
+}

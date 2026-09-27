@@ -15,9 +15,8 @@ struct AddToCollectionScreen: Screen {
 
     func collection(_ name: String) -> XCUIElement { app.buttons[Self.collectionPrefix + name] }
 
-    var collections: [String] {
-        app.buttons.matching(NSPredicate(format: "identifier BEGINSWITH %@", Self.collectionPrefix))
-            .allElementsBoundByIndex
+    var collections: [String]? {
+        elements(identifiedBy: Self.collectionPrefix)?
             .sorted { $0.frame.minY < $1.frame.minY }
             .map { String($0.identifier.dropFirst(Self.collectionPrefix.count)) }
     }

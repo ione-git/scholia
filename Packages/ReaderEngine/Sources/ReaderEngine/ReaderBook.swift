@@ -27,8 +27,20 @@ public final class ReaderBook {
     }
 
     public func chapter(containing location: ReaderLocation) -> ReaderChapter? {
+        indexOfChapter(containing: location).map { tableOfContents[$0] }
+    }
+
+    public func indexOfChapter(containing location: ReaderLocation) -> Int? {
+        guard !hasUnknownOffsets(inChapter: location.chapter) else {
+            return nil
+        }
         let start = tableOfContents.map(\.location).filter { $0 <= location }.max()
-        return tableOfContents.last { $0.location == start }
+        return tableOfContents.lastIndex { $0.location == start }
+    }
+
+    private func hasUnknownOffsets(inChapter chapter: Int) -> Bool {
+        let chapters = tableOfContents.filter { $0.location.chapter == chapter }
+        return chapters.count > 1 && chapters.contains { $0.unresolvedFragment != nil }
     }
 
     func unresolvedFragments(inChapter chapter: Int) -> [String] {
@@ -50,8 +62,8 @@ public final class ReaderBook {
             let chapter = readingOrder.firstIndexWithHREF(url.removingFragment()).flatMap { index in
                 link.title.map {
                     ReaderChapter(
-                        title: $0, location: ReaderLocation(chapter: index, offset: 0), unresolvedFragment: url.fragment
-                    )
+                        title: $0, location: ReaderLocation(chapter: index, offset: 0), fragment: url.fragment,
+                        unresolvedFragment: url.fragment)
                 }
             }
             return [chapter].compactMap { $0 } + chapters(in: link.children, readingOrder: readingOrder)

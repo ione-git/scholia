@@ -10,7 +10,21 @@ extension UITestCase {
         of screen: some Screen, named name: String, file: StaticString = #filePath, line: UInt = #line
     ) {
         screen.waitUntilShown(file: file, line: line)
-        let image = settledScreenshot(of: screen.app, file: file, line: line)
+        verify(settledScreenshot(of: screen.app, file: file, line: line), named: name, file: file, line: line)
+    }
+
+    func assertSnapshot(
+        of element: XCUIElement, clippedTo clip: CGPath, named name: String, file: StaticString = #filePath,
+        line: UInt = #line
+    ) {
+        element.waitUntilExists(file: file, line: line)
+        let image = settled(element.description, file: file, line: line) {
+            self.clip(element.screenshot().image, to: clip)
+        }
+        verify(image, named: name, file: file, line: line)
+    }
+
+    private func verify(_ image: UIImage, named name: String, file: StaticString, line: UInt) {
         let failure = verifySnapshot(
             of: image,
             as: .image(precision: pixelPrecision, perceptualPrecision: perceptualPrecision),
@@ -30,17 +44,23 @@ extension UITestCase {
     }
 
     private func settledScreenshot(of app: XCUIApplication, file: StaticString, line: UInt) -> UIImage {
-        let systemBars = systemBarInsets()
-        var previous = screenshot(of: app, without: systemBars)
+        let isLandscape = app.frame.width > app.frame.height
+        let systemBars = isLandscape ? landscapeSystemBarInsets(of: app) : systemBarInsets()
+        let capture = { isLandscape ? self.upright(XCUIScreen.main.screenshot().image) : app.screenshot().image }
+        return settled(app.description, file: file, line: line) { self.crop(capture(), without: systemBars) }
+    }
+
+    private func settled(_ description: String, file: StaticString, line: UInt, capture: () -> UIImage) -> UIImage {
+        var previous = capture()
         let deadline = Date.now.addingTimeInterval(settleTimeout)
         while Date.now < deadline {
-            let current = screenshot(of: app, without: systemBars)
+            let current = capture()
             if current.pngData() == previous.pngData() {
                 return current
             }
             previous = current
         }
-        XCTFail("\(app.description) kept changing for \(settleTimeout) s", file: file, line: line)
+        XCTFail("\(description) kept changing for \(settleTimeout) s", file: file, line: line)
         return previous
     }
 
@@ -53,8 +73,18 @@ extension UITestCase {
             top: statusBar.exists ? statusBar.frame.maxY : 0, left: 0, bottom: homeIndicator.first ?? 0, right: 0)
     }
 
-    private func screenshot(of app: XCUIApplication, without systemBars: UIEdgeInsets) -> UIImage {
-        let image = app.screenshot().image
+    private func landscapeSystemBarInsets(of app: XCUIApplication) -> UIEdgeInsets {
+        let safeArea = app.descendants(matching: .any)["debug.safeArea"].frame
+        return UIEdgeInsets(top: safeArea.minY, left: 0, bottom: app.frame.maxY - safeArea.maxY, right: 0)
+    }
+
+    private func upright(_ image: UIImage) -> UIImage {
+        let format = UIGraphicsImageRendererFormat()
+        format.scale = image.scale
+        return UIGraphicsImageRenderer(size: image.size, format: format).image { _ in image.draw(at: .zero) }
+    }
+
+    private func crop(_ image: UIImage, without systemBars: UIEdgeInsets) -> UIImage {
         guard let full = image.cgImage else { return image }
         let bounds = CGRect(x: 0, y: 0, width: full.width, height: full.height)
         let content = bounds.inset(
@@ -62,5 +92,18 @@ extension UITestCase {
                 top: systemBars.top * image.scale, left: 0, bottom: systemBars.bottom * image.scale, right: 0))
         guard let cropped = full.cropping(to: content) else { return image }
         return UIImage(cgImage: cropped, scale: image.scale, orientation: image.imageOrientation)
+    }
+
+    private func clip(_ image: UIImage, to path: CGPath) -> UIImage {
+        let bounds = path.boundingBox
+        let format = UIGraphicsImageRendererFormat()
+        format.scale = image.scale
+        format.opaque = false
+        return UIGraphicsImageRenderer(size: bounds.size, format: format).image { context in
+            context.cgContext.translateBy(x: -bounds.minX, y: -bounds.minY)
+            context.cgContext.addPath(path)
+            context.cgContext.clip()
+            image.draw(at: .zero)
+        }
     }
 }

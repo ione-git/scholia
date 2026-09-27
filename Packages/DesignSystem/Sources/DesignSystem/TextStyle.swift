@@ -59,6 +59,14 @@ public struct TextStyle: Identifiable, Sendable {
         return scaled(to: (size * width / widest).rounded(.down))
     }
 
+    func unclipped() -> TextStyle {
+        let fontLineHeight = uiFont.lineHeight.rounded(.up)
+        guard fontLineHeight > lineHeight else { return self }
+        return TextStyle(
+            name: name, family: family, size: size, lineHeight: fontLineHeight, weight: weight, tracking: tracking,
+            textIndent: textIndent, isUppercase: isUppercase)
+    }
+
     public func weighted(_ newWeight: Int) -> TextStyle {
         TextStyle(
             name: name, family: family, size: size, lineHeight: lineHeight, weight: newWeight, tracking: tracking,

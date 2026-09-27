@@ -4,26 +4,36 @@ import XCTest
 class UITestCase: XCTestCase {
     override func setUp() async throws {
         continueAfterFailure = false
+        XCUIDevice.shared.orientation = .portrait
     }
 
     func launch(_ configuration: LaunchConfiguration, timeZone: TimeZone = .gmt) -> XCUIApplication {
-        launch(configuration, timeZone: timeZone, arguments: [])
+        launch(configuration, timeZone: timeZone, arguments: [], animations: TestAnimations.off)
     }
 
     func launch(_ configuration: LaunchConfiguration, appearance: XCUIDevice.Appearance) -> XCUIApplication {
         switchAppearance(to: appearance)
-        return launch(configuration)
+        return rendered(in: appearance, launch(configuration))
+    }
+
+    func launchWithAnimations(_ configuration: LaunchConfiguration, appearance: XCUIDevice.Appearance)
+        -> XCUIApplication
+    {
+        switchAppearance(to: appearance)
+        return rendered(in: appearance, launch(configuration, timeZone: .gmt, arguments: [], animations: nil))
     }
 
     func launch(_ configuration: LaunchConfiguration, deviceLanguage: String) -> XCUIApplication {
-        launch(configuration, timeZone: .gmt, arguments: ["-AppleLanguages", "(\(deviceLanguage))"])
+        launch(
+            configuration, timeZone: .gmt, arguments: ["-AppleLanguages", "(\(deviceLanguage))"],
+            animations: TestAnimations.off)
     }
 
     func launch(
         _ configuration: LaunchConfiguration, appearance: XCUIDevice.Appearance, deviceLanguage: String
     ) -> XCUIApplication {
         switchAppearance(to: appearance)
-        return launch(configuration, deviceLanguage: deviceLanguage)
+        return rendered(in: appearance, launch(configuration, deviceLanguage: deviceLanguage))
     }
 
     func openSettings(_ app: XCUIApplication) -> SettingsScreen {
@@ -37,13 +47,13 @@ class UITestCase: XCTestCase {
         add(attachment)
     }
 
-    private func launch(_ configuration: LaunchConfiguration, timeZone: TimeZone, arguments: [String])
-        -> XCUIApplication
-    {
+    private func launch(
+        _ configuration: LaunchConfiguration, timeZone: TimeZone, arguments: [String], animations: String?
+    ) -> XCUIApplication {
         let app = XCUIApplication()
         app.launchEnvironment = configuration.environment
         app.launchEnvironment["TZ"] = timeZone.identifier
-        app.launchEnvironment[TestAnimations.environmentKey] = TestAnimations.off
+        app.launchEnvironment[TestAnimations.environmentKey] = animations
         app.launchArguments = arguments
         app.launch()
         return app
@@ -55,5 +65,11 @@ class UITestCase: XCTestCase {
             XCUIDevice.shared.appearance = original
         }
         XCUIDevice.shared.appearance = appearance
+    }
+
+    private func rendered(in appearance: XCUIDevice.Appearance, _ app: XCUIApplication) -> XCUIApplication {
+        app.descendants(matching: .any)["debug.colorScheme"].waitUntil(
+            \.label, equals: appearance == .dark ? "dark" : "light")
+        return app
     }
 }

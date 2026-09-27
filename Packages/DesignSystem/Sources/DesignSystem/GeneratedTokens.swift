@@ -162,6 +162,11 @@ extension ColorToken {
         light: UIColor(rgb: 0xb48cf2, opacity: 1),
         dark: UIColor(rgb: 0xb48cf2, opacity: 1)
     )
+    public static let highlightRing = ColorToken(
+        name: "highlight-ring",
+        light: UIColor(rgb: 0xb0471f, opacity: 0.35),
+        dark: UIColor(rgb: 0xd8683a, opacity: 0.35)
+    )
     public static let danger = ColorToken(
         name: "danger",
         light: UIColor(rgb: 0xb3261e, opacity: 1),
@@ -215,6 +220,7 @@ extension ColorToken {
         .highlightBlueSolid,
         .highlightPinkSolid,
         .highlightPurpleSolid,
+        .highlightRing,
         .danger,
         .scrim,
         .nightText,
@@ -255,6 +261,7 @@ extension ShapeStyle where Self == Color {
     public static var highlightBlueSolid: Color { ColorToken.highlightBlueSolid.color }
     public static var highlightPinkSolid: Color { ColorToken.highlightPinkSolid.color }
     public static var highlightPurpleSolid: Color { ColorToken.highlightPurpleSolid.color }
+    public static var highlightRing: Color { ColorToken.highlightRing.color }
     public static var danger: Color { ColorToken.danger.color }
     public static var scrim: Color { ColorToken.scrim.color }
     public static var nightText: Color { ColorToken.nightText.color }
@@ -450,6 +457,53 @@ extension TextStyle {
         .footnote,
         .caption,
         .labelCaps,
+    ]
+}
+
+extension ReadingSize {
+    public static let steps: [ReadingSize] = [
+        ReadingSize(
+            fontSize: 14,
+            tightLineHeight: 20,
+            normalLineHeight: 22,
+            looseLineHeight: 25
+        ),
+        ReadingSize(
+            fontSize: 15,
+            tightLineHeight: 21,
+            normalLineHeight: 24,
+            looseLineHeight: 27
+        ),
+        ReadingSize(
+            fontSize: 17,
+            tightLineHeight: 24,
+            normalLineHeight: 27,
+            looseLineHeight: 31
+        ),
+        ReadingSize(
+            fontSize: 19,
+            tightLineHeight: 27,
+            normalLineHeight: 30,
+            looseLineHeight: 34
+        ),
+        ReadingSize(
+            fontSize: 21,
+            tightLineHeight: 29,
+            normalLineHeight: 33,
+            looseLineHeight: 38
+        ),
+        ReadingSize(
+            fontSize: 23,
+            tightLineHeight: 32,
+            normalLineHeight: 37,
+            looseLineHeight: 41
+        ),
+        ReadingSize(
+            fontSize: 26,
+            tightLineHeight: 36,
+            normalLineHeight: 41,
+            looseLineHeight: 47
+        ),
     ]
 }
 

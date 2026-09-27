@@ -1,6 +1,6 @@
 import SwiftData
 
-nonisolated enum HighlightColor: String, Codable {
+nonisolated enum HighlightColor: String, Codable, CaseIterable {
     case yellow
     case green
     case blue
