@@ -18,6 +18,13 @@ final class HomeTests: UITestCase {
         home.heroTitle.waitUntil(\.label, equals: "Die Verwandlung")
     }
 
+    func testSingleBookIsAvailableOnLibraryShelf() throws {
+        let home = HomeScreen(app: launch(try seeded([.german]))).waitUntilShown()
+        home.book("Die Verwandlung").waitUntil(\.isHittable, equals: true).tap()
+        ReaderScreen(app: home.app).waitUntilOpened().backToHome()
+        home.book("Die Verwandlung").waitUntilExists()
+    }
+
     func testMostRecentlyOpenedBookIsHero() throws {
         var configuration = try seeded([.german, .frenchNoCover, .minimalMetadata])
         configuration.opened = [.frenchNoCover]
