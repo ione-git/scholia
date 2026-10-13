@@ -790,6 +790,7 @@ final class ReaderViewController: UIViewController {
     private func reach(_ target: ReaderJump) async {
         guard let chapter = readingOrderIndex(of: target) else {
             jumpTarget = nil
+            navigator.view.alpha = 1
             return
         }
         guard shows(chapter), let webView = webView(inChapter: chapter) else {

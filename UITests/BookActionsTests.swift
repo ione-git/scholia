@@ -226,6 +226,6 @@ final class BookActionsTests: UITestCase {
         library.storedLibrary.waitUntil(\.label, equals: "Un matin en ville · Scholia · fr · french-no-cover.epub")
         XCTAssertEqual(library.storedLibrary.stringValue, "french-no-cover.epub")
         library.storedHighlights.waitUntil(\.label, equals: "0")
-        library.goBack().libraryButton.waitUntil(\.label, equals: "Library, All 1")
+        library.goBack().libraryButton.waitUntil(\.label, equals: "Library, All")
     }
 }
