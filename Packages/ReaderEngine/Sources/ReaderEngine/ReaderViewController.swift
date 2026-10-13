@@ -832,6 +832,7 @@ final class ReaderViewController: UIViewController {
         }
         shownPage = nil
         trackPage()
+        navigator.resignFirstResponder()
         navigator.view.alpha = 1
     }
 

@@ -1,7 +1,7 @@
 import XCTest
 
 final class ReaderLayoutTests: UITestCase {
-    func testNestedChapterJumpKeepsItsDestinationAndCurrentMarker() {
+    func testNestedChapterJumpKeepsItsDestinationAndCurrentMarker() throws {
         let index = contents(appearance: .light)
         index.section("Part One").waitUntil(\.isHittable, equals: true)
         XCTAssertFalse(index.chapter("Part One").exists)
@@ -11,9 +11,21 @@ final class ReaderLayoutTests: UITestCase {
         let reader = index.jump(to: "Chapter 12")
 
         reader.subtitle.waitUntil(\.label, equals: "Scholia · Chapter 12")
-        let reopened = reader.openMenu().open("contents")
+        let menu = reader.openMenu()
+        XCTAssertFalse(reader.app.keyboards.firstMatch.exists)
+        let reopened = menu.open("contents")
         reopened.chapter("Chapter 12").waitUntil(\.isSelected, equals: true)
         XCTAssertFalse(reopened.chapter("Part Two").isSelected)
+
+        let returned = reopened.done()
+        let contents = returned.openMenu().open("contents")
+        contents.chapter("Chapter 12").waitUntil(\.isSelected, equals: true)
+        let selectable = contents.done()
+        selectable.hideChrome()
+        let paragraph = selectable.paragraph(startingWith: "This book has a cover")
+        try selectable.selectWord(onLine: 0, x: 20, in: paragraph).highlight()
+        selectable.paintedHighlights.waitUntil(\.label, equals: "1")
+        XCTAssertFalse(selectable.app.keyboards.firstMatch.exists)
     }
 
     func testNestedContentsSnapshotLight() {
