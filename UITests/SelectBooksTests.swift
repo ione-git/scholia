@@ -71,6 +71,16 @@ final class SelectBooksTests: UITestCase {
         finished.toggleFinished()
         reopened.book("Die Verwandlung").waitUntil(\.stringValue, equals: "")
         XCTAssertEqual(reopened.book("Minimal").stringValue, "")
+        reopened.app.terminate()
+        let unread = HomeScreen(
+            app: launch(
+                LaunchConfiguration(
+                    resetsState: false, fixtures: [], opened: [], inProgress: [], highlighted: [],
+                    translation: .immediate, now: nil, notificationPermission: nil))
+        )
+        .waitUntilShown().openLibrary()
+        unread.book("Die Verwandlung").waitUntil(\.stringValue, equals: "")
+        unread.book("Minimal").waitUntil(\.stringValue, equals: "")
     }
 
     func testSelectedBooksSnapshotLight() throws {
