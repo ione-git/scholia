@@ -139,6 +139,7 @@ struct ReadingView: View {
         }
         do {
             let readerBook = try await ReaderBook.open(book.fileURL)
+            Self.removeCoveredHighlights(from: book, in: modelContext)
             let controller = ReaderController(
                 book: readerBook,
                 language: book.language,
@@ -190,11 +191,39 @@ struct ReadingView: View {
         }
     }
 
+    private static func removeCoveredHighlights(from book: Book, in modelContext: ModelContext) {
+        let ordered = book.highlights.sorted {
+            if $0.start != $1.start {
+                return $0.start.location < $1.start.location
+            }
+            return $0.end.location > $1.end.location
+        }
+        var kept: [Highlight] = []
+        for highlight in ordered {
+            if kept.contains(where: { $0.color == highlight.color && $0.contains(highlight.range) }) {
+                book.highlights.removeAll { $0.persistentModelID == highlight.persistentModelID }
+                modelContext.delete(highlight)
+            } else {
+                kept.append(highlight)
+            }
+        }
+    }
+
     private static func addHighlight(
         _ range: ReaderTextRange, color: HighlightColor, to book: Book, in modelContext: ModelContext
     ) -> Bool {
         guard !book.highlights.contains(where: { $0.covers(range) }) else {
             return false
+        }
+        guard !book.highlights.contains(where: { $0.color == color && $0.contains(range) }) else {
+            return false
+        }
+        let covered = book.highlights.filter {
+            $0.color == color && range.start <= $0.start.location && $0.end.location <= range.end
+        }
+        for highlight in covered {
+            book.highlights.removeAll { $0.persistentModelID == highlight.persistentModelID }
+            modelContext.delete(highlight)
         }
         let highlight = Highlight(range: range, color: color)
         modelContext.insert(highlight)
