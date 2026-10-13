@@ -73,6 +73,34 @@ final class DragHighlightTests: UITestCase {
         XCTAssertEqual(reader.paintedHighlights.label, "1")
     }
 
+    func testDragOverWordHighlightedThroughMenuKeepsOneEntry() throws {
+        let reader = openGermanBook(launch(germanBook))
+        try reader.selectWord(onLine: 2, x: 20).highlight()
+        reader.paintedHighlights.waitUntil(\.label, equals: "1")
+
+        try reader.dragHighlight(in: reader.germanParagraph, fromLine: 2, x: 20, toLine: 2, x: 50)
+
+        reader.paintedLive.waitUntil(\.label, equals: "0")
+        XCTAssertEqual(reader.storedHighlights.label, "1")
+        XCTAssertEqual(reader.storedHighlights.stringValue, "seinem · yellow")
+        XCTAssertEqual(reader.paintedHighlights.label, "1")
+    }
+
+    func testRepeatingHighlightBackwardsAfterReopenKeepsOneEntry() throws {
+        let reader = openGermanBook(launch(germanBook))
+        try reader.dragHighlight(in: reader.germanParagraph, fromLine: 1, x: 220, toLine: 2, x: 270)
+        reader.paintedHighlights.waitUntil(\.label, equals: "1")
+        let reopened = reader.backToHome().openHeroBook()
+        reopened.paintedHighlights.waitUntil(\.label, equals: "1")
+
+        try reopened.dragHighlight(in: reopened.germanParagraph, fromLine: 2, x: 270, toLine: 1, x: 220)
+
+        reopened.paintedLive.waitUntil(\.label, equals: "0")
+        XCTAssertEqual(reopened.storedHighlights.label, "1")
+        XCTAssertEqual(reopened.storedHighlights.stringValue, "\(draggedText) · yellow")
+        XCTAssertEqual(reopened.paintedHighlights.label, "1")
+    }
+
     func testDragHighlightsRightToLeftText() throws {
         let reader = HomeScreen(app: launch(arabicBook)).waitUntilShown().openHeroBook()
         let paragraph = reader.paragraph(startingWith: arabicParagraph).waitUntilExists()
@@ -90,6 +118,21 @@ final class DragHighlightTests: UITestCase {
 
     func testReaderDragHighlightedSnapshotDark() throws {
         assertSnapshot(of: try dragHighlighted(appearance: .dark), named: "Reader-DragHighlighted")
+    }
+
+    func testReaderRepeatedHighlightSnapshotLight() throws {
+        assertSnapshot(of: try repeatHighlighted(appearance: .light), named: "Reader-RepeatedHighlight")
+    }
+
+    func testReaderRepeatedHighlightSnapshotDark() throws {
+        assertSnapshot(of: try repeatHighlighted(appearance: .dark), named: "Reader-RepeatedHighlight")
+    }
+
+    private func repeatHighlighted(appearance: XCUIDevice.Appearance) throws -> ReaderScreen {
+        let reader = try dragHighlighted(appearance: appearance)
+        try reader.dragHighlight(in: reader.germanParagraph, fromLine: 2, x: 270, toLine: 1, x: 220)
+        reader.paintedLive.waitUntil(\.label, equals: "0")
+        return reader
     }
 
     private var germanBook: LaunchConfiguration {
