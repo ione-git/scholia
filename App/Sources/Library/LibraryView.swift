@@ -15,7 +15,6 @@ struct LibraryView: View {
     @Query(sort: BookCollection.order) private var collections: [BookCollection]
     @State private var query = ""
     @State private var shownCollection: BookCollection?
-    @State private var isMenuShown = false
     @State private var isNamingCollection = false
     @State private var selection: Set<Book>?
     @State private var sheet: Sheet?
@@ -36,11 +35,6 @@ struct LibraryView: View {
             if let selection {
                 selectionBar(settings.librarySort.sorted(Array(selection)))
             }
-        }
-        .glassMenu(isPresented: $isMenuShown, alignment: .topTrailing) {
-            LibraryMenu(isShown: $isMenuShown, isNamingCollection: $isNamingCollection) { selection = [] }
-                .padding(.top, .controlH + .space2)
-                .padding(.trailing, .space5)
         }
         .newCollectionAlert(isPresented: $isNamingCollection) { _ in }
         .modalSheet(isPresented: isShowingSheet) { sheetContent }
@@ -87,13 +81,7 @@ struct LibraryView: View {
                 .accessibilityAddTraits(.isHeader)
                 .accessibilityIdentifier("library.title")
             Spacer(minLength: 0)
-            GlassButton(
-                .more, label: isMenuShown ? Text("Close menu") : Text("More"), size: .regular,
-                isActive: isMenuShown
-            ) {
-                isMenuShown.toggle()
-            }
-            .accessibilityIdentifier("library.more")
+            LibraryMenu(isNamingCollection: $isNamingCollection) { selection = [] }
         }
     }
 
@@ -153,9 +141,11 @@ struct LibraryView: View {
             }
             .accessibilityIdentifier("librarySelection.collection")
             GlassToolbarItem(marksUnread ? Text("Unread") : Text("Finished"), icon: .select, role: nil) {
-                selected.setFinished(!marksUnread)
+                withAnimation(.smooth) {
+                    selected.setFinished(!marksUnread)
+                    selection = nil
+                }
                 try? modelContext.save()
-                selection = nil
             }
             .accessibilityIdentifier("librarySelection.finished")
             GlassToolbarItem(Text("Remove"), icon: .trash, role: .destructive) {
@@ -223,7 +213,9 @@ struct LibraryView: View {
         case .addToCollection:
             sheet = .addToCollection([book])
         case .toggleFinished:
-            [book].setFinished(!book.isFinished)
+            withAnimation(.smooth) {
+                [book].setFinished(!book.isFinished)
+            }
             try? modelContext.save()
         case .info:
             sheet = .info(book)
@@ -297,43 +289,60 @@ private struct LibraryGrid: View {
 private struct LibraryMenu: View {
     @Environment(\.modelContext) private var modelContext
     @Environment(Settings.self) private var settings
-    @Binding var isShown: Bool
     @Binding var isNamingCollection: Bool
     let onSelectBooks: () -> Void
-    @State private var isSortShown = false
 
     var body: some View {
-        GlassMenu(size: .regular) {
-            if isSortShown {
-                GlassMenuHeader(Text("Sort by")) { isSortShown = false }
-                    .accessibilityIdentifier("librarySortMenu.back")
-                ForEach(LibrarySort.allCases, id: \.self) { sort in
-                    GlassMenuOption(Text(sort.title), isSelected: sort == settings.librarySort) {
-                        settings.librarySort = sort
-                        try? modelContext.save()
-                        isShown = false
-                    }
-                    .accessibilityIdentifier("librarySortMenu.\(sort.rawValue)")
+        Menu {
+            Button(action: onSelectBooks) {
+                Label {
+                    Text("Select Books")
+                } icon: {
+                    Icon.select.menuImage
                 }
-            } else {
-                GlassMenuItem(Text("Select Books"), icon: .select) {
-                    isShown = false
-                    onSelectBooks()
-                }
-                .accessibilityIdentifier("libraryMenu.selectBooks")
-                GlassMenuItem(Text("New Collection"), icon: .newCollection) {
-                    isShown = false
-                    isNamingCollection = true
-                }
-                .accessibilityIdentifier("libraryMenu.newCollection")
-                GlassMenuItem(
-                    Text("Sort by \(Text(settings.librarySort.shortTitle).foregroundStyle(.inkMuted))"), icon: .sort
-                ) {
-                    isSortShown = true
-                }
-                .accessibilityIdentifier("libraryMenu.sortBy")
             }
+            .accessibilityIdentifier("libraryMenu.selectBooks")
+            Button {
+                isNamingCollection = true
+            } label: {
+                Label {
+                    Text("New Collection")
+                } icon: {
+                    Icon.newCollection.menuImage
+                }
+            }
+            .accessibilityIdentifier("libraryMenu.newCollection")
+            Menu {
+                Picker(selection: sortSelection) {
+                    ForEach(LibrarySort.allCases, id: \.self) { sort in
+                        Text(sort.title)
+                            .tag(sort)
+                            .accessibilityIdentifier("librarySortMenu.\(sort.rawValue)")
+                    }
+                } label: {
+                    Text("Sort by")
+                }
+            } label: {
+                Label {
+                    Text("Sort by \(Text(settings.librarySort.shortTitle))")
+                } icon: {
+                    Icon.sort.menuImage
+                }
+            }
+            .accessibilityIdentifier("libraryMenu.sortBy")
+        } label: {
+            GlassMenuLabel(.more, label: Text("More"), size: .regular)
         }
-        .id(isSortShown)
+        .accessibilityLabel(Text("More"))
+        .accessibilityIdentifier("library.more")
+    }
+
+    private var sortSelection: Binding<LibrarySort> {
+        Binding {
+            settings.librarySort
+        } set: { sort in
+            settings.librarySort = sort
+            try? modelContext.save()
+        }
     }
 }

@@ -3,12 +3,12 @@ import ReaderEngine
 import SwiftData
 import SwiftUI
 
-struct ReaderChrome: View {
+struct ReaderChrome<MenuContent: View>: View {
     let book: Book
     let controller: ReaderController?
     let isShown: Bool
     let cannotOpen: Bool
-    @Binding var isMenuShown: Bool
+    let menu: MenuContent
     let back: () -> Void
 
     @Environment(\.modelContext) private var modelContext
@@ -65,30 +65,27 @@ struct ReaderChrome: View {
     }
 
     private var footer: some View {
-        ZStack {
-            if let page = controller?.page {
-                Text("\(page.number) of \(page.count)")
-                    .textStyle(.caption)
-                    .foregroundStyle(.inkMuted)
-                    .accessibilityIdentifier("reader.pageCounter")
-            }
-        }
-        .frame(maxWidth: .infinity)
-        .frame(height: showsControls ? GlassButton.Size.reader.diameter : TextStyle.caption.lineHeight)
-        .overlay(alignment: .trailing) {
-            if showsControls {
-                GlassButton(
-                    .more, label: isMenuShown ? Text("Close menu") : Text("Menu"), size: .reader,
-                    isActive: isMenuShown
-                ) {
-                    isMenuShown.toggle()
+        ZStack(alignment: .bottom) {
+            Group {
+                if let page = controller?.page {
+                    Text("\(page.number) of \(page.count)")
+                        .textStyle(.caption)
+                        .foregroundStyle(.inkMuted)
+                        .accessibilityIdentifier("reader.pageCounter")
                 }
-                .padding(.trailing, .space5)
-                .transition(.opacity)
-                .accessibilityIdentifier("reader.menu")
+            }
+            .frame(maxWidth: .infinity)
+            .padding(.bottom, .space8 + .space1)
+            if showsControls {
+                menu
+                    .frame(maxWidth: .infinity, alignment: .trailing)
+                    .padding(.trailing, .space5)
+                    .padding(.bottom, .space6)
+                    .transition(.opacity)
+                    .accessibilityIdentifier("reader.menu")
             }
         }
-        .padding(.bottom, showsControls ? .space6 : .space8 + .space1)
+        .frame(height: GlassButton.Size.reader.diameter + .space6, alignment: .bottom)
     }
 
     private var bookmarkButton: some View {
@@ -118,7 +115,4 @@ struct ReaderChrome: View {
         }
     }
 
-    static var menuBottomInset: CGFloat {
-        .space6 + GlassButton.Size.reader.diameter + .space3
-    }
 }

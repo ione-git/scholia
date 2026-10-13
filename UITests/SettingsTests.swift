@@ -12,6 +12,43 @@ final class SettingsTests: UITestCase {
         home.settingsButton.waitUntil(\.isHittable, equals: true)
     }
 
+    func testBackSwipeReturnsHomeAndAllowsAnotherPush() {
+        var configuration = LaunchConfiguration.withoutBooks
+        configuration.fixtures = [.minimalMetadata]
+        let app = launchWithAnimations(configuration, appearance: .light)
+        let home = HomeScreen(app: app).waitUntilShown()
+        let settings = home.openSettings()
+
+        settings.swipeBack()
+
+        home.settingsButton.waitUntil(\.isHittable, equals: true)
+        let library = home.openLibrary()
+        library.swipeBack()
+        home.openSettings().goBack()
+        home.settingsButton.waitUntil(\.isHittable, equals: true)
+    }
+
+    func testCancelledBackSwipeKeepsSettingsAndBackButtonWorks() {
+        let settings = openSettings(launchWithAnimations(.withoutBooks, appearance: .light))
+
+        settings.cancelBackSwipe()
+
+        settings.backButton.waitUntil(\.isHittable, equals: true)
+        settings.chooseWordTapStyle("card")
+        let home = settings.goBack()
+        home.openSettings().onWordTap("card").waitUntil(\.isSelected, equals: true)
+    }
+
+    func testDraggingNativeSegmentsChangesWordTapAndTheme() {
+        let settings = openSettings(launchWithAnimations(.withoutBooks, appearance: .light))
+
+        settings.dragWordTap(from: "bubble", to: "card")
+        settings.onWordTap("card").waitUntil(\.isSelected, equals: true)
+        settings.dragTheme(from: "system", to: "dark")
+        settings.theme("dark").waitUntil(\.isSelected, equals: true)
+        settings.colorScheme.waitUntil(\.label, equals: "dark")
+    }
+
     func testTranslateToDefaultsToSupportedDeviceLanguage() {
         let settings = openSettings(launch(.withoutBooks, deviceLanguage: "ru"))
 

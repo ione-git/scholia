@@ -97,9 +97,9 @@ public struct BookCover: View {
         .shadow(shadow, in: shape)
         .contentShape([.interaction, .accessibility, .contextMenuPreview], shape)
         .overlay(alignment: .topTrailing) {
-            if isFinished {
-                FinishedBadge()
-            }
+            FinishedBadge()
+                .opacity(isFinished ? 1 : 0)
+                .animation(.smooth, value: isFinished)
         }
         .accessibilityElement(children: .ignore)
         .accessibilityLabel(Text(title))
@@ -151,28 +151,17 @@ extension BookCover {
 
 extension BookCover {
     public func selectable(isSelected: Bool) -> some View {
-        modifier(CoverSelection(isSelected: isSelected, radius: size.metrics.radius))
+        modifier(CoverSelection(isSelected: isSelected))
     }
 }
 
 private struct CoverSelection: ViewModifier {
-    private static let ringWidth: CGFloat = 2
-    private static let ringOffset: CGFloat = 3
     private static let checkboxInset: CGFloat = 6
 
     let isSelected: Bool
-    let radius: CGFloat
 
     func body(content: Content) -> some View {
-        let outset = Self.ringOffset + Self.ringWidth
         content
-            .overlay {
-                if isSelected {
-                    RoundedRectangle(cornerRadius: radius + outset)
-                        .strokeBorder(.accent, lineWidth: Self.ringWidth)
-                        .padding(-outset)
-                }
-            }
             .overlay(alignment: .bottomTrailing) {
                 CoverCheckbox(isChecked: isSelected)
                     .padding(Self.checkboxInset)

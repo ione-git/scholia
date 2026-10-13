@@ -87,7 +87,8 @@
 
     extension Fixture {
         fileprivate var coverURL: URL? {
-            Bundle.main.url(forResource: "\(rawValue)-cover", withExtension: "png", subdirectory: "Fixtures")
+            let resource = self == .germanContainedHighlights ? Fixture.german.rawValue : rawValue
+            return Bundle.main.url(forResource: "\(resource)-cover", withExtension: "png", subdirectory: "Fixtures")
         }
 
         fileprivate var highlights: [Highlight]? {
@@ -127,6 +128,38 @@
                         before: "rten ihm hilflos vor den Augen.\n", after: " Es war kein Traum. Sein Zimmer,",
                         color: .green),
                 ]
+            case .germanContainedHighlights:
+                [
+                    Highlight(
+                        chapter: 0, offset: 77,
+                        text: "fand er sich in seinem Bett zu einem ungeheueren Ungeziefer verwandelt",
+                        before: "aus unruhigen Träumen erwachte, ", after: ". Er lag auf seinem panzerartig ",
+                        color: .yellow),
+                    Highlight(
+                        chapter: 0, offset: 90, text: "in seinem Bett zu einem ungeheueren Ungeziefer verwandelt",
+                        before: " Träumen erwachte, fand er sich ", after: ". Er lag auf seinem panzerartig ",
+                        color: .yellow),
+                    Highlight(
+                        chapter: 0, offset: 77, text: "fand er sich in seinem Bett zu einem ungeheueren Ungeziefer",
+                        before: "aus unruhigen Träumen erwachte, ", after: " verwandelt. Er lag auf seinem p",
+                        color: .yellow),
+                    Highlight(
+                        chapter: 0, offset: 77,
+                        text: "fand er sich in seinem Bett zu einem ungeheueren Ungeziefer verwandelt",
+                        before: "aus unruhigen Träumen erwachte, ", after: ". Er lag auf seinem panzerartig ",
+                        color: .yellow),
+                    Highlight(
+                        chapter: 0, offset: 90, text: "in seinem Bett zu einem ungeheueren Ungeziefer verwandelt",
+                        before: " Träumen erwachte, fand er sich ", after: ". Er lag auf seinem panzerartig ",
+                        color: .green),
+                    Highlight(
+                        chapter: 0, offset: 140, text: "wandelt. Er lag auf",
+                        before: "einem ungeheueren Ungeziefer ver", after: " seinem panzerartig harten Rücke",
+                        color: .yellow),
+                    Highlight(
+                        chapter: 0, offset: 565, text: "Es war kein Traum.", before: "mit mir geschehen?«, dachte er. ",
+                        after: " Sein Zimmer, ein richtiges, nur", color: .yellow),
+                ]
             case .frenchSections:
                 [
                     Highlight(
@@ -134,14 +167,16 @@
                         before: "ur un banc près de la fontaine.\n", after: " Elle tient une tasse de café en",
                         color: .yellow)
                 ]
-            case .frenchNoCover, .frenchSplit, .arabic, .minimalMetadata, .corrupted, .drm, .zip64, .fontObfuscation:
+            case .frenchNoCover, .frenchSplit, .arabic, .minimalMetadata, .corrupted, .drm, .zip64, .fontObfuscation,
+                .nestedContents:
                 nil
             }
         }
 
         fileprivate var title: String {
             switch self {
-            case .german: "Die Verwandlung"
+            case .german, .germanContainedHighlights: "Die Verwandlung"
+            case .nestedContents: "Nested Contents"
             case .frenchNoCover: "Un matin en ville"
             case .frenchSections: "Un soir en ville"
             case .frenchSplit: "Trois matins"
@@ -156,18 +191,18 @@
 
         fileprivate var author: String? {
             switch self {
-            case .german, .drm, .zip64, .fontObfuscation: "Franz Kafka"
-            case .frenchNoCover, .frenchSections, .frenchSplit, .arabic: "Scholia"
+            case .german, .germanContainedHighlights, .drm, .zip64, .fontObfuscation: "Franz Kafka"
+            case .frenchNoCover, .frenchSections, .frenchSplit, .arabic, .nestedContents: "Scholia"
             case .minimalMetadata, .corrupted: nil
             }
         }
 
         fileprivate var language: String {
             switch self {
-            case .german, .drm, .zip64, .fontObfuscation: "de"
+            case .german, .germanContainedHighlights, .drm, .zip64, .fontObfuscation: "de"
             case .frenchNoCover, .frenchSections, .frenchSplit: "fr"
             case .arabic: "ar"
-            case .minimalMetadata, .corrupted: "en"
+            case .minimalMetadata, .corrupted, .nestedContents: "en"
             }
         }
     }

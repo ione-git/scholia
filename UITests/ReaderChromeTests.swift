@@ -24,7 +24,6 @@ final class ReaderChromeTests: UITestCase {
         XCTAssertEqual(reader.menuButton.frame.size, CGSize(width: 48, height: 48))
         XCTAssertEqual(reader.menuButton.frame.maxX, reader.app.frame.width - 20)
         XCTAssertEqual(reader.menuButton.frame.maxY, reader.app.frame.height - 24)
-        XCTAssertEqual(reader.menuButton.frame.midY, reader.pageCounter.frame.midY, accuracy: 0.5)
         XCTAssertEqual(reader.title.label, "Die Verwandlung")
         reader.subtitle.waitUntil(\.label, equals: "Franz Kafka · Erster Teil")
         reader.runningHead.waitUntilGone()
@@ -90,8 +89,7 @@ final class ReaderChromeTests: UITestCase {
 
         let menu = reader.openMenu()
 
-        XCTAssertEqual(menu.entries.map(\.label), menuEntries)
-        reader.menuButton.waitUntil(\.isSelected, equals: true)
+        XCTAssertEqual(Set(menu.entries.map(\.label)), Set(menuEntries))
     }
 
     func testMenuEntriesOpenTheirTabAndDoneReturnsWithChrome() {
@@ -110,7 +108,6 @@ final class ReaderChromeTests: UITestCase {
 
             index.done()
             reader.backButton.waitUntil(\.isHittable, equals: true)
-            XCTAssertFalse(reader.menuButton.isSelected)
         }
         reader.pageCounter.waitUntil(\.label, equals: "1 of \(bookPages)")
     }
@@ -125,21 +122,17 @@ final class ReaderChromeTests: UITestCase {
         XCTAssertFalse(ReaderMenuScreen(app: reader.app).root.exists)
     }
 
-    func testOpenMenuBlocksPageAndTapOutsideClosesItKeepingChrome() {
+    func testNativeMenuDismissesOutsideKeepingPage() {
         let reader = openGermanBook()
         reader.showChrome()
         let menu = reader.openMenu()
 
-        reader.app.swipeLeft()
-
-        XCTAssertEqual(reader.pageCounter.label, "1 of \(bookPages)")
-        XCTAssertTrue(menu.root.exists)
-
         menu.closeByTappingOutside()
 
-        reader.menuButton.waitUntil(\.isSelected, equals: false)
-        XCTAssertTrue(reader.backButton.isHittable)
-        XCTAssertEqual(reader.pageCounter.label, "1 of \(bookPages)")
+        reader.pageCounter.waitUntil(\.label, equals: "1 of \(bookPages)")
+        reader.showChrome()
+        reader.backButton.waitUntil(\.isHittable, equals: true)
+        reader.openMenu().open("bookmarks").tab("bookmarks").waitUntil(\.isSelected, equals: true)
     }
 
     func testBookmarkMarksOnlyItsPage() {
@@ -190,7 +183,7 @@ final class ReaderChromeTests: UITestCase {
         XCTAssertEqual(reader.bookmarkButton.label, "Bookmark this page")
     }
 
-    func testChromeAndMenuScreenshotsInPaperAndNight() throws {
+    func testChromeScreenshotsInPaperAndNight() throws {
         let original = XCUIDevice.shared.appearance
         addTeardownBlock { @MainActor in
             XCUIDevice.shared.appearance = original
@@ -210,9 +203,6 @@ final class ReaderChromeTests: UITestCase {
             XCTAssertLessThanOrEqual(page.distance(to: expected), 3, "\(page) vs \(expected)")
             attachScreenshot("Reader-Chrome\(suffix)")
 
-            reader.openMenu()
-            reader.menuButton.waitUntil(\.isSelected, equals: true)
-            attachScreenshot("Reader-Menu\(suffix)")
             reader.app.terminate()
         }
     }

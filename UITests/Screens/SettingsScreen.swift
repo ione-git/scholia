@@ -82,6 +82,37 @@ struct SettingsScreen: Screen {
         return HomeScreen(app: app).waitUntilShown()
     }
 
+    @discardableResult
+    func swipeBack() -> HomeScreen {
+        root.waitUntil(\.isHittable, equals: true)
+        let start = app.coordinate(withNormalizedOffset: CGVector(dx: 0.001, dy: 0.5))
+        let end = app.coordinate(withNormalizedOffset: CGVector(dx: 0.8, dy: 0.5))
+        start.press(forDuration: 0.1, thenDragTo: end)
+        root.waitUntilGone()
+        return HomeScreen(app: app).waitUntilShown()
+    }
+
+    func cancelBackSwipe() {
+        root.waitUntil(\.isHittable, equals: true)
+        let start = app.coordinate(withNormalizedOffset: CGVector(dx: 0.001, dy: 0.5))
+        let end = app.coordinate(withNormalizedOffset: CGVector(dx: 0.12, dy: 0.5))
+        start.press(forDuration: 0.1, thenDragTo: end, withVelocity: .slow, thenHoldForDuration: 0.5)
+    }
+
+    func dragWordTap(from: String, to: String) {
+        drag(from: onWordTap(from), to: onWordTap(to))
+    }
+
+    func dragTheme(from: String, to: String) {
+        drag(from: theme(from), to: theme(to))
+    }
+
+    private func drag(from start: XCUIElement, to end: XCUIElement) {
+        start.waitUntil(\.isHittable, equals: true)
+        end.waitUntil(\.isHittable, equals: true)
+        start.press(forDuration: 0.1, thenDragTo: end)
+    }
+
     private func select(_ segment: XCUIElement) {
         segment.waitUntil(\.isHittable, equals: true).tap()
         segment.waitUntil(\.isSelected, equals: true)

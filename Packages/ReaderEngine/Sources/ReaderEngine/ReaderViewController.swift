@@ -344,6 +344,7 @@ final class ReaderViewController: UIViewController {
     }
 
     func go(to target: ReaderJump) {
+        navigator.view.alpha = 0
         jumpTarget = target
         jump()
     }
@@ -442,6 +443,7 @@ final class ReaderViewController: UIViewController {
         locateTask?.cancel()
         turnTask?.cancel()
         jumpTask?.cancel()
+        navigator.view.alpha = 1
         stopNeighbours()
         isShown = false
         shownPage = nil
@@ -786,14 +788,23 @@ final class ReaderViewController: UIViewController {
     }
 
     private func reach(_ target: ReaderJump) async {
-        let chapter = readingOrderIndex(of: target)
+        guard let chapter = readingOrderIndex(of: target) else {
+            jumpTarget = nil
+            navigator.view.alpha = 1
+            return
+        }
         guard shows(chapter), let webView = webView(inChapter: chapter) else {
             guard let locator = Self.locator(for: ReaderLocation(chapter: chapter, offset: 0), in: book.publication)
             else {
                 jumpTarget = nil
+                navigator.view.alpha = 1
                 return
             }
-            _ = await navigator.go(to: locator, options: NavigatorGoOptions(animated: false))
+            let moved = await navigator.go(to: locator, options: NavigatorGoOptions(animated: false))
+            if !moved, !Task.isCancelled, target == jumpTarget {
+                jumpTarget = nil
+                navigator.view.alpha = 1
+            }
             return
         }
         let offset = await offset(of: target, in: webView)
@@ -802,6 +813,7 @@ final class ReaderViewController: UIViewController {
         }
         jumpTarget = nil
         guard let offset else {
+            navigator.view.alpha = 1
             return
         }
         landing = Landing(location: ReaderLocation(chapter: chapter, offset: offset), isReached: false)
@@ -811,16 +823,23 @@ final class ReaderViewController: UIViewController {
         }
         guard didShow else {
             landing = nil
+            navigator.view.alpha = 1
+            return
+        }
+        await waitUntilRendered()
+        guard !Task.isCancelled, jumpTarget == nil else {
             return
         }
         shownPage = nil
         trackPage()
+        navigator.resignFirstResponder()
+        navigator.view.alpha = 1
     }
 
-    private func readingOrderIndex(of target: ReaderJump) -> Int {
+    private func readingOrderIndex(of target: ReaderJump) -> Int? {
         switch target {
         case .location(let location): location.chapter
-        case .chapter(let index): book.tableOfContents[index].location.chapter
+        case .chapter(let index): book.tableOfContents[index].location?.chapter
         }
     }
 
@@ -829,9 +848,10 @@ final class ReaderViewController: UIViewController {
         case .location(let location):
             return location.offset
         case .chapter(let index):
-            await resolveFragments(inChapter: readingOrderIndex(of: target), in: webView)
+            guard let chapterIndex = readingOrderIndex(of: target) else { return nil }
+            await resolveFragments(inChapter: chapterIndex, in: webView)
             let chapter = book.tableOfContents[index]
-            return chapter.unresolvedFragment == nil ? chapter.location.offset : nil
+            return chapter.unresolvedFragment == nil ? chapter.location?.offset : nil
         }
     }
 
@@ -883,8 +903,15 @@ final class ReaderViewController: UIViewController {
         guard width > 0, scrollView.contentSize.width >= width else {
             return nil
         }
+        let distance = distanceFromStart(of: scrollView.bounds, in: scrollView)
+        let page = Int((distance / width).rounded())
+        guard abs(distance - CGFloat(page) * width) < 1,
+            let pager,
+            abs(distanceFromStart(of: pager.bounds, in: pager) - CGFloat(chapter) * pager.bounds.width) < 1
+        else {
+            return nil
+        }
         let count = Int((scrollView.contentSize.width / width).rounded())
-        let page = Int((distanceFromStart(of: scrollView.bounds, in: scrollView) / width).rounded())
         return ChapterPage(chapter: chapter, page: min(max(page, 0), count - 1))
     }
 

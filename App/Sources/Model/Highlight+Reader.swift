@@ -20,6 +20,11 @@ extension Highlight {
         self.range.start == range.start && self.range.end == range.end
     }
 
+    func contains(_ range: ReaderTextRange) -> Bool {
+        (start.chapter, start.offset) <= (range.start.chapter, range.start.offset)
+            && (range.end.chapter, range.end.offset) <= (end.chapter, end.offset)
+    }
+
     var key: String {
         "\(start.chapter):\(start.offset)-\(end.offset)"
     }

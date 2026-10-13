@@ -23,6 +23,7 @@ struct RootView: View {
     var body: some View {
         NavigationStack(path: $path) {
             HomeView(path: $path, isPickingFile: $isPickingFile)
+                .background { InteractiveBackNavigation() }
                 .navigationDestination(for: Route.self) { route in
                     switch route {
                     case .library: LibraryView()

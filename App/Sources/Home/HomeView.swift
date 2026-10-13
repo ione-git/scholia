@@ -33,7 +33,7 @@ struct HomeView: View {
                         HeroBook(book: hero, minutesLeft: stats.minutesLeft(in: hero))
                             .padding(.top, .space8)
                         Spacer(minLength: .space6)
-                        LibraryShelf(count: books.count, books: Array(books.dropFirst()))
+                        LibraryShelf(books: books)
                             .padding(.bottom, .space8)
                     } else {
                         EmptyHome { isPickingFile = true }
@@ -83,7 +83,7 @@ struct HomeView: View {
         Button {
             isGoalShown = true
         } label: {
-            GoalRing(value: stats.goalProgress, size: .header, isActive: isGoalShown, center: nil)
+            GoalRing(value: stats.goalProgress, size: .header, isActive: false, center: nil)
                 .frame(width: .controlH, height: .controlH)
                 .contentShape(.circle)
         }
@@ -224,7 +224,6 @@ private struct TimeLeft: View {
 }
 
 private struct LibraryShelf: View {
-    let count: Int
     let books: [Book]
 
     var body: some View {
@@ -236,7 +235,7 @@ private struct LibraryShelf: View {
                         .foregroundStyle(.ink)
                     Spacer()
                     HStack(spacing: .space1) {
-                        Text("All \(count)")
+                        Text("All")
                             .textStyle(TextStyle.callout.weighted(TextStyle.body.weight))
                             .foregroundStyle(.inkMuted)
                         ListRowChevron()

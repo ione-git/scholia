@@ -24,6 +24,10 @@ struct ReaderIndexScreen: Screen {
 
     func tab(_ name: String) -> XCUIElement { app.buttons["readerIndex.tab.\(name)"] }
 
+    func section(_ title: String) -> XCUIElement {
+        app.descendants(matching: .any)["readerIndex.section.\(title)"]
+    }
+
     func chapter(_ title: String) -> XCUIElement { app.buttons["readerIndex.chapter.\(title)"] }
 
     func highlight(_ key: String) -> XCUIElement { app.buttons["readerIndex.highlight.\(key)"] }
@@ -55,6 +59,10 @@ struct ReaderIndexScreen: Screen {
         bookmark(page: page).waitUntil(\.isHittable, equals: true).tap()
         root.waitUntilGone()
         return ReaderScreen(app: app).waitUntilShown()
+    }
+
+    func scrollContents() {
+        app.scrollViews.firstMatch.swipeUp()
     }
 
     @discardableResult

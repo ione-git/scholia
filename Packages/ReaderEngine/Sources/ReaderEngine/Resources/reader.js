@@ -481,26 +481,100 @@
     livePaint = null;
   }
 
+  function continuousBoxes(range) {
+    const rects = lineBoxes(range);
+    const tops = rects.map((rect) => rect.top);
+    const lineHeight = parseFloat(getComputedStyle(blockOf(range.startContainer)).lineHeight);
+    for (let index = 0; index < rects.length - 1; index++) {
+      const first = rects[index];
+      const next = rects[index + 1];
+      const gap = next.top - first.bottom;
+      if (gap <= 0 || tops[index + 1] - tops[index] > lineHeight + rectTolerance) {
+        continue;
+      }
+      if (Math.min(first.right, next.right) <= Math.max(first.left, next.left)) {
+        continue;
+      }
+      const seam = (first.bottom + next.top) / 2;
+      rects[index] = rectangle(first.left, first.top, first.right, seam);
+      rects[index + 1] = rectangle(next.left, seam, next.right, next.bottom);
+    }
+    return rects;
+  }
+
+  function paintShape(range, fill, radius, className) {
+    const rects = continuousBoxes(range);
+    const left = Math.min(...rects.map((rect) => rect.left));
+    const top = Math.min(...rects.map((rect) => rect.top));
+    const right = Math.max(...rects.map((rect) => rect.right));
+    const bottom = Math.max(...rects.map((rect) => rect.bottom));
+    const rounded = (rect) => {
+      const x = rect.left - left;
+      const y = rect.top - top;
+      const w = rect.width;
+      const h = rect.height;
+      const r = Math.min(radius, w / 2, h / 2);
+      return `M${x + r},${y}h${w - 2 * r}q${r},0 ${r},${r}v${h - 2 * r}q0,${r} ${-r},${r}h${2 * r - w}q${-r},0 ${-r},${-r}v${2 * r - h}q0,${-r} ${r},${-r}Z`;
+    };
+    const paths = rects.map(rounded);
+    for (const [index, first] of rects.entries()) {
+      const next = rects[index + 1];
+      if (!next || !almostEqual(first.bottom, next.top)) {
+        continue;
+      }
+      const bridgeLeft = Math.max(first.left, next.left) + radius;
+      const bridgeRight = Math.min(first.right, next.right) - radius;
+      if (bridgeRight > bridgeLeft) {
+        paths.push(rounded(rectangle(bridgeLeft, first.bottom - radius, bridgeRight, next.top + radius)));
+      }
+    }
+    const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+    svg.setAttribute("class", className);
+    svg.setAttribute("width", right - left);
+    svg.setAttribute("height", bottom - top);
+    Object.assign(svg.style, {
+      position: "absolute",
+      left: `${left + document.scrollingElement.scrollLeft}px`,
+      top: `${top + document.scrollingElement.scrollTop}px`,
+      zIndex: "-1",
+      pointerEvents: "none",
+    });
+    const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+    path.setAttribute("d", paths.join(" "));
+    path.setAttribute("fill", fill);
+    svg.append(path);
+    return svg;
+  }
+
   function drawPaint() {
-    const { scrollLeft, scrollTop } = document.scrollingElement;
     livePaint.container.replaceChildren(
-      ...lineBoxes(livePaint.range).map((rect) => {
-        const box = document.createElement("div");
-        box.className = paintedClasses.paintedLive;
-        Object.assign(box.style, {
-          position: "absolute",
-          left: `${rect.left + scrollLeft}px`,
-          top: `${rect.top + scrollTop}px`,
-          width: `${rect.width}px`,
-          height: `${rect.height}px`,
-          backgroundColor: livePaint.fill,
-          borderRadius: `${livePaint.radius}px`,
-          zIndex: "-1",
-          pointerEvents: "none",
-        });
-        return box;
-      })
+      paintShape(livePaint.range, livePaint.fill, livePaint.radius, paintedClasses.paintedLive)
     );
+  }
+
+  function paintSavedHighlights() {
+    for (const item of window.readium.getDecorations("highlights").items) {
+      const container = item.container;
+      if (!container || container.dataset.scholiaPainted) {
+        continue;
+      }
+      const boxes = Array.from(container.querySelectorAll(`.${paintedClasses.paintedHighlights}`));
+      const first = boxes[0];
+      if (!first) {
+        continue;
+      }
+      if (lineBoxes(item.range).length === 1) {
+        container.dataset.scholiaPainted = "true";
+        continue;
+      }
+      const style = getComputedStyle(first);
+      const shape = paintShape(item.range, style.backgroundColor, parseFloat(style.borderRadius), "scholia-fill");
+      for (const box of boxes) {
+        box.style.setProperty("background-color", "transparent", "important");
+      }
+      container.dataset.scholiaPainted = "true";
+      container.append(shape);
+    }
   }
 
   function addsHighlight(record) {
@@ -728,7 +802,11 @@
 
   const painted = { paintedHighlights: 0, paintedWordTints: 0, paintedLive: 0, paintedHighlightRings: 0 };
   new MutationObserver((records) => {
-    if (livePaint && !livePaint.isFollowing && records.some(addsHighlight)) {
+    const highlightAdded = records.some(addsHighlight);
+    if (highlightAdded) {
+      paintSavedHighlights();
+    }
+    if (livePaint && !livePaint.isFollowing && highlightAdded) {
       removePaint();
     }
     for (const [name, className] of Object.entries(paintedClasses)) {

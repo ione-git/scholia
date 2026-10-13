@@ -11,6 +11,17 @@
         }
       }
     },
+    "%@, %@" : {
+      "comment" : "VoiceOver label: tab name followed by its item count",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@, %2$@"
+          }
+        }
+      }
+    },
     "%@ left" : {
 
     },
