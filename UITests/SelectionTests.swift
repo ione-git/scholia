@@ -35,6 +35,19 @@ final class SelectionTests: UITestCase {
         XCTAssertEqual(relaunched.storedHighlights.stringValue, "seinem · yellow")
     }
 
+    func testHighlightingTheSameWordAgainKeepsOneEntry() throws {
+        let reader = openGermanBook(launch(germanBook))
+        try reader.selectWord(onLine: 2, x: 20).highlight()
+        reader.paintedHighlights.waitUntil(\.label, equals: "1")
+
+        try reader.selectWord(onLine: 2, x: 20).highlight()
+        try reader.selectWord(onLine: 6, x: 20).highlight()
+
+        reader.storedHighlights.waitUntil(\.stringValue, equals: "braunen · yellow\nseinem · yellow")
+        XCTAssertEqual(reader.storedHighlights.label, "2")
+        reader.paintedHighlights.waitUntil(\.label, equals: "2")
+    }
+
     func testTranslateOpensBubbleForSelection() throws {
         let reader = openGermanBook(launch(germanBook))
 
