@@ -28,7 +28,6 @@ final class SelectBooksTests: UITestCase {
         for button in [selection.collectionButton, selection.finishedButton, selection.removeButton] {
             XCTAssertTrue(button.isEnabled)
         }
-        attachScreenshot("Library-Select")
 
         selection.toggle("Die Verwandlung")
         XCTAssertEqual(selection.title.label, "1 Selected")
@@ -52,16 +51,50 @@ final class SelectBooksTests: UITestCase {
         library.book("Die Verwandlung").waitUntil(\.stringValue, equals: "Finished")
         XCTAssertEqual(library.book("Minimal").stringValue, "Finished")
         XCTAssertEqual(library.book("Un matin en ville").stringValue, "")
+        app.terminate()
+        let reopened = HomeScreen(
+            app: launch(
+                LaunchConfiguration(
+                    resetsState: false, fixtures: [], opened: [], inProgress: [], highlighted: [],
+                    translation: .immediate, now: nil, notificationPermission: nil))
+        )
+        .waitUntilShown().openLibrary()
+        reopened.book("Die Verwandlung").waitUntil(\.stringValue, equals: "Finished")
+        reopened.book("Minimal").waitUntil(\.stringValue, equals: "Finished")
 
-        let mixed = library.selectBooks().toggle("Die Verwandlung").toggle("Un matin en ville")
+        let mixed = reopened.selectBooks().toggle("Die Verwandlung").toggle("Un matin en ville")
         XCTAssertEqual(mixed.finishedButton.label, "Finished")
         mixed.cancel()
 
-        let finished = library.selectBooks().toggle("Die Verwandlung").toggle("Minimal")
+        let finished = reopened.selectBooks().toggle("Die Verwandlung").toggle("Minimal")
         XCTAssertEqual(finished.finishedButton.label, "Unread")
         finished.toggleFinished()
-        library.book("Die Verwandlung").waitUntil(\.stringValue, equals: "")
-        XCTAssertEqual(library.book("Minimal").stringValue, "")
+        reopened.book("Die Verwandlung").waitUntil(\.stringValue, equals: "")
+        XCTAssertEqual(reopened.book("Minimal").stringValue, "")
+    }
+
+    func testSelectedBooksSnapshotLight() throws {
+        assertSnapshot(of: try selectedBooks(appearance: .light), named: "Library-Select")
+    }
+
+    func testSelectedBooksSnapshotDark() throws {
+        assertSnapshot(of: try selectedBooks(appearance: .dark), named: "Library-Select")
+    }
+
+    func testFinishedBooksSnapshotLight() throws {
+        assertSnapshot(of: try selectedBooks(appearance: .light).toggleFinished(), named: "Library-Finished")
+    }
+
+    func testFinishedBooksSnapshotDark() throws {
+        assertSnapshot(of: try selectedBooks(appearance: .dark).toggleFinished(), named: "Library-Finished")
+    }
+
+    private func selectedBooks(appearance: XCUIDevice.Appearance) throws -> LibrarySelectionScreen {
+        var configuration = LaunchConfiguration.withoutBooks
+        configuration.fixtures = fixtures
+        configuration.now = try Date("2026-03-14T09:30:00Z", strategy: .iso8601)
+        return HomeScreen(app: launch(configuration, appearance: appearance)).waitUntilShown()
+            .openLibrary().selectBooks().toggle("Die Verwandlung").toggle("Minimal")
     }
 
     func testSelectedBooksAreAddedToCollection() {

@@ -153,9 +153,11 @@ struct LibraryView: View {
             }
             .accessibilityIdentifier("librarySelection.collection")
             GlassToolbarItem(marksUnread ? Text("Unread") : Text("Finished"), icon: .select, role: nil) {
-                selected.setFinished(!marksUnread)
+                withAnimation(.smooth) {
+                    selected.setFinished(!marksUnread)
+                    selection = nil
+                }
                 try? modelContext.save()
-                selection = nil
             }
             .accessibilityIdentifier("librarySelection.finished")
             GlassToolbarItem(Text("Remove"), icon: .trash, role: .destructive) {
@@ -223,7 +225,9 @@ struct LibraryView: View {
         case .addToCollection:
             sheet = .addToCollection([book])
         case .toggleFinished:
-            [book].setFinished(!book.isFinished)
+            withAnimation(.smooth) {
+                [book].setFinished(!book.isFinished)
+            }
             try? modelContext.save()
         case .info:
             sheet = .info(book)
