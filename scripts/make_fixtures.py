@@ -305,6 +305,28 @@ def main():
         None,
         anchored=True,
     )
+    nested = epub(
+        "urn:scholia:fixture:nested-contents",
+        "Nested Contents",
+        "en",
+        "Scholia",
+        [(f"Chapter {number}", prose(ENGLISH * 2)) for number in range(1, 15)],
+        None,
+    )
+    first_part = "".join(
+        f'<li><a href="chapter-{number}.xhtml">Chapter {number}</a></li>' for number in range(1, 11)
+    )
+    second_part = "".join(
+        f'<li><a href="chapter-{number}.xhtml">Chapter {number}</a></li>' for number in range(11, 15)
+    )
+    nested["OEBPS/nav.xhtml"] = xhtml(
+        "en",
+        "Nested Contents",
+        '<nav epub:type="toc" id="toc"><ol>'
+        f'<li><span>Part One</span><ol>{first_part}</ol></li>'
+        f'<li><a href="chapter-11.xhtml">Part Two</a><ol>{second_part}</ol></li>'
+        '</ol></nav>',
+    ).encode()
     minimal = archive(
         epub(
             "urn:scholia:fixture:minimal-metadata",
@@ -336,6 +358,7 @@ def main():
     font["OEBPS/font.otf"] = hashlib.shake_256(b"scholia-font").digest(2048)
     books = {
         "german.epub": archive(german),
+        "nested-contents.epub": archive(nested),
         "french-no-cover.epub": archive(french),
         "french-sections.epub": archive(french_sections),
         "french-split.epub": archive(french_split),

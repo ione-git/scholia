@@ -134,7 +134,8 @@
                         before: "ur un banc près de la fontaine.\n", after: " Elle tient une tasse de café en",
                         color: .yellow)
                 ]
-            case .frenchNoCover, .frenchSplit, .arabic, .minimalMetadata, .corrupted, .drm, .zip64, .fontObfuscation:
+            case .frenchNoCover, .frenchSplit, .arabic, .minimalMetadata, .corrupted, .drm, .zip64, .fontObfuscation,
+                .nestedContents:
                 nil
             }
         }
@@ -142,6 +143,7 @@
         fileprivate var title: String {
             switch self {
             case .german: "Die Verwandlung"
+            case .nestedContents: "Nested Contents"
             case .frenchNoCover: "Un matin en ville"
             case .frenchSections: "Un soir en ville"
             case .frenchSplit: "Trois matins"
@@ -157,7 +159,7 @@
         fileprivate var author: String? {
             switch self {
             case .german, .drm, .zip64, .fontObfuscation: "Franz Kafka"
-            case .frenchNoCover, .frenchSections, .frenchSplit, .arabic: "Scholia"
+            case .frenchNoCover, .frenchSections, .frenchSplit, .arabic, .nestedContents: "Scholia"
             case .minimalMetadata, .corrupted: nil
             }
         }
@@ -167,7 +169,7 @@
             case .german, .drm, .zip64, .fontObfuscation: "de"
             case .frenchNoCover, .frenchSections, .frenchSplit: "fr"
             case .arabic: "ar"
-            case .minimalMetadata, .corrupted: "en"
+            case .minimalMetadata, .corrupted, .nestedContents: "en"
             }
         }
     }

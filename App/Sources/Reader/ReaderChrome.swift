@@ -65,17 +65,17 @@ struct ReaderChrome: View {
     }
 
     private var footer: some View {
-        ZStack {
-            if let page = controller?.page {
-                Text("\(page.number) of \(page.count)")
-                    .textStyle(.caption)
-                    .foregroundStyle(.inkMuted)
-                    .accessibilityIdentifier("reader.pageCounter")
+        ZStack(alignment: .bottom) {
+            Group {
+                if let page = controller?.page {
+                    Text("\(page.number) of \(page.count)")
+                        .textStyle(.caption)
+                        .foregroundStyle(.inkMuted)
+                        .accessibilityIdentifier("reader.pageCounter")
+                }
             }
-        }
-        .frame(maxWidth: .infinity)
-        .frame(height: showsControls ? GlassButton.Size.reader.diameter : TextStyle.caption.lineHeight)
-        .overlay(alignment: .trailing) {
+            .frame(maxWidth: .infinity)
+            .padding(.bottom, .space8 + .space1)
             if showsControls {
                 GlassButton(
                     .more, label: isMenuShown ? Text("Close menu") : Text("Menu"), size: .reader,
@@ -83,12 +83,14 @@ struct ReaderChrome: View {
                 ) {
                     isMenuShown.toggle()
                 }
+                .frame(maxWidth: .infinity, alignment: .trailing)
                 .padding(.trailing, .space5)
+                .padding(.bottom, .space6)
                 .transition(.opacity)
                 .accessibilityIdentifier("reader.menu")
             }
         }
-        .padding(.bottom, showsControls ? .space6 : .space8 + .space1)
+        .frame(height: GlassButton.Size.reader.diameter + .space6, alignment: .bottom)
     }
 
     private var bookmarkButton: some View {

@@ -786,7 +786,10 @@ final class ReaderViewController: UIViewController {
     }
 
     private func reach(_ target: ReaderJump) async {
-        let chapter = readingOrderIndex(of: target)
+        guard let chapter = readingOrderIndex(of: target) else {
+            jumpTarget = nil
+            return
+        }
         guard shows(chapter), let webView = webView(inChapter: chapter) else {
             guard let locator = Self.locator(for: ReaderLocation(chapter: chapter, offset: 0), in: book.publication)
             else {
@@ -817,10 +820,10 @@ final class ReaderViewController: UIViewController {
         trackPage()
     }
 
-    private func readingOrderIndex(of target: ReaderJump) -> Int {
+    private func readingOrderIndex(of target: ReaderJump) -> Int? {
         switch target {
         case .location(let location): location.chapter
-        case .chapter(let index): book.tableOfContents[index].location.chapter
+        case .chapter(let index): book.tableOfContents[index].location?.chapter
         }
     }
 
@@ -829,9 +832,10 @@ final class ReaderViewController: UIViewController {
         case .location(let location):
             return location.offset
         case .chapter(let index):
-            await resolveFragments(inChapter: readingOrderIndex(of: target), in: webView)
+            guard let chapterIndex = readingOrderIndex(of: target) else { return nil }
+            await resolveFragments(inChapter: chapterIndex, in: webView)
             let chapter = book.tableOfContents[index]
-            return chapter.unresolvedFragment == nil ? chapter.location.offset : nil
+            return chapter.unresolvedFragment == nil ? chapter.location?.offset : nil
         }
     }
 

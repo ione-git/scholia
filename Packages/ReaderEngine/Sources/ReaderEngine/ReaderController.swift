@@ -65,14 +65,17 @@ public final class ReaderController {
     }
 
     public func go(toChapterAt index: Int) {
+        guard book.tableOfContents.indices.contains(index), book.tableOfContents[index].location != nil else {
+            return
+        }
         viewController.go(to: .chapter(index))
     }
 
     public func startPage(ofChapterAt index: Int) -> Int? {
-        guard book.tableOfContents.indices.contains(index) else {
+        guard book.tableOfContents.indices.contains(index), let location = book.tableOfContents[index].location else {
             return nil
         }
-        return page(of: book.tableOfContents[index].location)
+        return page(of: location)
     }
 
     public func page(of location: ReaderLocation) -> Int? {

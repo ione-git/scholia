@@ -23,7 +23,7 @@ public final class ReaderBook {
         let contents = (try? await publication.tableOfContents().get()) ?? []
         return ReaderBook(
             url: url, publication: publication,
-            tableOfContents: chapters(in: contents, readingOrder: publication.readingOrder))
+            tableOfContents: chapters(in: contents, readingOrder: publication.readingOrder, depth: 0))
     }
 
     public func chapter(containing location: ReaderLocation) -> ReaderChapter? {
@@ -34,39 +34,43 @@ public final class ReaderBook {
         guard !hasUnknownOffsets(inChapter: location.chapter) else {
             return nil
         }
-        let start = tableOfContents.map(\.location).filter { $0 <= location }.max()
+        guard let start = tableOfContents.compactMap(\.location).filter({ $0 <= location }).max() else {
+            return nil
+        }
         return tableOfContents.lastIndex { $0.location == start }
     }
 
     private func hasUnknownOffsets(inChapter chapter: Int) -> Bool {
-        let chapters = tableOfContents.filter { $0.location.chapter == chapter }
+        let chapters = tableOfContents.filter { $0.location?.chapter == chapter }
         return chapters.count > 1 && chapters.contains { $0.unresolvedFragment != nil }
     }
 
     func unresolvedFragments(inChapter chapter: Int) -> [String] {
-        tableOfContents.filter { $0.location.chapter == chapter }.compactMap(\.unresolvedFragment)
+        tableOfContents.filter { $0.location?.chapter == chapter }.compactMap(\.unresolvedFragment)
     }
 
     func resolveFragments(_ offsets: [String: Int], inChapter chapter: Int) {
-        for index in tableOfContents.indices where tableOfContents[index].location.chapter == chapter {
+        for index in tableOfContents.indices where tableOfContents[index].location?.chapter == chapter {
             if let fragment = tableOfContents[index].unresolvedFragment {
-                tableOfContents[index].location.offset = offsets[fragment] ?? 0
+                tableOfContents[index].location?.offset = offsets[fragment] ?? 0
                 tableOfContents[index].unresolvedFragment = nil
             }
         }
     }
 
-    private static func chapters(in links: [Link], readingOrder: [Link]) -> [ReaderChapter] {
+    private static func chapters(in links: [Link], readingOrder: [Link], depth: Int) -> [ReaderChapter] {
         links.flatMap { link in
+            let children = chapters(in: link.children, readingOrder: readingOrder, depth: depth + 1)
+            guard let title = link.title else { return children }
             let url = link.url()
-            let chapter = readingOrder.firstIndexWithHREF(url.removingFragment()).flatMap { index in
-                link.title.map {
-                    ReaderChapter(
-                        title: $0, location: ReaderLocation(chapter: index, offset: 0), fragment: url.fragment,
-                        unresolvedFragment: url.fragment)
-                }
-            }
-            return [chapter].compactMap { $0 } + chapters(in: link.children, readingOrder: readingOrder)
+            let index = readingOrder.firstIndexWithHREF(url.removingFragment())
+            guard index != nil || !children.isEmpty else { return children }
+            let chapter = ReaderChapter(
+                depth: depth, title: title,
+                location: index.map { ReaderLocation(chapter: $0, offset: 0) },
+                fragment: index == nil ? nil : url.fragment,
+                unresolvedFragment: index == nil ? nil : url.fragment)
+            return [chapter] + children
         }
     }
 }
