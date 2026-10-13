@@ -81,7 +81,7 @@ final class LibraryTests: UITestCase {
         reopened.openMenu().openSort().option("title").waitUntil(\.isSelected, equals: true)
     }
 
-    func testSortSubmenuBackAndTapOutsideClosesMenu() {
+    func testNativeSortMenuDismissesOutsideAndReopens() {
         let app = launch(
             LaunchConfiguration(
                 resetsState: true, fixtures: allFixtures, opened: [], inProgress: [], highlighted: [],
@@ -90,13 +90,11 @@ final class LibraryTests: UITestCase {
         let library = HomeScreen(app: app).waitUntilShown().openLibrary()
         XCTAssertEqual(library.moreButton.waitUntilExists().label, "More")
 
-        let menu = library.openMenu()
-        library.moreButton.waitUntil(\.label, equals: "Close menu")
-        menu.openSort().goBack()
-        library.root.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5)).tap()
+        let sort = library.openMenu().openSort()
+        sort.option("recentlyOpened").waitUntil(\.isSelected, equals: true)
+        sort.closeByTappingOutside()
 
-        menu.root.waitUntilGone()
-        library.moreButton.waitUntil(\.label, equals: "More")
+        library.openMenu().selectBooks.waitUntil(\.isHittable, equals: true)
     }
 
     func testLibraryASnapshotLight() throws {
@@ -105,22 +103,6 @@ final class LibraryTests: UITestCase {
 
     func testLibraryASnapshotDark() throws {
         assertSnapshot(of: try openLibraryWithCollections(appearance: .dark), named: "Library-A")
-    }
-
-    func testLibraryEmptySnapshotLight() throws {
-        assertSnapshot(of: try openLibrary(appearance: .light).openMenu(), named: "Library-Empty")
-    }
-
-    func testLibraryEmptySnapshotDark() throws {
-        assertSnapshot(of: try openLibrary(appearance: .dark).openMenu(), named: "Library-Empty")
-    }
-
-    func testLibrarySortSnapshotLight() throws {
-        assertSnapshot(of: try openLibrary(appearance: .light).openMenu().openSort(), named: "Library-Sort")
-    }
-
-    func testLibrarySortSnapshotDark() throws {
-        assertSnapshot(of: try openLibrary(appearance: .dark).openMenu().openSort(), named: "Library-Sort")
     }
 
     private func openLibraryWithCollections(appearance: XCUIDevice.Appearance) throws -> LibraryScreen {

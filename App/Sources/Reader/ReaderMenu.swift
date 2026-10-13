@@ -2,28 +2,37 @@ import DesignSystem
 import SwiftUI
 
 struct ReaderMenu: View {
-    @Binding var isShown: Bool
     @Binding var indexTab: ReaderIndexTab?
     @Binding var isSettingsShown: Bool
 
     var body: some View {
-        GlassMenu(size: .reader) {
+        Menu {
             item(.contents, icon: .contents)
             item(.highlights, icon: .highlighter)
             item(.bookmarks, icon: .bookmark)
-            GlassMenuDivider()
-            GlassMenuItem(Text("Themes & Settings"), sample: Text(verbatim: "Aa")) {
-                isShown = false
+            Divider()
+            Button {
                 isSettingsShown = true
+            } label: {
+                Label("Themes & Settings", systemImage: "textformat")
             }
             .accessibilityIdentifier("readerMenu.settings")
+        } label: {
+            GlassMenuLabel(.more, label: Text("Menu"), size: .reader)
         }
+        .accessibilityLabel(Text("Menu"))
+        .accessibilityIdentifier("reader.menu")
     }
 
     private func item(_ tab: ReaderIndexTab, icon: Icon) -> some View {
-        GlassMenuItem(Text(tab.title), icon: icon) {
-            isShown = false
+        Button {
             indexTab = tab
+        } label: {
+            Label {
+                Text(tab.title)
+            } icon: {
+                icon.menuImage
+            }
         }
         .accessibilityIdentifier("readerMenu.\(tab.rawValue)")
     }

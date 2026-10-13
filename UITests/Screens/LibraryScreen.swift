@@ -79,6 +79,16 @@ struct LibraryScreen: Screen {
     }
 
     @discardableResult
+    func swipeBack() -> HomeScreen {
+        root.waitUntil(\.isHittable, equals: true)
+        let start = app.coordinate(withNormalizedOffset: CGVector(dx: 0.001, dy: 0.5))
+        let end = app.coordinate(withNormalizedOffset: CGVector(dx: 0.8, dy: 0.5))
+        start.press(forDuration: 0.1, thenDragTo: end)
+        root.waitUntilGone()
+        return HomeScreen(app: app).waitUntilShown()
+    }
+
+    @discardableResult
     func goBack() -> HomeScreen {
         backButton.waitUntil(\.isHittable, equals: true).tap()
         root.waitUntilGone()
@@ -109,13 +119,12 @@ struct LibraryMenuScreen: Screen {
 struct LibrarySortMenuScreen: Screen {
     let app: XCUIApplication
 
-    var root: XCUIElement { app.buttons["librarySortMenu.back"] }
+    var root: XCUIElement { option("recentlyOpened") }
 
     func option(_ key: String) -> XCUIElement { app.buttons["librarySortMenu.\(key)"] }
 
-    func goBack() -> LibraryMenuScreen {
-        root.waitUntil(\.isHittable, equals: true).tap()
+    func closeByTappingOutside() {
+        app.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.8)).tap()
         root.waitUntilGone()
-        return LibraryMenuScreen(app: app).waitUntilShown()
     }
 }

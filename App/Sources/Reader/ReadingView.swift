@@ -17,7 +17,6 @@ struct ReadingView: View {
     @State private var controller: ReaderController?
     @State private var cannotOpen = false
     @State private var isChromeShown = false
-    @State private var isMenuShown = false
     @State private var indexTab: ReaderIndexTab?
     @State private var isSettingsShown = false
     @State private var pickedTheme: ReaderTheme?
@@ -44,14 +43,9 @@ struct ReadingView: View {
             }
             ReaderChrome(
                 book: book, controller: controller, isShown: isChromeShown || isVoiceOverEnabled,
-                cannotOpen: cannotOpen, isMenuShown: $isMenuShown
+                cannotOpen: cannotOpen, menu: ReaderMenu(indexTab: $indexTab, isSettingsShown: $isSettingsShown)
             ) {
                 dismiss()
-            }
-            .glassMenu(isPresented: $isMenuShown, alignment: .bottomTrailing) {
-                ReaderMenu(isShown: $isMenuShown, indexTab: $indexTab, isSettingsShown: $isSettingsShown)
-                    .padding(.bottom, ReaderChrome.menuBottomInset)
-                    .padding(.trailing, .space5)
             }
             .ignoresSafeArea()
             if let controller {

@@ -97,6 +97,7 @@ struct BookInfoView: View {
             .padding(.top, .space7)
             .background(.surface)
             .toolbar(.hidden, for: .navigationBar)
+            .background { InteractiveBackNavigation() }
             .navigationDestination(isPresented: $isChoosingLanguage) {
                 LanguagePicker(selection: $language, detected: nil)
             }
