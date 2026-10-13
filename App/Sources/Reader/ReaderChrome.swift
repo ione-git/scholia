@@ -3,12 +3,12 @@ import ReaderEngine
 import SwiftData
 import SwiftUI
 
-struct ReaderChrome: View {
+struct ReaderChrome<MenuContent: View>: View {
     let book: Book
     let controller: ReaderController?
     let isShown: Bool
     let cannotOpen: Bool
-    @Binding var isMenuShown: Bool
+    let menu: MenuContent
     let back: () -> Void
 
     @Environment(\.modelContext) private var modelContext
@@ -77,15 +77,10 @@ struct ReaderChrome: View {
         .frame(height: showsControls ? GlassButton.Size.reader.diameter : TextStyle.caption.lineHeight)
         .overlay(alignment: .trailing) {
             if showsControls {
-                GlassButton(
-                    .more, label: isMenuShown ? Text("Close menu") : Text("Menu"), size: .reader,
-                    isActive: isMenuShown
-                ) {
-                    isMenuShown.toggle()
-                }
-                .padding(.trailing, .space5)
-                .transition(.opacity)
-                .accessibilityIdentifier("reader.menu")
+                menu
+                    .padding(.trailing, .space5)
+                    .transition(.opacity)
+                    .accessibilityIdentifier("reader.menu")
             }
         }
         .padding(.bottom, showsControls ? .space6 : .space8 + .space1)
@@ -118,7 +113,4 @@ struct ReaderChrome: View {
         }
     }
 
-    static var menuBottomInset: CGFloat {
-        .space6 + GlassButton.Size.reader.diameter + .space3
-    }
 }
