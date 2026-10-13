@@ -2,6 +2,7 @@ import Foundation
 
 enum Fixture: String {
     case german
+    case germanContainedHighlights = "german-contained-highlights"
     case frenchNoCover = "french-no-cover"
     case frenchSections = "french-sections"
     case frenchSplit = "french-split"
@@ -13,7 +14,8 @@ enum Fixture: String {
     case fontObfuscation = "font-obfuscation"
 
     var url: URL? {
-        Bundle.main.url(forResource: rawValue, withExtension: "epub", subdirectory: "Fixtures")
+        let resource = self == .germanContainedHighlights ? Fixture.german.rawValue : rawValue
+        return Bundle.main.url(forResource: resource, withExtension: "epub", subdirectory: "Fixtures")
     }
 }
 
