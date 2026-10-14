@@ -2,11 +2,14 @@ import SwiftUI
 import UIKit
 
 struct InteractiveBackNavigation: UIViewControllerRepresentable {
+    var isEnabled = true
+
     func makeUIViewController(context: Context) -> Controller {
         Controller()
     }
 
     func updateUIViewController(_ controller: Controller, context: Context) {
+        controller.isEnabled = isEnabled
         controller.enableInteractiveBack()
     }
 
@@ -15,6 +18,8 @@ struct InteractiveBackNavigation: UIViewControllerRepresentable {
     }
 
     final class Controller: UIViewController, UIGestureRecognizerDelegate {
+        var isEnabled = true
+
         private weak var gesture: UIGestureRecognizer?
         private weak var originalDelegate: (any UIGestureRecognizerDelegate)?
         private var originallyEnabled = false
@@ -35,7 +40,7 @@ struct InteractiveBackNavigation: UIViewControllerRepresentable {
                 originallyEnabled = gesture.isEnabled
             }
             gesture.delegate = self
-            gesture.isEnabled = true
+            gesture.isEnabled = isEnabled
         }
 
         func restoreGesture() {
@@ -49,7 +54,7 @@ struct InteractiveBackNavigation: UIViewControllerRepresentable {
 
         func gestureRecognizerShouldBegin(_ gestureRecognizer: UIGestureRecognizer) -> Bool {
             guard let navigationController else { return false }
-            return navigationController.viewControllers.count > 1
+            return isEnabled && navigationController.viewControllers.count > 1
                 && navigationController.transitionCoordinator == nil
                 && navigationController.presentedViewController == nil
         }
@@ -83,5 +88,13 @@ struct InteractiveBackNavigation: UIViewControllerRepresentable {
         func gestureRecognizer(_ gestureRecognizer: UIGestureRecognizer, shouldReceive event: UIEvent) -> Bool {
             originalDelegate?.gestureRecognizer?(gestureRecognizer, shouldReceive: event) ?? true
         }
+    }
+}
+
+struct BackSwipeDisabled: PreferenceKey {
+    nonisolated static var defaultValue: Bool { false }
+
+    nonisolated static func reduce(value: inout Bool, nextValue: () -> Bool) {
+        value = value || nextValue()
     }
 }

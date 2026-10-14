@@ -117,6 +117,44 @@ final class SettingsTests: UITestCase {
         settings.colorScheme.waitUntil(\.label, equals: "light")
     }
 
+    func testThemeChoicesMatchingLightSystemAndBackKeepControlsInteractive() {
+        themeChoicesAndBack(appearance: .light, matchingTheme: "light", oppositeTheme: "dark")
+    }
+
+    func testThemeChoicesMatchingDarkSystemAndBackKeepControlsInteractive() {
+        themeChoicesAndBack(appearance: .dark, matchingTheme: "dark", oppositeTheme: "light")
+    }
+
+    private func themeChoicesAndBack(appearance: XCUIDevice.Appearance, matchingTheme: String, oppositeTheme: String) {
+        let app = launchWithAnimations(.withoutBooks, appearance: appearance)
+        let home = HomeScreen(app: app).waitUntilShown()
+        let settings = home.openSettings()
+        settings.theme(matchingTheme).tap()
+        settings.theme("system").tap()
+        settings.theme(oppositeTheme).tap()
+        settings.dragTheme(from: oppositeTheme, to: "system")
+        settings.backButton.tap()
+        home.settingsButton.waitUntil(\.isHittable, equals: true)
+        home.openSettings().theme("system").waitUntil(\.isSelected, equals: true)
+    }
+
+    func testAnimatedThemeSwitchesKeepControlsAndPersistLastChoice() {
+        let app = launchWithAnimations(.withoutBooks, appearance: .light)
+        let settings = openSettings(app)
+        for theme in ["dark", "light", "dark", "light"] {
+            settings.chooseTheme(theme)
+            settings.colorScheme.waitUntil(\.label, equals: theme)
+            settings.chooseWordTapStyle("card")
+        }
+        app.terminate()
+
+        var configuration = LaunchConfiguration.withoutBooks
+        configuration.resetsState = false
+        let reopened = openSettings(launch(configuration, appearance: .light))
+        reopened.theme("light").waitUntil(\.isSelected, equals: true)
+        reopened.onWordTap("card").waitUntil(\.isSelected, equals: true)
+    }
+
     func testSettingsSnapshotLight() {
         assertSnapshot(of: openSettingsWithReminder(appearance: .light), named: "Settings")
     }

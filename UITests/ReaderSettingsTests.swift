@@ -344,6 +344,77 @@ final class ReaderSettingsTests: UITestCase {
         reader.turnForward(expecting: "2 of \(reader.pageCounter.label.components(separatedBy: " of ").last ?? "")")
     }
 
+    func testDraggingOffThemeSwatchCancelsChoice() throws {
+        let reader = HomeScreen(app: launchWithAnimations(germanBook, appearance: .light)).waitUntilShown()
+            .openHeroBook()
+        let sheet = reader.openSettings()
+
+        sheet.cancelThemePress("night", byDraggingTo: "paper")
+
+        sheet.theme("paper").waitUntil(\.isSelected, equals: true)
+        XCTAssertFalse(sheet.theme("night").isSelected)
+        reader.appearance.waitUntil(\.label, equals: try style(theme: "paper"))
+        sheet.choose(sheet.theme("night"))
+        reader.appearance.waitUntil(\.label, equals: try style(theme: "night"))
+    }
+
+    func testHoldingThemeSwatchesSelectsOnReleaseAndKeepsSheetInteractive() throws {
+        let reader = HomeScreen(app: launchWithAnimations(germanBook, appearance: .light)).waitUntilShown()
+            .openHeroBook()
+        let sheet = reader.openSettings()
+        sheet.pressTheme("paper")
+        sheet.theme("paper").waitUntil(\.isSelected, equals: true)
+        sheet.pressTheme("night")
+        sheet.theme("night").waitUntil(\.isSelected, equals: true)
+        reader.appearance.waitUntil(\.label, equals: try style(theme: "night"))
+        sheet.pressTheme("paper")
+        sheet.theme("paper").waitUntil(\.isSelected, equals: true)
+        reader.appearance.waitUntil(\.label, equals: try style(theme: "paper"))
+        sheet.closeByTappingPage(reader)
+        reader.turnForward(expecting: "2 of \(bookPages)")
+    }
+
+    func testAnimatedThemeSwitchesKeepSheetAndReadingPosition() throws {
+        let app = launchWithAnimations(germanBook, appearance: .light)
+        let reader = HomeScreen(app: app).waitUntilShown().openHeroBook()
+        reader.turnForward(expecting: "2 of \(bookPages)")
+        reader.appearance.waitUntil(\.stringValue, satisfies: { (span(in: $0)?.start ?? 0) > 0 })
+        let before = try XCTUnwrap(span(in: reader.appearance.stringValue))
+        let sheet = reader.openSettings()
+
+        for theme in ["night", "paper", "black", "sepia"] {
+            sheet.choose(sheet.theme(theme))
+            reader.appearance.waitUntil(\.label, equals: try style(theme: theme))
+            reader.appearance.waitUntil(\.stringValue, satisfies: { span(in: $0)?.contains(before.start) == true })
+        }
+        sheet.closeByTappingPage(reader)
+        reader.turnForward(expecting: "3 of \(bookPages)")
+        reader.backToHome().openHeroBook().appearance.waitUntil(\.label, equals: try style(theme: "sepia"))
+    }
+
+    func testPickedNightSettingsSnapshotLight() {
+        assertSnapshot(of: pickedSettingsTheme("night", appearance: .light), named: "Reader-Settings-PickedNight")
+    }
+
+    func testPickedNightSettingsSnapshotDark() {
+        assertSnapshot(of: pickedSettingsTheme("night", appearance: .dark), named: "Reader-Settings-PickedNight")
+    }
+
+    func testPickedPaperSettingsSnapshotLight() {
+        assertSnapshot(of: pickedSettingsTheme("paper", appearance: .light), named: "Reader-Settings-PickedPaper")
+    }
+
+    func testPickedPaperSettingsSnapshotDark() {
+        assertSnapshot(of: pickedSettingsTheme("paper", appearance: .dark), named: "Reader-Settings-PickedPaper")
+    }
+
+    private func pickedSettingsTheme(_ theme: String, appearance: XCUIDevice.Appearance) -> ReaderSettingsScreen {
+        let reader = HomeScreen(app: launch(germanBook, appearance: appearance)).waitUntilShown().openHeroBook()
+        let sheet = reader.openSettings()
+        sheet.choose(sheet.theme(theme))
+        return sheet
+    }
+
     func testReaderMenuSettingsSnapshotLight() {
         assertSnapshot(of: openSettingsWithLockedRotation(appearance: .light), named: "Reader-Menu-Settings")
     }

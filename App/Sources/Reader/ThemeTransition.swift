@@ -6,15 +6,21 @@ final class ThemeTransition {
     private static let timeout = Duration.seconds(1.5)
 
     private var cover: UIView?
+    private var isRevealing = false
     private var timeoutTask: Task<Void, Never>?
 
-    func begin(in window: UIWindow?) {
-        guard cover == nil, let window, let snapshot = window.snapshotView(afterScreenUpdates: false) else {
+    func begin(in content: UIView?) {
+        if isRevealing {
+            end()
+        }
+        guard cover == nil, let content,
+            let snapshot = content.snapshotView(afterScreenUpdates: false)
+        else {
             return
         }
-        snapshot.frame = window.bounds
+        snapshot.frame = content.bounds
         snapshot.isUserInteractionEnabled = false
-        window.addSubview(snapshot)
+        content.addSubview(snapshot)
         cover = snapshot
         timeoutTask = Task { [weak self] in
             try? await Task.sleep(for: Self.timeout)
@@ -27,22 +33,28 @@ final class ThemeTransition {
     func reveal() {
         timeoutTask?.cancel()
         timeoutTask = nil
-        guard let cover else {
+        guard let cover, !isRevealing else {
             return
         }
-        self.cover = nil
+        isRevealing = true
         UIView.animate(withDuration: Self.fadeDuration) {
             cover.alpha = 0
-        } completion: { _ in
+        } completion: { [weak self] _ in
             cover.removeFromSuperview()
+            if self?.cover === cover {
+                self?.cover = nil
+                self?.isRevealing = false
+            }
         }
     }
 
     func end() {
         timeoutTask?.cancel()
         timeoutTask = nil
+        cover?.layer.removeAllAnimations()
         cover?.removeFromSuperview()
         cover = nil
+        isRevealing = false
     }
 }
 

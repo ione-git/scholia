@@ -1,7 +1,7 @@
 import XCTest
 
 final class ReaderNativeControlsTests: UITestCase {
-    func testBackSwipeFromReaderReturnsToLibrary() {
+    func testBackSwipeStaysInReaderAndBackReturnsToLibrary() {
         var configuration = LaunchConfiguration.withoutBooks
         configuration.fixtures = [.minimalMetadata]
         let app = launchWithAnimations(configuration, appearance: .light)
@@ -13,9 +13,13 @@ final class ReaderNativeControlsTests: UITestCase {
         let end = app.coordinate(withNormalizedOffset: CGVector(dx: 0.8, dy: 0.5))
         start.press(forDuration: 0.1, thenDragTo: end)
 
-        library.root.waitUntil(\.isHittable, equals: true)
-        reader.pageCounter.waitUntilGone()
-        library.goBack().settingsButton.waitUntil(\.isHittable, equals: true)
+        reader.pageCounter.waitUntil(\.label, equals: "1 of 1")
+        XCTAssertFalse(library.root.exists)
+        reader.backToLibrary().root.waitUntil(\.isHittable, equals: true)
+        library.swipeBack()
+        let home = HomeScreen(app: app).waitUntilShown()
+        home.openSettings().swipeBack()
+        home.settingsButton.waitUntil(\.isHittable, equals: true)
     }
 
     func testNativeTabsKeepBookmarksSeparateFromHighlights() {

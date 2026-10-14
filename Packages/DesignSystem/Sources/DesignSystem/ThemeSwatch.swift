@@ -35,21 +35,34 @@ public struct ThemeSwatch: View {
                     .lineLimit(1)
             }
             .contentShape(.rect)
+            .animation(.smooth, value: isSelected)
         }
-        .buttonStyle(.plain)
+        .buttonStyle(ThemeSwatchPressStyle())
         .accessibilityLabel(label)
         .accessibilityAddTraits(isSelected ? .isSelected : [])
     }
 
-    @ViewBuilder
     private var ring: some View {
-        if isSelected {
-            Circle()
-                .strokeBorder(.accent, lineWidth: Self.ringWidth)
-                .background { Circle().strokeBorder(.surfaceCard, lineWidth: Self.ringGap).padding(Self.ringWidth) }
-                .padding(-(Self.ringGap + Self.ringWidth))
-        } else {
-            Circle().strokeBorder(.controlBorder, lineWidth: .hairlineW)
-        }
+        Circle()
+            .strokeBorder(.controlBorder, lineWidth: .hairlineW)
+            .opacity(isSelected ? 0 : 1)
+            .overlay {
+                Circle()
+                    .strokeBorder(.accent, lineWidth: Self.ringWidth)
+                    .background { Circle().strokeBorder(.surfaceCard, lineWidth: Self.ringGap).padding(Self.ringWidth) }
+                    .padding(-(Self.ringGap + Self.ringWidth))
+                    .opacity(isSelected ? 1 : 0)
+            }
+    }
+}
+
+private struct ThemeSwatchPressStyle: ButtonStyle {
+    private static let pressedOpacity = 0.6
+    private static let duration = 0.15
+
+    func makeBody(configuration: Configuration) -> some View {
+        configuration.label
+            .opacity(configuration.isPressed ? Self.pressedOpacity : 1)
+            .animation(.easeOut(duration: Self.duration), value: configuration.isPressed)
     }
 }

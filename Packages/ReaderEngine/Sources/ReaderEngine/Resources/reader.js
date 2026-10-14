@@ -150,45 +150,51 @@
     return Array.from(kept);
   }
 
-  function subtract(rect, cut) {
-    const left = Math.max(rect.left, cut.left);
-    const right = Math.min(rect.right, cut.right);
-    const top = Math.max(rect.top, cut.top);
-    const bottom = Math.min(rect.bottom, cut.bottom);
-    if (right <= left || bottom <= top) {
-      return [rect];
-    }
-    return [
-      rectangle(rect.left, rect.top, left, rect.bottom),
-      rectangle(left, rect.top, right, top),
-      rectangle(left, bottom, right, rect.bottom),
-      rectangle(right, rect.top, rect.right, rect.bottom),
-    ].filter((part) => part.width !== 0 && part.height !== 0);
-  }
-
-  function replaceOverlapping(rects) {
-    for (const [index, first] of rects.entries()) {
-      for (const second of rects.slice(index + 1)) {
-        if (!touchOrOverlap(first, second, false)) {
-          continue;
+  function lineBoxes(range) {
+    const root = range.commonAncestorContainer;
+    const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
+    let node = range.startContainer;
+    if (node.nodeType !== Node.TEXT_NODE) {
+      const child = node.childNodes[range.startOffset];
+      if (child) {
+        node = child;
+      } else {
+        while (node !== root && !node.nextSibling) {
+          node = node.parentNode;
         }
-        const firstParts = subtract(first, second);
-        const secondParts = subtract(second, first);
-        const [removed, added] =
-          firstParts.length === 1 || firstParts.length < secondParts.length
-            ? [first, firstParts]
-            : [second, secondParts];
-        return replaceOverlapping([...rects.filter((rect) => rect !== removed), ...added]);
+        node = node === root ? null : node.nextSibling;
       }
     }
-    return rects;
-  }
-
-  function lineBoxes(range) {
-    const rects = Array.from(range.getClientRects(), (rect) =>
-      rectangle(rect.left, rect.top, rect.right, rect.bottom)
-    );
-    const kept = replaceOverlapping(removeContained(mergeTouching(rects)));
+    const nodes = [];
+    if (node) {
+      walker.currentNode = node;
+      if (node.nodeType !== Node.TEXT_NODE) {
+        node = walker.nextNode();
+      }
+      while (node && range.comparePoint(node, 0) <= 0) {
+        if (range.intersectsNode(node)) {
+          nodes.push(node);
+        }
+        if (node === range.endContainer) {
+          break;
+        }
+        node = walker.nextNode();
+      }
+    }
+    const rects = nodes.flatMap((node) => {
+      const selected = document.createRange();
+      selected.selectNodeContents(node);
+      if (range.compareBoundaryPoints(Range.START_TO_START, selected) > 0) {
+        selected.setStart(range.startContainer, range.startOffset);
+      }
+      if (range.compareBoundaryPoints(Range.END_TO_END, selected) < 0) {
+        selected.setEnd(range.endContainer, range.endOffset);
+      }
+      return Array.from(selected.getClientRects(), (rect) =>
+        rectangle(rect.left, rect.top, rect.right, rect.bottom)
+      );
+    });
+    const kept = removeContained(mergeTouching(rects));
     const visible = kept.filter((rect) => rect.width * rect.height > minimumBoxArea);
     return (visible.length > 0 ? visible : kept.slice(0, 1)).sort((a, b) => a.top - b.top || a.left - b.left);
   }
@@ -476,7 +482,17 @@
     drawPaint();
   }
 
+  function restoreHighlights() {
+    for (const { element, visibility } of livePaint?.hidden ?? []) {
+      element.style.visibility = visibility;
+    }
+    if (livePaint) {
+      livePaint.hidden = [];
+    }
+  }
+
   function removePaint() {
+    restoreHighlights();
     livePaint?.container.remove();
     livePaint = null;
   }
@@ -488,8 +504,8 @@
     for (let index = 0; index < rects.length - 1; index++) {
       const first = rects[index];
       const next = rects[index + 1];
-      const gap = next.top - first.bottom;
-      if (gap <= 0 || tops[index + 1] - tops[index] > lineHeight + rectTolerance) {
+      const distance = tops[index + 1] - tops[index];
+      if (distance <= rectTolerance || distance > lineHeight + rectTolerance) {
         continue;
       }
       if (Math.min(first.right, next.right) <= Math.max(first.left, next.left)) {
@@ -502,32 +518,29 @@
     return rects;
   }
 
-  function paintShape(range, fill, radius, className) {
-    const rects = continuousBoxes(range);
+  function paintShape(ranges, fill, radius, className) {
+    const lines = ranges.map(continuousBoxes);
+    const rects = lines.flat();
     const left = Math.min(...rects.map((rect) => rect.left));
     const top = Math.min(...rects.map((rect) => rect.top));
     const right = Math.max(...rects.map((rect) => rect.right));
     const bottom = Math.max(...rects.map((rect) => rect.bottom));
-    const rounded = (rect) => {
+    const paths = lines.flatMap((line) => line.map((rect, index) => {
+      const previous = line[index - 1];
+      const next = line[index + 1];
+      const joinedTop = previous && almostEqual(previous.bottom, rect.top);
+      const joinedBottom = next && almostEqual(rect.bottom, next.top);
+      const r = Math.min(radius, rect.width / 2, rect.height / 2);
+      const tl = joinedTop && previous.left <= rect.left && previous.right > rect.left ? 0 : r;
+      const tr = joinedTop && previous.right >= rect.right && previous.left < rect.right ? 0 : r;
+      const bl = joinedBottom && next.left <= rect.left && next.right > rect.left ? 0 : r;
+      const br = joinedBottom && next.right >= rect.right && next.left < rect.right ? 0 : r;
       const x = rect.left - left;
       const y = rect.top - top;
       const w = rect.width;
       const h = rect.height;
-      const r = Math.min(radius, w / 2, h / 2);
-      return `M${x + r},${y}h${w - 2 * r}q${r},0 ${r},${r}v${h - 2 * r}q0,${r} ${-r},${r}h${2 * r - w}q${-r},0 ${-r},${-r}v${2 * r - h}q0,${-r} ${r},${-r}Z`;
-    };
-    const paths = rects.map(rounded);
-    for (const [index, first] of rects.entries()) {
-      const next = rects[index + 1];
-      if (!next || !almostEqual(first.bottom, next.top)) {
-        continue;
-      }
-      const bridgeLeft = Math.max(first.left, next.left) + radius;
-      const bridgeRight = Math.min(first.right, next.right) - radius;
-      if (bridgeRight > bridgeLeft) {
-        paths.push(rounded(rectangle(bridgeLeft, first.bottom - radius, bridgeRight, next.top + radius)));
-      }
-    }
+      return `M${x + tl},${y}h${w - tl - tr}q${tr},0 ${tr},${tr}v${h - tr - br}q0,${br} ${-br},${br}h${bl + br - w}q${-bl},0 ${-bl},${-bl}v${tl + bl - h}q0,${-tl} ${tl},${-tl}Z`;
+    }));
     const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
     svg.setAttribute("class", className);
     svg.setAttribute("width", right - left);
@@ -547,8 +560,32 @@
   }
 
   function drawPaint() {
+    restoreHighlights();
+    const ranges = [livePaint.range];
+    for (const item of window.readium.getDecorations("highlights").items) {
+      const container = item.container;
+      if (!container) {
+        continue;
+      }
+      const shape = container.querySelector(".scholia-fill");
+      const boxes = Array.from(container.querySelectorAll(`.${paintedClasses.paintedHighlights}`));
+      const fill = shape?.firstChild.getAttribute("fill") ?? (boxes[0] && getComputedStyle(boxes[0]).backgroundColor);
+      if (!fill || !sameColor(hex(fill), hex(livePaint.fill))) {
+        continue;
+      }
+      const overlaps = item.range.comparePoint(livePaint.range.startContainer, livePaint.range.startOffset) === 0 ||
+        livePaint.range.comparePoint(item.range.startContainer, item.range.startOffset) === 0;
+      if (!overlaps) {
+        continue;
+      }
+      ranges.push(item.range);
+      for (const element of shape ? [shape] : boxes) {
+        livePaint.hidden.push({ element, visibility: element.style.visibility });
+        element.style.visibility = "hidden";
+      }
+    }
     livePaint.container.replaceChildren(
-      paintShape(livePaint.range, livePaint.fill, livePaint.radius, paintedClasses.paintedLive)
+      paintShape(ranges, livePaint.fill, livePaint.radius, paintedClasses.paintedLive)
     );
   }
 
@@ -563,12 +600,26 @@
       if (!first) {
         continue;
       }
-      if (lineBoxes(item.range).length === 1) {
+      const rects = lineBoxes(item.range);
+      item.clickableElements = rects.map((rect) => {
+        const hit = document.createElement("div");
+        Object.assign(hit.style, {
+          position: "absolute",
+          left: `${rect.left + document.scrollingElement.scrollLeft}px`,
+          top: `${rect.top + document.scrollingElement.scrollTop}px`,
+          width: `${rect.width}px`,
+          height: `${rect.height}px`,
+          pointerEvents: "none",
+        });
+        container.append(hit);
+        return hit;
+      });
+      if (rects.length === 1) {
         container.dataset.scholiaPainted = "true";
         continue;
       }
       const style = getComputedStyle(first);
-      const shape = paintShape(item.range, style.backgroundColor, parseFloat(style.borderRadius), "scholia-fill");
+      const shape = paintShape([item.range], style.backgroundColor, parseFloat(style.borderRadius), "scholia-fill");
       for (const box of boxes) {
         box.style.setProperty("background-color", "transparent", "important");
       }
@@ -648,7 +699,7 @@
       await nextFrame();
     },
 
-    async scrollToOffset(offset) {
+    async scrollToOffset(offset, topInset) {
       await document.fonts.ready;
       for (const { node, start } of textNodes()) {
         if (start + node.data.length <= offset) {
@@ -656,17 +707,17 @@
         }
         const rect = boxOfCharacter(node, Math.max(0, offset - start));
         if (rect) {
-          document.scrollingElement.scrollTo({ top: rect.top + window.scrollY, behavior: "instant" });
+          document.scrollingElement.scrollTo({ top: rect.top + window.scrollY - topInset, behavior: "instant" });
           return;
         }
       }
     },
 
-    visibleSpan() {
+    visibleSpan(topInset, bottomInset) {
       const lineStart = isRightToLeft() ? window.innerWidth - 1 : 0;
       const lineEnd = window.innerWidth - 1 - lineStart;
-      const start = offsetAt(lineStart, 0);
-      const end = offsetAt(lineEnd, window.innerHeight - 1);
+      const start = offsetAt(lineStart, topInset);
+      const end = offsetAt(lineEnd, window.innerHeight - bottomInset - 1);
       return start === null || end === null ? null : { start, end, firstLine: lineAt(start) };
     },
 
@@ -748,7 +799,7 @@
       const container = document.createElement("div");
       container.style.pointerEvents = "none";
       document.body.append(container);
-      livePaint = { fill, radius, container, range: press.anchor, isFollowing: true };
+      livePaint = { fill, radius, container, range: press.anchor, isFollowing: true, hidden: [] };
       drawPaint();
     },
 
