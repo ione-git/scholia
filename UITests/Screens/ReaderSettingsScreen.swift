@@ -18,10 +18,8 @@ struct ReaderSettingsScreen: Screen {
         theme(name).waitUntil(\.isHittable, equals: true).press(forDuration: 1.5)
     }
 
-    func cancelThemePress(_ name: String) {
-        theme(name).waitUntil(\.isHittable, equals: true)
-            .coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5))
-            .press(forDuration: 0.1, thenDragTo: root.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.8)))
+    func cancelThemePress(_ name: String, byDraggingTo otherTheme: String) {
+        theme(name).waitUntil(\.isHittable, equals: true).press(forDuration: 0.1, thenDragTo: theme(otherTheme))
     }
 
     func choose(_ option: XCUIElement, file: StaticString = #filePath, line: UInt = #line) {

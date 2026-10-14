@@ -349,7 +349,7 @@ final class ReaderSettingsTests: UITestCase {
             .openHeroBook()
         let sheet = reader.openSettings()
 
-        sheet.cancelThemePress("night")
+        sheet.cancelThemePress("night", byDraggingTo: "paper")
 
         sheet.theme("paper").waitUntil(\.isSelected, equals: true)
         XCTAssertFalse(sheet.theme("night").isSelected)

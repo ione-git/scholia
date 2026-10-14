@@ -11,7 +11,6 @@ struct SettingsView: View {
     @Environment(\.modelContext) private var modelContext
     @Environment(\.dismiss) private var dismiss
     @Environment(\.locale) private var locale
-    @Environment(\.colorScheme) private var colorScheme
     @Environment(\.openURL) private var openURL
     @State private var isTimePickerShown = false
     @State private var isAskingPermission = false
@@ -39,7 +38,7 @@ struct SettingsView: View {
         .scrollBounceBehavior(.basedOnSize)
         .background(.surface)
         .background { WindowAnchor(reference: window) }
-        .onChange(of: colorScheme) { transition.reveal() }
+        .onChange(of: settings.appTheme) { transition.reveal() }
         .onDisappear { transition.end() }
         .toolbar(.hidden, for: .navigationBar)
         .task { targetLanguages = await translationService.provider.targetLanguages() }
