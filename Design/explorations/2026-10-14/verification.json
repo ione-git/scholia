@@ -1,0 +1,305 @@
+{
+  "cases": [
+    {
+      "key": "home-a-light-390",
+      "phoneWidth": 390,
+      "phoneHeight": 844,
+      "outside": [],
+      "coverWordsFit": true,
+      "coverWordFailures": [],
+      "fontLoaded": true
+    },
+    {
+      "key": "home-a-light-402",
+      "phoneWidth": 402,
+      "phoneHeight": 844,
+      "outside": [],
+      "coverWordsFit": true,
+      "coverWordFailures": [],
+      "fontLoaded": true
+    },
+    {
+      "key": "home-a-light-one-390",
+      "expectedBooks": 1,
+      "visibleBooks": 1
+    },
+    {
+      "key": "home-a-light-empty-390",
+      "expectedBooks": 0,
+      "visibleBooks": 0
+    },
+    {
+      "key": "home-b-light-390",
+      "phoneWidth": 390,
+      "phoneHeight": 844,
+      "outside": [],
+      "coverWordsFit": true,
+      "coverWordFailures": [],
+      "fontLoaded": true
+    },
+    {
+      "key": "home-b-light-402",
+      "phoneWidth": 402,
+      "phoneHeight": 844,
+      "outside": [],
+      "coverWordsFit": true,
+      "coverWordFailures": [],
+      "fontLoaded": true
+    },
+    {
+      "key": "home-b-light-one-390",
+      "expectedBooks": 1,
+      "visibleBooks": 1
+    },
+    {
+      "key": "home-b-light-empty-390",
+      "expectedBooks": 0,
+      "visibleBooks": 0
+    },
+    {
+      "key": "home-c-light-390",
+      "phoneWidth": 390,
+      "phoneHeight": 844,
+      "outside": [],
+      "coverWordsFit": true,
+      "coverWordFailures": [],
+      "fontLoaded": true
+    },
+    {
+      "key": "home-c-light-402",
+      "phoneWidth": 402,
+      "phoneHeight": 844,
+      "outside": [],
+      "coverWordsFit": true,
+      "coverWordFailures": [],
+      "fontLoaded": true
+    },
+    {
+      "key": "home-c-light-one-390",
+      "expectedBooks": 1,
+      "visibleBooks": 1
+    },
+    {
+      "key": "home-c-light-empty-390",
+      "expectedBooks": 0,
+      "visibleBooks": 0
+    },
+    {
+      "key": "home-a-dark-390",
+      "phoneWidth": 390,
+      "phoneHeight": 844,
+      "outside": [],
+      "coverWordsFit": true,
+      "coverWordFailures": [],
+      "fontLoaded": true
+    },
+    {
+      "key": "home-a-dark-402",
+      "phoneWidth": 402,
+      "phoneHeight": 844,
+      "outside": [],
+      "coverWordsFit": true,
+      "coverWordFailures": [],
+      "fontLoaded": true
+    },
+    {
+      "key": "home-a-dark-one-390",
+      "expectedBooks": 1,
+      "visibleBooks": 1
+    },
+    {
+      "key": "home-a-dark-empty-390",
+      "expectedBooks": 0,
+      "visibleBooks": 0
+    },
+    {
+      "key": "home-b-dark-390",
+      "phoneWidth": 390,
+      "phoneHeight": 844,
+      "outside": [],
+      "coverWordsFit": true,
+      "coverWordFailures": [],
+      "fontLoaded": true
+    },
+    {
+      "key": "home-b-dark-402",
+      "phoneWidth": 402,
+      "phoneHeight": 844,
+      "outside": [],
+      "coverWordsFit": true,
+      "coverWordFailures": [],
+      "fontLoaded": true
+    },
+    {
+      "key": "home-b-dark-one-390",
+      "expectedBooks": 1,
+      "visibleBooks": 1
+    },
+    {
+      "key": "home-b-dark-empty-390",
+      "expectedBooks": 0,
+      "visibleBooks": 0
+    },
+    {
+      "key": "home-c-dark-390",
+      "phoneWidth": 390,
+      "phoneHeight": 844,
+      "outside": [],
+      "coverWordsFit": true,
+      "coverWordFailures": [],
+      "fontLoaded": true
+    },
+    {
+      "key": "home-c-dark-402",
+      "phoneWidth": 402,
+      "phoneHeight": 844,
+      "outside": [],
+      "coverWordsFit": true,
+      "coverWordFailures": [],
+      "fontLoaded": true
+    },
+    {
+      "key": "home-c-dark-one-390",
+      "expectedBooks": 1,
+      "visibleBooks": 1
+    },
+    {
+      "key": "home-c-dark-empty-390",
+      "expectedBooks": 0,
+      "visibleBooks": 0
+    },
+    {
+      "key": "settings-a-light-390",
+      "phoneWidth": 390,
+      "phoneHeight": 844,
+      "outside": [],
+      "coverWordsFit": true,
+      "coverWordFailures": [],
+      "fontLoaded": true
+    },
+    {
+      "key": "settings-a-light-402",
+      "phoneWidth": 402,
+      "phoneHeight": 844,
+      "outside": [],
+      "coverWordsFit": true,
+      "coverWordFailures": [],
+      "fontLoaded": true
+    },
+    {
+      "key": "settings-b-light-390",
+      "phoneWidth": 390,
+      "phoneHeight": 844,
+      "outside": [],
+      "coverWordsFit": true,
+      "coverWordFailures": [],
+      "fontLoaded": true
+    },
+    {
+      "key": "settings-b-light-402",
+      "phoneWidth": 402,
+      "phoneHeight": 844,
+      "outside": [],
+      "coverWordsFit": true,
+      "coverWordFailures": [],
+      "fontLoaded": true
+    },
+    {
+      "key": "settings-c-light-390",
+      "phoneWidth": 390,
+      "phoneHeight": 844,
+      "outside": [],
+      "coverWordsFit": true,
+      "coverWordFailures": [],
+      "fontLoaded": true
+    },
+    {
+      "key": "settings-c-light-402",
+      "phoneWidth": 402,
+      "phoneHeight": 844,
+      "outside": [],
+      "coverWordsFit": true,
+      "coverWordFailures": [],
+      "fontLoaded": true
+    },
+    {
+      "key": "settings-a-dark-390",
+      "phoneWidth": 390,
+      "phoneHeight": 844,
+      "outside": [],
+      "coverWordsFit": true,
+      "coverWordFailures": [],
+      "fontLoaded": true
+    },
+    {
+      "key": "settings-a-dark-402",
+      "phoneWidth": 402,
+      "phoneHeight": 844,
+      "outside": [],
+      "coverWordsFit": true,
+      "coverWordFailures": [],
+      "fontLoaded": true
+    },
+    {
+      "key": "settings-b-dark-390",
+      "phoneWidth": 390,
+      "phoneHeight": 844,
+      "outside": [],
+      "coverWordsFit": true,
+      "coverWordFailures": [],
+      "fontLoaded": true
+    },
+    {
+      "key": "settings-b-dark-402",
+      "phoneWidth": 402,
+      "phoneHeight": 844,
+      "outside": [],
+      "coverWordsFit": true,
+      "coverWordFailures": [],
+      "fontLoaded": true
+    },
+    {
+      "key": "settings-c-dark-390",
+      "phoneWidth": 390,
+      "phoneHeight": 844,
+      "outside": [],
+      "coverWordsFit": true,
+      "coverWordFailures": [],
+      "fontLoaded": true
+    },
+    {
+      "key": "settings-c-dark-402",
+      "phoneWidth": 402,
+      "phoneHeight": 844,
+      "outside": [],
+      "coverWordsFit": true,
+      "coverWordFailures": [],
+      "fontLoaded": true
+    }
+  ],
+  "responsive": [
+    {
+      "width": 320,
+      "overflow": false,
+      "phoneFits": true
+    },
+    {
+      "width": 390,
+      "overflow": false,
+      "phoneFits": true
+    },
+    {
+      "width": 736,
+      "overflow": false,
+      "phoneFits": true
+    }
+  ],
+  "interaction": {
+    "background": "rgb(239, 227, 203)",
+    "font": "Georgia, Georgia, serif",
+    "size": "21px",
+    "spacing": "true"
+  },
+  "failures": [],
+  "passed": true
+}
