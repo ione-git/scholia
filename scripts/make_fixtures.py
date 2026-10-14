@@ -305,6 +305,16 @@ def main():
         None,
         anchored=True,
     )
+    index_highlights = epub(
+        "urn:scholia:fixture:index-highlights", "Index Highlights", "en", "Scholia",
+        [("Index", '<div style="line-height:1.5">'
+          '<p style="margin:0;text-indent:0.7em">Archive on river routes</p>\n'
+          '    <p style="margin:0;text-indent:0.7em">    on garden paths</p>\n'
+          '    <p style="margin:0;text-indent:0.7em">    family of</p>\n'
+          '    <p style="margin:0;text-indent:0.7em">    on mountain passes</p>\n'
+          '    <p style="margin:0;text-indent:0.7em">    on coastal weather</p>\n'
+          '    <p style="margin:0;text-indent:0.7em">    on railway journeys</p></div>')], None,
+    )
     nested = epub(
         "urn:scholia:fixture:nested-contents",
         "Nested Contents",
@@ -359,6 +369,7 @@ def main():
     books = {
         "german.epub": archive(german),
         "nested-contents.epub": archive(nested),
+        "index-highlights.epub": archive(index_highlights),
         "french-no-cover.epub": archive(french),
         "french-sections.epub": archive(french_sections),
         "french-split.epub": archive(french_split),

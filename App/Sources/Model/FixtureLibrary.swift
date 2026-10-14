@@ -160,6 +160,14 @@
                         chapter: 0, offset: 565, text: "Es war kein Traum.", before: "mit mir geschehen?«, dachte er. ",
                         after: " Sein Zimmer, ein richtiges, nur", color: .yellow),
                 ]
+            case .indexHighlights:
+                [
+                    Highlight(
+                        chapter: 0, offset: 19,
+                        text:
+                            "river routes\n        on garden paths\n        family of\n        on mountain passes\n        on coastal weather",
+                        before: "\n\nIndex\nArchive on ", after: "\n        on railway journeys\n\n", color: .yellow)
+                ]
             case .frenchSections:
                 [
                     Highlight(
@@ -176,6 +184,7 @@
         fileprivate var title: String {
             switch self {
             case .german, .germanContainedHighlights: "Die Verwandlung"
+            case .indexHighlights: "Index Highlights"
             case .nestedContents: "Nested Contents"
             case .frenchNoCover: "Un matin en ville"
             case .frenchSections: "Un soir en ville"
@@ -192,7 +201,7 @@
         fileprivate var author: String? {
             switch self {
             case .german, .germanContainedHighlights, .drm, .zip64, .fontObfuscation: "Franz Kafka"
-            case .frenchNoCover, .frenchSections, .frenchSplit, .arabic, .nestedContents: "Scholia"
+            case .frenchNoCover, .frenchSections, .frenchSplit, .arabic, .nestedContents, .indexHighlights: "Scholia"
             case .minimalMetadata, .corrupted: nil
             }
         }
@@ -202,7 +211,7 @@
             case .german, .germanContainedHighlights, .drm, .zip64, .fontObfuscation: "de"
             case .frenchNoCover, .frenchSections, .frenchSplit: "fr"
             case .arabic: "ar"
-            case .minimalMetadata, .corrupted, .nestedContents: "en"
+            case .minimalMetadata, .corrupted, .nestedContents, .indexHighlights: "en"
             }
         }
     }

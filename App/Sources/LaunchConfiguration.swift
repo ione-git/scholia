@@ -3,6 +3,7 @@ import Foundation
 enum Fixture: String {
     case german
     case germanContainedHighlights = "german-contained-highlights"
+    case indexHighlights = "index-highlights"
     case nestedContents = "nested-contents"
     case frenchNoCover = "french-no-cover"
     case frenchSections = "french-sections"
