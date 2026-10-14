@@ -14,6 +14,16 @@ struct ReaderSettingsScreen: Screen {
     func pageTurn(_ name: String) -> XCUIElement { app.buttons["readerSettings.pageTurn.\(name)"] }
     func lineSpacing(_ name: String) -> XCUIElement { app.buttons["readerSettings.lineSpacing.\(name)"] }
 
+    func pressTheme(_ name: String) {
+        theme(name).waitUntil(\.isHittable, equals: true).press(forDuration: 1.5)
+    }
+
+    func cancelThemePress(_ name: String) {
+        theme(name).waitUntil(\.isHittable, equals: true)
+            .coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5))
+            .press(forDuration: 0.1, thenDragTo: root.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.8)))
+    }
+
     func choose(_ option: XCUIElement, file: StaticString = #filePath, line: UInt = #line) {
         option.waitUntilExists(file: file, line: line).tap()
         option.waitUntil(\.isSelected, equals: true, file: file, line: line)

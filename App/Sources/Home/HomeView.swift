@@ -105,6 +105,7 @@ struct HomeView: View {
         Text("Scholia")
             .textStyle(.wordmark)
             .foregroundStyle(.ink)
+            .offset(y: -.space1)
             .accessibilityAddTraits(.isHeader)
             .accessibilityIdentifier("home.wordmark")
             #if DEBUG

@@ -65,6 +65,7 @@ struct ReaderSettingsSheet: View {
             }
         }
         .padding(.horizontal, .space1)
+        .background { ThemeTouchDelivery() }
     }
 
     private var fonts: some View {
@@ -163,6 +164,31 @@ struct ReaderSettingsSheet: View {
             settings[keyPath: keyPath]
         } set: { value in
             settings.update(keyPath, to: value, in: modelContext)
+        }
+    }
+}
+
+private struct ThemeTouchDelivery: UIViewRepresentable {
+    func makeUIView(context: Context) -> TouchView {
+        let view = TouchView()
+        view.isUserInteractionEnabled = false
+        return view
+    }
+
+    func updateUIView(_ view: TouchView, context: Context) {}
+
+    final class TouchView: UIView {
+        override func didMoveToWindow() {
+            super.didMoveToWindow()
+            guard window != nil else { return }
+            var ancestor = superview
+            while let view = ancestor {
+                if let scrollView = view as? UIScrollView {
+                    scrollView.delaysContentTouches = false
+                    return
+                }
+                ancestor = view.superview
+            }
         }
     }
 }
