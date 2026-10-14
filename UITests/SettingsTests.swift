@@ -117,6 +117,23 @@ final class SettingsTests: UITestCase {
         settings.colorScheme.waitUntil(\.label, equals: "light")
     }
 
+    func testAnimatedThemeSwitchesKeepControlsAndPersistLastChoice() {
+        let app = launchWithAnimations(.withoutBooks, appearance: .light)
+        let settings = openSettings(app)
+        for theme in ["dark", "light", "dark", "light"] {
+            settings.chooseTheme(theme)
+            settings.colorScheme.waitUntil(\.label, equals: theme)
+            settings.chooseWordTapStyle("card")
+        }
+        app.terminate()
+
+        var configuration = LaunchConfiguration.withoutBooks
+        configuration.resetsState = false
+        let reopened = openSettings(launch(configuration, appearance: .light))
+        reopened.theme("light").waitUntil(\.isSelected, equals: true)
+        reopened.onWordTap("card").waitUntil(\.isSelected, equals: true)
+    }
+
     func testSettingsSnapshotLight() {
         assertSnapshot(of: openSettingsWithReminder(appearance: .light), named: "Settings")
     }

@@ -11,11 +11,14 @@ struct SettingsView: View {
     @Environment(\.modelContext) private var modelContext
     @Environment(\.dismiss) private var dismiss
     @Environment(\.locale) private var locale
+    @Environment(\.colorScheme) private var colorScheme
     @Environment(\.openURL) private var openURL
     @State private var isTimePickerShown = false
     @State private var isAskingPermission = false
     @State private var isNotificationsOffAlertShown = false
     @State private var targetLanguages: [String] = []
+    @State private var window = WindowReference()
+    @State private var transition = ThemeTransition()
 
     var body: some View {
         ScrollView {
@@ -35,6 +38,9 @@ struct SettingsView: View {
         }
         .scrollBounceBehavior(.basedOnSize)
         .background(.surface)
+        .background { WindowAnchor(reference: window) }
+        .onChange(of: colorScheme) { transition.reveal() }
+        .onDisappear { transition.end() }
         .toolbar(.hidden, for: .navigationBar)
         .task { targetLanguages = await translationService.provider.targetLanguages() }
     }
@@ -154,13 +160,23 @@ struct SettingsView: View {
         GroupedSection(Text("Appearance")) {
             ListRow(Text("Theme"), height: .control) {
                 SegmentedControl(
-                    selection: binding(\.appTheme), size: .compact,
+                    selection: appTheme, size: .compact,
                     segments: [
                         .init(.system, title: Text("System"), count: nil, identifier: "settings.theme.system"),
                         .init(.light, title: Text("Light"), count: nil, identifier: "settings.theme.light"),
                         .init(.dark, title: Text("Dark"), count: nil, identifier: "settings.theme.dark"),
                     ])
             }
+        }
+    }
+
+    private var appTheme: Binding<AppTheme> {
+        Binding {
+            settings.appTheme
+        } set: { theme in
+            guard theme != settings.appTheme else { return }
+            transition.begin(in: window.window)
+            settings.update(\.appTheme, to: theme, in: modelContext)
         }
     }
 

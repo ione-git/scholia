@@ -20,6 +20,7 @@ struct ReadingView: View {
     @State private var indexTab: ReaderIndexTab?
     @State private var isSettingsShown = false
     @State private var pickedTheme: ReaderTheme?
+    @State private var sheetColorScheme: ColorScheme?
     @State private var window = WindowReference()
     @State private var transition = ThemeTransition()
 
@@ -83,14 +84,19 @@ struct ReadingView: View {
             }
         }
         .sheet(isPresented: $isSettingsShown) {
-            ReaderSettingsSheet(theme: theme, pick: pick)
-                .preferredColorScheme(shownColorScheme)
+            if let sheetColorScheme {
+                ReaderSettingsSheet(theme: theme, pick: pick)
+                    .environment(\.colorScheme, sheetColorScheme)
+                    .preferredColorScheme(sheetColorScheme)
+            }
         }
         .task { await open() }
         .task(id: appearance) {
+            let renderedScheme = shownColorScheme
             controller?.highlightColor = theme.highlightColor(settings.highlightColor)
             await controller?.apply(appearance)
             if !Task.isCancelled {
+                sheetColorScheme = renderedScheme
                 transition.reveal()
             }
         }

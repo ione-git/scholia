@@ -8,13 +8,15 @@ final class ThemeTransition {
     private var cover: UIView?
     private var timeoutTask: Task<Void, Never>?
 
-    func begin(in window: UIWindow?) {
-        guard cover == nil, let window, let snapshot = window.snapshotView(afterScreenUpdates: false) else {
+    func begin(in content: UIView?) {
+        guard cover == nil, let content,
+            let snapshot = content.snapshotView(afterScreenUpdates: false)
+        else {
             return
         }
-        snapshot.frame = window.bounds
+        snapshot.frame = content.bounds
         snapshot.isUserInteractionEnabled = false
-        window.addSubview(snapshot)
+        content.addSubview(snapshot)
         cover = snapshot
         timeoutTask = Task { [weak self] in
             try? await Task.sleep(for: Self.timeout)
