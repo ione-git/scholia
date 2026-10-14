@@ -600,7 +600,21 @@
       if (!first) {
         continue;
       }
-      if (lineBoxes(item.range).length === 1) {
+      const rects = lineBoxes(item.range);
+      item.clickableElements = rects.map((rect) => {
+        const hit = document.createElement("div");
+        Object.assign(hit.style, {
+          position: "absolute",
+          left: `${rect.left + document.scrollingElement.scrollLeft}px`,
+          top: `${rect.top + document.scrollingElement.scrollTop}px`,
+          width: `${rect.width}px`,
+          height: `${rect.height}px`,
+          pointerEvents: "none",
+        });
+        container.append(hit);
+        return hit;
+      });
+      if (rects.length === 1) {
         container.dataset.scholiaPainted = "true";
         continue;
       }
