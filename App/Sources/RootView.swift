@@ -19,11 +19,12 @@ struct RootView: View {
     @Environment(TranslationService.self) private var translationService
     @State private var path = NavigationPath()
     @State private var isPickingFile = false
+    @State private var isBackSwipeDisabled = false
 
     var body: some View {
         NavigationStack(path: $path) {
             HomeView(path: $path, isPickingFile: $isPickingFile)
-                .background { InteractiveBackNavigation() }
+                .background { InteractiveBackNavigation(isEnabled: !isBackSwipeDisabled) }
                 .navigationDestination(for: Route.self) { route in
                     switch route {
                     case .library: LibraryView()
@@ -41,6 +42,7 @@ struct RootView: View {
                     }
                 #endif
         }
+        .onPreferenceChange(BackSwipeDisabled.self) { isBackSwipeDisabled = $0 }
         .modifier(ImportFlow(isPickingFile: $isPickingFile))
         .background {
             Color.clear.preferredColorScheme(settings.appTheme.colorScheme)

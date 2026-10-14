@@ -62,6 +62,7 @@ struct ReaderChrome<MenuContent: View>: View {
             }
         }
         .padding(.top, .navTop)
+        .background { scrollBackdrop }
     }
 
     private var footer: some View {
@@ -86,6 +87,15 @@ struct ReaderChrome<MenuContent: View>: View {
             }
         }
         .frame(height: GlassButton.Size.reader.diameter + .space6, alignment: .bottom)
+        .background { scrollBackdrop }
+    }
+
+    @ViewBuilder
+    private var scrollBackdrop: some View {
+        if let controller, controller.appearance.pageTurn == .scroll {
+            Color(uiColor: controller.appearance.colors.page)
+                .allowsHitTesting(false)
+        }
     }
 
     private var bookmarkButton: some View {
