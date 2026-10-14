@@ -48,13 +48,19 @@ private struct ReaderHighlightRow: View {
             controller.go(to: start)
         } label: {
             HighlightCard(
-                quote: Text(verbatim: highlight.text, spokenIn: locale), quoteDirection: quoteDirection,
+                quote: Text(verbatim: quote, spokenIn: locale), quoteDirection: quoteDirection,
                 color: highlight.color.solid.color,
                 meta: meta(chapter: chapter, page: page))
         }
         .buttonStyle(.plain)
         .accessibilityValue(value(chapter: chapter, page: page))
         .accessibilityIdentifier("readerIndex.highlight.\(highlight.key)")
+    }
+
+    private var quote: String {
+        highlight.text
+            .replacingOccurrences(of: #"[\t\n\r\f ]+"#, with: " ", options: .regularExpression)
+            .trimmingCharacters(in: .whitespacesAndNewlines)
     }
 
     private func meta(chapter: String?, page: Int?) -> Text? {
