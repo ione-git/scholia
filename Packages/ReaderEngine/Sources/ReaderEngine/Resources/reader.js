@@ -153,10 +153,32 @@
   function lineBoxes(range) {
     const root = range.commonAncestorContainer;
     const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
-    const nodes = root.nodeType === Node.TEXT_NODE ? [root] : [];
-    while (walker.nextNode()) {
-      if (range.intersectsNode(walker.currentNode)) {
-        nodes.push(walker.currentNode);
+    let node = range.startContainer;
+    if (node.nodeType !== Node.TEXT_NODE) {
+      const child = node.childNodes[range.startOffset];
+      if (child) {
+        node = child;
+      } else {
+        while (node !== root && !node.nextSibling) {
+          node = node.parentNode;
+        }
+        node = node === root ? null : node.nextSibling;
+      }
+    }
+    const nodes = [];
+    if (node) {
+      walker.currentNode = node;
+      if (node.nodeType !== Node.TEXT_NODE) {
+        node = walker.nextNode();
+      }
+      while (node && range.comparePoint(node, 0) <= 0) {
+        if (range.intersectsNode(node)) {
+          nodes.push(node);
+        }
+        if (node === range.endContainer) {
+          break;
+        }
+        node = walker.nextNode();
       }
     }
     const rects = nodes.flatMap((node) => {
