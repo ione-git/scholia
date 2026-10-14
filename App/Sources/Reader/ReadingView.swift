@@ -77,6 +77,7 @@ struct ReadingView: View {
         .environment(\.colorScheme, shownColorScheme)
         .statusBarHidden()
         .toolbar(.hidden, for: .navigationBar)
+        .preference(key: BackSwipeDisabled.self, value: true)
         .fullScreenCover(item: $indexTab) { tab in
             if let controller {
                 ReaderIndexView(book: book, controller: controller, tab: tab)
@@ -93,6 +94,9 @@ struct ReadingView: View {
         .task { await open() }
         .task(id: appearance) {
             let renderedScheme = shownColorScheme
+            if let controller, controller.appearance.style != appearance.style {
+                transition.begin(in: window.window?.rootViewController?.view)
+            }
             controller?.highlightColor = theme.highlightColor(settings.highlightColor)
             await controller?.apply(appearance)
             if !Task.isCancelled {

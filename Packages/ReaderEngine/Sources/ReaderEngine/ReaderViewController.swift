@@ -776,7 +776,8 @@ final class ReaderViewController: UIViewController {
         }
         let function = navigator.presentation.scroll ? "scrollToOffset" : "showOffset"
         _ = try? await webView.callAsyncJavaScript(
-            "return await scholia.\(function)(offset)", arguments: ["offset": location.offset], contentWorld: .page)
+            "return await scholia.\(function)(offset, topInset)",
+            arguments: ["offset": location.offset, "topInset": contentInset.top], contentWorld: .page)
     }
 
     private func jump() {
@@ -866,7 +867,8 @@ final class ReaderViewController: UIViewController {
         let function = navigator.presentation.scroll ? "scrollToOffset" : "showOffset"
         do {
             _ = try await webView.callAsyncJavaScript(
-                "return await scholia.\(function)(offset)", arguments: ["offset": offset], contentWorld: .page)
+                "return await scholia.\(function)(offset, topInset)",
+                arguments: ["offset": offset, "topInset": contentInset.top], contentWorld: .page)
             return true
         } catch {
             return false
@@ -1046,7 +1048,7 @@ final class ReaderViewController: UIViewController {
         let isScrolled = navigator.presentation.scroll
         let script =
             isScrolled
-            ? "return scholia.visibleSpan()" : "return scholia.pageSpan(page)"
+            ? "return scholia.visibleSpan(topInset, bottomInset)" : "return scholia.pageSpan(page)"
         let epoch = epoch
         locateTask = Task {
             if isScrolled {
@@ -1057,7 +1059,10 @@ final class ReaderViewController: UIViewController {
             }
             await resolveFragments(inChapter: page.chapter, in: webView)
             let found =
-                try? await webView.callAsyncJavaScript(script, arguments: ["page": page.page], contentWorld: .page)
+                try? await webView.callAsyncJavaScript(
+                    script,
+                    arguments: ["page": page.page, "topInset": contentInset.top, "bottomInset": contentInset.bottom],
+                    contentWorld: .page)
                 as? [String: Any]
             guard
                 !Task.isCancelled,

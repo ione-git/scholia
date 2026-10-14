@@ -685,7 +685,7 @@
       await nextFrame();
     },
 
-    async scrollToOffset(offset) {
+    async scrollToOffset(offset, topInset) {
       await document.fonts.ready;
       for (const { node, start } of textNodes()) {
         if (start + node.data.length <= offset) {
@@ -693,17 +693,17 @@
         }
         const rect = boxOfCharacter(node, Math.max(0, offset - start));
         if (rect) {
-          document.scrollingElement.scrollTo({ top: rect.top + window.scrollY, behavior: "instant" });
+          document.scrollingElement.scrollTo({ top: rect.top + window.scrollY - topInset, behavior: "instant" });
           return;
         }
       }
     },
 
-    visibleSpan() {
+    visibleSpan(topInset, bottomInset) {
       const lineStart = isRightToLeft() ? window.innerWidth - 1 : 0;
       const lineEnd = window.innerWidth - 1 - lineStart;
-      const start = offsetAt(lineStart, 0);
-      const end = offsetAt(lineEnd, window.innerHeight - 1);
+      const start = offsetAt(lineStart, topInset);
+      const end = offsetAt(lineEnd, window.innerHeight - bottomInset - 1);
       return start === null || end === null ? null : { start, end, firstLine: lineAt(start) };
     },
 
