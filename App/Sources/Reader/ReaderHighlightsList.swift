@@ -59,7 +59,7 @@ private struct ReaderHighlightRow: View {
 
     private var quote: String {
         highlight.text
-            .replacingOccurrences(of: #"[\t\n\r\f ]+"#, with: " ", options: .regularExpression)
+            .replacingOccurrences(of: #"(?m)^[\t ]+"#, with: "", options: .regularExpression)
             .trimmingCharacters(in: .whitespacesAndNewlines)
     }
 
